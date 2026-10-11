@@ -1,0 +1,46 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    // Gestionnaire : uniquement le compte sas61ana@gmail.com, adresse vérifiée
+    function isAdmin() {
+      return request.auth != null
+        && request.auth.token.email == "sas61ana@gmail.com"
+        && request.auth.token.email_verified == true;
+    }
+    function hasAccess() {
+      return request.auth != null && exists(/databases/$(database)/documents/access/$(request.auth.uid));
+    }
+    function myEmp() {
+      return get(/databases/$(database)/documents/access/$(request.auth.uid)).data.empId;
+    }
+
+    match /config/{doc}  { allow read, write: if isAdmin(); }
+    match /weeks/{week}  { allow read, write: if isAdmin(); }
+
+    match /access/{uid} {
+      allow read: if isAdmin() || (request.auth != null && request.auth.uid == uid);
+      allow write: if isAdmin();
+    }
+    match /logins/{empId} {
+      allow get: if true;
+      allow list: if false;
+      allow write: if isAdmin();
+    }
+    match /annuaire/{doc} {
+      allow read: if isAdmin() || hasAccess();
+      allow write: if isAdmin();
+    }
+    match /publies/{empId}/semaines/{week} {
+      allow read: if isAdmin() || (hasAccess() && myEmp() == empId);
+      allow write: if isAdmin();
+    }
+    match /demandes/{id} {
+      allow read: if isAdmin() || (hasAccess() && resource.data.empId == myEmp());
+      allow create: if hasAccess()
+        && request.resource.data.empId == myEmp()
+        && request.resource.data.status == "attente"
+        && request.resource.data.type in ["CP", "ECHANGE", "ERREUR"];
+      allow update, delete: if isAdmin();
+    }
+  }
+}
