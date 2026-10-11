@@ -261,7 +261,7 @@ code.code{font-family:var(--font-mono);background:var(--surface-2);padding:2px 6
 .roul-list{display:grid;gap:14px}
 .roul-weeks{grid-template-columns:repeat(auto-fill,minmax(560px,1fr))}
 .rtab{width:100%;font-size:13px}.rtab td{padding:2px 3px}.rtab .tsel{padding:3px 4px;font-size:12px}.rtab .rsel{max-width:240px;padding:3px 6px;font-size:12px}
-.rd{font-weight:600;text-transform:capitalize;width:38px}.rdur{width:52px;text-align:right}
+.rd{font-weight:600;text-transform:capitalize;width:38px}.rdur{width:58px;min-width:58px;text-align:right;white-space:nowrap}.rtab .tsel{min-width:72px}
 .cw-tot{margin-left:auto;font-family:var(--font-mono)}.cw-tot em{font-style:normal;font-size:12px;margin-left:4px}.cw-tot em.ok{color:#1a7f37}.cw-tot em.warn{color:#b26a00}.cw-tot em.bad{color:#c62828}
 .cwb{width:60px;padding:4px 6px;border:1px solid var(--line);border-radius:6px}
 @media(max-width:700px){.roul-weeks{grid-template-columns:1fr}}
@@ -1393,7 +1393,7 @@ function renderRoul(){
       return '<div class="cw'+(i===idx?" cur":"")+'" data-ci="'+i+'"><div class="cw-hd">Semaine '+(i+1)+(i===idx?' <span class="pill info">S'+wnum(S.weekId)+'</span>':' <span class="st-mut">S'+wnum(shiftWeek(S.weekId,i-idx))+'</span>')+
         '<span class="cw-tot">'+fmt(t)+(t?' <em class="'+(Math.abs(diff)<1?"ok":diff>0?"warn":"bad")+'">'+fmtSigned(diff)+'</em>':'')+'</span></div>'+
         '<div class="roul-row"><label>Heures prévues</label><input class="mono cwb" data-k="base" inputmode="decimal" placeholder="'+esc(String(e.base||0))+'" value="'+esc(b==null?"":String(b))+'"> h'+
-        '<button class="btn ghost" data-k="take">Prendre la S'+wnum(S.weekId)+'</button><button class="btn ghost" data-k="copy"'+(i?"":" disabled")+'>Copier la semaine '+i+'</button><button class="btn ghost danger" data-k="clear">Vider</button></div>'+
+        '<button class="btn ghost" data-k="take">Prendre la S'+wnum(S.weekId)+'</button>'+(i?'<button class="btn ghost" data-k="copy">Copier la semaine '+i+'</button>':'')+'<button class="btn ghost danger" data-k="clear">Vider</button></div>'+
         '<div class="tbl"><table class="rtab"><thead><tr><th></th><th>Horaire</th><th>Matin</th><th></th><th>Ap.-midi</th><th></th><th>Pause</th><th>Durée</th></tr></thead><tbody>'+
         [0,1,2,3,4,5,6].map(d=>dayRow(e,i,d,r[d])).join("")+'</tbody></table></div></div>'; }).join("")+'</div>':'')+
     '</div>'; }).join("")+'</div></div>';
