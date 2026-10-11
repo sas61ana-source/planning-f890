@@ -415,6 +415,8 @@ tr.abs-cur td{background:rgba(227,6,19,.04)}
 .hobjm small{display:block;opacity:.9;font-size:13px}.hobjm b{display:block;font-family:var(--font-display);font-size:30px;line-height:1.1}.hobjm b span{font-family:var(--font-ui);font-size:14px;font-weight:600;opacity:.9}
 .hobjm .chips{display:flex;flex-wrap:wrap;gap:5px;margin-top:8px}.hobjm .chips i{font-style:normal;font-size:12px;background:rgba(255,255,255,.18);border-radius:8px;padding:2px 7px}
 .hobjm.empty{background:var(--surface);color:var(--fg);border:1px dashed var(--accent)}.hobjm.empty b{font-size:20px;color:var(--accent)}
+.tkind{display:inline-flex;background:var(--surface-2);border-radius:9px;padding:2px;gap:2px}.tkind button{border:0;background:transparent;border-radius:7px;padding:5px 9px;font-weight:600;font-size:12.5px;color:var(--muted);white-space:nowrap}.tkind button[aria-pressed="true"]{background:var(--surface);color:var(--fg);box-shadow:0 1px 2px rgba(0,0,0,.1)}
+.tadd{display:flex;gap:8px;flex-wrap:wrap;margin-top:12px}
 </style>
 
 </head><body>
@@ -565,7 +567,8 @@ function timeSel(id, f, val, disabled, attrs){
     '<optgroup label="Horaires courants">'+COMMON[f].map(t=>'<option value="'+t+'">'+t+'</option>').join("")+'</optgroup>'+
     '<optgroup label="Toutes les heures (5 min)">'+all.map(o).join("")+'</optgroup></select>';
 }
-const tplTxt = t => (t.m1?t.m1+"–"+t.m2:"—")+" / "+(t.a1?t.a1+"–"+t.a2:"—");
+const tplKind = t => t.m1&&!t.a1?"am":(!t.m1&&t.a1?"pm":"day");
+const tplTxt = t => { const k=tplKind(t); return k==="am"?"Matin "+t.m1+"–"+t.m2 : k==="pm"?"Après-midi "+t.a1+"–"+t.a2 : (t.m1?t.m1+"–"+t.m2:"—")+" / "+(t.a1?t.a1+"–"+t.a2:"—"); };
 
 /* ---------- semaines ISO ---------- */
 function isoWeekId(d){
@@ -1304,19 +1307,30 @@ async function renderObj(){
 /* ---------- horaires types ---------- */
 function renderTpl(){
   const v=$("#v-tpl"); const T=S.team.templates;
-  v.innerHTML='<div class="panel"><h2>Horaires types</h2><p class="lead">Les 9 premiers s\'appliquent avec les touches 1 à 9 sur le planning. Choisissez les heures dans les menus, par pas de 5 minutes. La pause de 10 minutes est facultative et déduite seulement si elle est cochée.</p>'+
-  '<div class="tbl"><table><thead><tr><th style="width:44px">Touche</th><th>Matin début</th><th>Matin fin</th><th>Ap.-m. début</th><th>Ap.-m. fin</th><th>Pause</th><th>Durée</th><th></th></tr></thead><tbody>'+
-  T.map((t,i)=>'<tr data-i="'+i+'"><td><b style="color:var(--accent);font-family:var(--font-mono)">'+(i<9?i+1:"–")+'</b></td>'+["m1","m2","a1","a2"].map(f=>'<td>'+timeSel("t-"+f+"-"+i,f,t[f],false,' data-f="'+f+'"')+'</td>').join("")+
-  '<td><input type="checkbox" id="t-p-'+i+'" data-f="p"'+(t.p?" checked":"")+'></td><td style="font-family:var(--font-mono);font-weight:600">'+fmt(tplMin(t))+'</td><td style="white-space:nowrap"><button class="btn ghost" data-a="up">↑</button><button class="btn ghost" data-a="down">↓</button><button class="btn ghost danger" data-a="del">Supprimer</button></td></tr>').join("")+
-  '</tbody></table></div><div style="margin-top:12px"><button class="btn primary" id="addTpl">+ Ajouter un horaire type</button></div></div>';
-  v.querySelectorAll("tr[data-i]").forEach(tr=>{ const i=+tr.dataset.i;
+  const KL={day:"Journée",am:"Matin",pm:"Après-midi"};
+  v.innerHTML='<div class="panel"><h2>Horaires types</h2><p class="lead">Les 9 premiers s\'appliquent avec les touches 1 à 9 sur le planning. Choisissez pour chacun : journée (matin + après-midi), matin seul ou après-midi seul, puis les heures par pas de 5 minutes. La pause de 10 minutes est facultative et déduite seulement si elle est cochée.</p>'+
+  '<div class="tbl"><table><thead><tr><th style="width:44px">Touche</th><th>Type</th><th>Matin début</th><th>Matin fin</th><th>Ap.-m. début</th><th>Ap.-m. fin</th><th>Pause</th><th>Durée</th><th></th></tr></thead><tbody>'+
+  T.map((t,i)=>{ const k=tplKind(t); return '<tr data-i="'+i+'"><td><b style="color:var(--accent);font-family:var(--font-mono)">'+(i<9?i+1:"–")+'</b></td>'+
+    '<td><div class="tkind">'+["day","am","pm"].map(x=>'<button type="button" data-k="'+x+'" aria-pressed="'+(x===k)+'">'+KL[x]+'</button>').join("")+'</div></td>'+
+    ["m1","m2","a1","a2"].map(f=>{ const off=(k==="am"&&f[0]==="a")||(k==="pm"&&f[0]==="m"); return '<td>'+(off?'<span class="st-mut">—</span>':timeSel("t-"+f+"-"+i,f,t[f],false,' data-f="'+f+'"'))+'</td>'; }).join("")+
+    '<td><input type="checkbox" id="t-p-'+i+'" data-f="p"'+(t.p?" checked":"")+'></td><td style="font-family:var(--font-mono);font-weight:600">'+fmt(tplMin(t))+'</td><td style="white-space:nowrap"><button class="btn ghost" data-a="up">↑</button><button class="btn ghost" data-a="down">↓</button><button class="btn ghost danger" data-a="del">Supprimer</button></td></tr>'; }).join("")+
+  '</tbody></table></div><div class="tadd"><button class="btn primary" data-add="day">+ Journée</button><button class="btn" data-add="am">+ Matin</button><button class="btn" data-add="pm">+ Après-midi</button></div></div>';
+  v.querySelectorAll("tr[data-i]").forEach(tr=>{ const i=+tr.dataset.i; const t=T[i];
     tr.querySelectorAll("[data-f]").forEach(inp=>inp.onchange=()=>{ const f=inp.dataset.f;
-      if(f==="p") T[i].p=inp.checked; else T[i][f]=inp.value;
+      if(f==="p") t.p=inp.checked; else t[f]=inp.value;
+      teamChanged(); });
+    tr.querySelectorAll("[data-k]").forEach(b=>b.onclick=()=>{ const k=b.dataset.k; const cur=tplKind(t); if(k===cur) return;
+      t._m=t._m||(t.m1?{m1:t.m1,m2:t.m2}:null); t._a=t._a||(t.a1?{a1:t.a1,a2:t.a2}:null);
+      if(t.m1) t._m={m1:t.m1,m2:t.m2}; if(t.a1) t._a={a1:t.a1,a2:t.a2};
+      if(k==="am"){ const m=t._m||{m1:"09:45",m2:"13:00"}; t.m1=m.m1; t.m2=m.m2; t.a1=""; t.a2=""; }
+      if(k==="pm"){ const a=t._a||{a1:"14:00",a2:"19:00"}; t.a1=a.a1; t.a2=a.a2; t.m1=""; t.m2=""; }
+      if(k==="day"){ const m=t._m||{m1:"09:45",m2:"13:00"}, a=t._a||{a1:"14:00",a2:"19:00"}; Object.assign(t,m,a); }
       teamChanged(); });
     tr.querySelectorAll("[data-a]").forEach(b=>b.onclick=()=>{ const a=b.dataset.a;
       if(a==="up"&&i>0) [T[i-1],T[i]]=[T[i],T[i-1]]; if(a==="down"&&i<T.length-1) [T[i+1],T[i]]=[T[i],T[i+1]]; if(a==="del") T.splice(i,1); teamChanged(); });
   });
-  $("#addTpl").onclick=()=>{ T.push({m1:"09:45",m2:"13:00",a1:"14:00",a2:"18:00",p:true}); teamChanged(); };
+  v.querySelectorAll("[data-add]").forEach(b=>b.onclick=()=>{ const k=b.dataset.add;
+    T.push(k==="am"?{m1:"09:45",m2:"13:00",a1:"",a2:"",p:false}:k==="pm"?{m1:"",m2:"",a1:"14:00",a2:"19:00",p:false}:{m1:"09:45",m2:"13:00",a1:"14:00",a2:"18:00",p:true}); teamChanged(); });
 }
 
 /* ---------- transmettre ---------- */
