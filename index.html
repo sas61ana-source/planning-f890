@@ -255,6 +255,9 @@ code.code{font-family:var(--font-mono);background:var(--surface-2);padding:2px 6
 .lmsg{color:var(--bad);font-weight:600;min-height:1.2em}
 
 @media (prefers-reduced-motion:reduce){*{transition:none!important;animation:none!important}}
+.rhd{min-width:24px;height:26px;margin:0 1px;padding:0 4px;border:1px solid var(--line,#ccc);border-radius:6px;background:transparent;color:inherit;font:inherit;font-size:12px;cursor:pointer}
+.rhd.on{background:#e30613;border-color:#e30613;color:#fff;font-weight:600}
+#v-staff input[data-f=name]{min-width:96px}#v-staff input[data-f=role]{min-width:160px}#v-staff input[data-f=email]{min-width:200px}#v-staff .tbl{overflow-x:auto}
 </style>
 
 </head><body>
@@ -282,7 +285,7 @@ code.code{font-family:var(--font-mono);background:var(--surface-2);padding:2px 6
     </div>
     <button class="btn ghost" id="todayW">Cette semaine</button>
     <span id="copyZone"></span>
-    <button class="btn" id="genW" title="Applique les roulements, les CP acceptés, les fériés et complète les heures">Générer la semaine</button>
+    <button class="btn" id="genW" title="Ne reprend pas la semaine précédente : applique roulements, repos fixes RH, CP acceptés, fériés et complète les heures du contrat">Générer la semaine</button>
     <button class="btn pub" id="pubW" title="Rend la semaine visible dans l'espace de chaque collaborateur">Publier aux collaborateurs</button>
     <span class="spacer"></span>
     <span id="localTools" hidden><button class="btn" id="gBtn" hidden>Se connecter à Google</button><button class="btn ghost" id="expData" title="Sauvegarder toutes les données dans un fichier">Sauvegarder (.json)</button><label class="btn ghost" for="impData" style="cursor:pointer">Importer</label><input type="file" id="impData" accept=".json,application/json" hidden></span>
@@ -884,12 +887,13 @@ function renderIndiv(){
 function renderStaff(){
   const v=$("#v-staff"); const all=S.team.employees;
   v.innerHTML='<div class="panel"><h2>Collaborateurs</h2><p class="lead">L\'ordre ici est l\'ordre du planning. La base du contrat s\'applique par défaut à chaque semaine ; elle peut être ajustée semaine par semaine dans la colonne Total du planning. Un collaborateur archivé disparaît du planning sans perdre son historique.</p>'+
-  '<div class="tbl"><table><thead><tr><th style="width:36px"></th><th>Prénom</th><th>Poste</th><th style="width:100px">Base (h)</th><th style="width:120px">Fonction</th><th>E-mail</th><th style="width:90px">Solde CP (j)</th><th style="width:140px">au</th><th style="width:210px">Espace collaborateur</th><th style="width:120px">Équipe</th><th style="width:220px"></th></tr></thead><tbody>'+
-  all.map((e,i)=>'<tr data-i="'+i+'"'+(e.archived?' style="opacity:.5"':'')+'><td style="color:var(--muted)">'+(i+1)+'</td><td><input id="s-n-'+i+'" data-f="name" value="'+esc(e.name)+'"></td><td><input id="s-r-'+i+'" data-f="role" value="'+esc(e.role||"")+'"></td><td><input id="s-b-'+i+'" class="mono" data-f="base" inputmode="decimal" value="'+esc(String(e.base))+'"></td><td><select id="s-f-'+i+'" data-f="fonction">'+Object.entries(FONCTIONS).map(([k,l])=>'<option value="'+k+'"'+(fonctionOf(e)===k?" selected":"")+'>'+l+'</option>').join("")+'</select></td><td><input id="s-m-'+i+'" data-f="email" type="email" autocomplete="off" placeholder="prenom@exemple.fr" value="'+esc(e.email||"")+'"></td><td><input id="s-c-'+i+'" class="mono" data-f="cpSolde" inputmode="decimal" value="'+esc(e.cpSolde==null?"":String(e.cpSolde))+'"></td><td><input id="s-d-'+i+'" data-f="cpDate" type="date" value="'+esc(e.cpDate||"")+'"></td><td style="white-space:nowrap">'+(e.code?'<code class="code">'+esc(e.id)+' · '+esc(e.code)+'</code> <button class="btn ghost" data-acc="send">Envoyer</button><button class="btn ghost" data-acc="new" title="Nouveau code">↻</button>':'<button class="btn" data-acc="new">Créer l\'accès</button>')+'</td><td><select id="s-t-'+i+'" data-f="team"><option value="vente"'+(e.team==="vente"?" selected":"")+'>Vente</option><option value="back"'+(e.team==="back"?" selected":"")+'>Back office</option></select></td>'+
+  '<div class="tbl"><table><thead><tr><th style="width:36px"></th><th>Prénom</th><th>Poste</th><th style="width:100px">Base (h)</th><th style="width:120px">Fonction</th><th style="width:190px">Repos fixes (RH)</th><th>E-mail</th><th style="width:90px">Solde CP (j)</th><th style="width:140px">au</th><th style="width:210px">Espace collaborateur</th><th style="width:120px">Équipe</th><th style="width:220px"></th></tr></thead><tbody>'+
+  all.map((e,i)=>'<tr data-i="'+i+'"'+(e.archived?' style="opacity:.5"':'')+'><td style="color:var(--muted)">'+(i+1)+'</td><td><input id="s-n-'+i+'" data-f="name" value="'+esc(e.name)+'"></td><td><input id="s-r-'+i+'" data-f="role" value="'+esc(e.role||"")+'"></td><td><input id="s-b-'+i+'" class="mono" data-f="base" inputmode="decimal" value="'+esc(String(e.base))+'"></td><td><select id="s-f-'+i+'" data-f="fonction">'+Object.entries(FONCTIONS).map(([k,l])=>'<option value="'+k+'"'+(fonctionOf(e)===k?" selected":"")+'>'+l+'</option>').join("")+'</select></td><td style="white-space:nowrap">'+DAYN.map((dn,d)=>'<button type="button" class="rhd'+((e.rh||[]).includes(d)?' on':'')+'" data-rh="'+d+'" title="'+esc(dn)+'">'+dn[0].toUpperCase()+'</button>').join("")+'</td><td><input id="s-m-'+i+'" data-f="email" type="email" autocomplete="off" placeholder="prenom@exemple.fr" value="'+esc(e.email||"")+'"></td><td><input id="s-c-'+i+'" class="mono" data-f="cpSolde" inputmode="decimal" value="'+esc(e.cpSolde==null?"":String(e.cpSolde))+'"></td><td><input id="s-d-'+i+'" data-f="cpDate" type="date" value="'+esc(e.cpDate||"")+'"></td><td style="white-space:nowrap">'+(e.code?'<code class="code">'+esc(e.id)+' · '+esc(e.code)+'</code> <button class="btn ghost" data-acc="send">Envoyer</button><button class="btn ghost" data-acc="new" title="Nouveau code">↻</button>':'<button class="btn" data-acc="new">Créer l\'accès</button>')+'</td><td><select id="s-t-'+i+'" data-f="team"><option value="vente"'+(e.team==="vente"?" selected":"")+'>Vente</option><option value="back"'+(e.team==="back"?" selected":"")+'>Back office</option></select></td>'+
   '<td style="white-space:nowrap"><button class="btn ghost" data-a="up" title="Monter">↑</button><button class="btn ghost" data-a="down" title="Descendre">↓</button><button class="btn ghost'+(e.archived?"":" danger")+'" data-a="arch">'+(e.archived?"Réactiver":"Archiver")+'</button></td></tr>').join("")+
   '</tbody></table></div><div style="margin-top:12px"><button class="btn primary" id="addEmp">+ Ajouter un collaborateur</button></div></div>';
   v.querySelectorAll("tr[data-i]").forEach(tr=>{ const i=+tr.dataset.i;
     tr.querySelectorAll("[data-f]").forEach(inp=>inp.onchange=()=>{ const f=inp.dataset.f; let val=inp.value.trim(); if(f==="base"){ val=parseFloat(val.replace(",","."))||0; } if(f==="cpSolde"){ val=val===""?null:(parseFloat(val.replace(",","."))||0); } S.team.employees[i][f]=val; teamChanged(); });
+    tr.querySelectorAll("[data-rh]").forEach(b=>b.onclick=()=>{ const emp=S.team.employees[i], d=+b.dataset.rh; const L=(emp.rh||[]).filter(x=>x!==d); if(!(emp.rh||[]).includes(d)) L.push(d); L.sort(); emp.rh=L; teamChanged(); });
     tr.querySelectorAll("[data-acc]").forEach(b=>b.onclick=()=>{ const emp=S.team.employees[i]; if(b.dataset.acc==="new") createAccess(emp); else sendAccess(emp); });
     tr.querySelectorAll("[data-a]").forEach(b=>b.onclick=()=>{ const a=b.dataset.a, L=S.team.employees;
       if(a==="up"&&i>0) [L[i-1],L[i]]=[L[i],L[i-1]]; if(a==="down"&&i<L.length-1) [L[i+1],L[i]]=[L[i],L[i+1]];
@@ -1259,14 +1263,15 @@ function favTemplate(e){
   const t=S.team.templates[2]||DEFAULT_TPL[2]; return {s:"T",...t,tag:""};
 }
 async function generateWeek(){
-  const prev=await loadWeek(shiftWeek(S.weekId,-1));
   const approved=(S.demandes||[]).filter(r=>r.status==="acceptée"&&r.type==="CP");
   pushUndo(); const ds=weekDays(S.weekId); let nCycle=0, nPrev=0, nFill=0, nCP=0;
+  const fav={}; for(const e of emps()) fav[e.id]=favTemplate(e);
   for(const e of emps()){
     let r;
     if(cycleOf(e)){ r=cleanCycleRow(cycleOf(e).weeks[cycleIndex(e,S.weekId)]); nCycle++; }
-    else { r=cleanCycleRow(prev&&prev.entries&&prev.entries[e.id]); if(r.some(Boolean)) nPrev++; }
+    else r=[];
     while(r.length<7) r.push(null);
+    (e.rh||[]).forEach(d=>{ r[d]={s:"RH"}; nPrev++; });
     for(let d=0; d<7; d++){
       const day=ymd(ds[d]);
       if(approved.some(q=>q.empId===e.id && q.from<=day && (q.to||q.from)>=day) && d<6){ r[d]={s:"CP"}; nCP++; continue; }
@@ -1278,7 +1283,7 @@ async function generateWeek(){
   // complétion : atteindre la base contrat sur les jours vides, là où il manque du monde
   for(const e of emps()){
     let need=Math.round(baseOf(e)*60)-totals(e).t; if(need<180) continue;
-    const t=favTemplate(e), tm=mins(t); if(!tm) continue;
+    const t=fav[e.id], tm=mins(t); if(!tm) continue;
     const free=[0,1,2,3,4,5].filter(d=>!getE(e.id,d) && !isClosed(d));
     free.sort((a,b)=>coverage(b).length-coverage(a).length);
     const restDays=(S.week.entries[e.id]||[]).filter((x,i)=>i<6&&x&&x.s==="RH").length;
@@ -1286,15 +1291,15 @@ async function generateWeek(){
     for(let d=0; d<7; d++) if(!getE(e.id,d)) setE(e.id,d,{s:"RH"});
   }
   changed();
-  toast("Semaine générée : "+nCycle+" roulement"+(nCycle>1?"s":"")+", "+nPrev+" reprise"+(nPrev>1?"s":"")+" de la S"+wnum(shiftWeek(S.weekId,-1))+(nCP?", "+nCP+" jour(s) de CP posés":"")+(nFill?", "+nFill+" journée(s) complétée(s)":""));
+  toast("Semaine générée : "+nCycle+" roulement"+(nCycle>1?"s":"")+", "+nPrev+" jour"+(nPrev>1?"s":"")+" de repos fixe"+(nPrev>1?"s":"")+(nCP?", "+nCP+" jour(s) de CP posés":"")+(nFill?", "+nFill+" journée(s) complétée(s)":""));
 }
 
 function renderRoul(){
   const v=$("#v-roul"); const list=emps();
-  v.innerHTML='<div class="panel"><h2>Roulements</h2><p class="lead">Chaque collaborateur peut avoir son propre cycle de 1 à 4 semaines. « Générer la semaine » applique les cycles, pose les congés acceptés et les jours fériés, puis complète les heures manquantes. Pour remplir un cycle, affichez une semaine type dans le planning puis cliquez sur la case du cycle à remplir.</p>'+
+  v.innerHTML='<div class="panel"><h2>Roulements</h2><p class="lead">Chaque collaborateur peut avoir son propre cycle de 1 à 4 semaines. « Générer la semaine » ne reprend jamais la semaine précédente : elle applique les cycles, les jours de repos fixes (RH) définis dans Collaborateurs, les congés acceptés et les jours fériés, puis complète les heures du contrat avec l\'horaire habituel. Pour remplir un cycle, affichez une semaine type dans le planning puis cliquez sur la case du cycle à remplir.</p>'+
   '<div class="roul-grid">'+list.map(e=>{ const c=cycleOf(e); const len=c?c.len:0; const idx=c?cycleIndex(e,S.weekId):-1;
     return '<div class="roul"><div class="roul-hd"><b>'+esc(e.name)+'</b><span class="st-mut">'+esc(e.role||"")+'</span></div>'+
-    '<div class="roul-row"><label for="cl-'+esc(e.id)+'">Cycle</label><select id="cl-'+esc(e.id)+'" data-clen="'+esc(e.id)+'">'+[0,1,2,3,4].map(n=>'<option value="'+n+'"'+(n===len?" selected":"")+'>'+(n?n+" semaine"+(n>1?"s":""):"Aucun (reprise S-1)")+'</option>').join("")+'</select>'+
+    '<div class="roul-row"><label for="cl-'+esc(e.id)+'">Cycle</label><select id="cl-'+esc(e.id)+'" data-clen="'+esc(e.id)+'">'+[0,1,2,3,4].map(n=>'<option value="'+n+'"'+(n===len?" selected":"")+'>'+(n?n+" semaine"+(n>1?"s":""):"Aucun (horaires types)")+'</option>').join("")+'</select>'+
     (c?'<span class="st-mut">S'+wnum(S.weekId)+' = semaine '+(idx+1)+' du cycle</span>':'')+'</div>'+
     (c?'<div class="roul-weeks">'+c.weeks.slice(0,len).map((r,i)=>{ const t=(r||[]).reduce((a,x)=>a+mins(x),0); const filled=(r||[]).some(Boolean);
       return '<div class="cw'+(i===idx?" cur":"")+'"><div class="cw-hd">Semaine '+(i+1)+(i===idx?' <span class="pill info">cette semaine</span>':'')+'<b>'+(filled?fmt(t):"vide")+'</b></div>'+
