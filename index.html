@@ -321,7 +321,7 @@ tr.abs-cur td{background:rgba(227,6,19,.04)}
   body:not([data-view="home"]) .mtitle{display:block;flex:1;min-width:0;font-family:var(--font-display);font-size:21px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
   header.top .save{margin-left:auto;font-size:0;gap:0} header.top .save i{width:10px;height:10px}
   #logoutB{padding:6px 10px;font-size:13px}
-  body[data-view="home"] .bar, body[data-view="staff"] .bar, body[data-view="abs"] .bar, body[data-view="pz"] .bar, body[data-view="tpl"] .bar, body[data-view="dem"] .bar, body[data-view="cpt"] .bar{display:none}
+  body[data-view="home"] .bar, body[data-view="staff"] .bar, body[data-view="abs"] .bar, body[data-view="pz"] .bar, body[data-view="obj"] .bar, body[data-view="tpl"] .bar, body[data-view="dem"] .bar, body[data-view="cpt"] .bar{display:none}
   .bar{display:grid!important;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:10px}
   .bar .weeknav{grid-column:1/-1;display:flex;justify-content:space-between;width:100%}
   .bar .weeknav .lbl{flex:1;text-align:center}
@@ -399,6 +399,17 @@ tr.abs-cur td{background:rgba(227,6,19,.04)}
 @keyframes pulse{50%{box-shadow:0 0 0 7px transparent}}
 .t-tl .ti{background:linear-gradient(135deg,#0e8a8a,#3cc2b5)}
 @media(max-width:900px){.pzgrid{grid-template-columns:1fr}}
+
+.obgrid{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1.4fr);gap:18px}
+.oblbl{display:block;font-size:12px;font-weight:700;text-transform:uppercase;letter-spacing:.04em;color:var(--muted);margin:6px 0 6px}
+.obpo{display:flex;align-items:center;gap:8px}.obpo input{font-size:26px;font-weight:600;width:100%;max-width:240px;padding:8px 12px;border:1px solid var(--line);border-radius:12px;background:var(--surface)}
+.obpo span{color:var(--muted);font-weight:600}.obpo.sm input{font-size:15px;max-width:110px;padding:6px 8px;border-radius:8px}
+.obw{display:grid;grid-template-columns:repeat(6,1fr);gap:6px}.obw label{display:grid;gap:3px;font-size:12px;color:var(--muted);text-align:center}.obw input{width:100%;padding:6px;border:1px solid var(--line);border-radius:8px;text-align:center;font-family:var(--font-mono)}
+.obsvc input,.obsvc select{width:100%;padding:6px 8px;border:1px solid var(--line);border-radius:8px;background:var(--surface)}
+.obemp{display:flex;flex-wrap:wrap;gap:8px 16px}.obemp .chk{display:flex;align-items:center;gap:6px}
+.obwk{display:flex;gap:6px;flex-wrap:wrap}.obrep td,.obrep th{white-space:nowrap}.obtot td{background:var(--surface-2)}
+@media(max-width:900px){.obgrid{grid-template-columns:1fr}}
+@media(max-width:760px){.obw{grid-template-columns:repeat(3,1fr)}}
 </style>
 
 </head><body>
@@ -413,6 +424,7 @@ tr.abs-cur td{background:rgba(227,6,19,.04)}
       <button role="tab" data-v="staff" aria-selected="false">Collaborateurs</button>
       <button role="tab" data-v="abs" aria-selected="false">Absences</button>
       <button role="tab" data-v="pz" aria-selected="false">Pauses</button>
+      <button role="tab" data-v="obj" aria-selected="false">Objectifs</button>
       <button role="tab" data-v="tpl" aria-selected="false">Horaires types</button>
       <button role="tab" data-v="roul" aria-selected="false">Roulements</button>
       <button role="tab" data-v="send" aria-selected="false">Transmettre</button>
@@ -465,6 +477,7 @@ tr.abs-cur td{background:rgba(227,6,19,.04)}
   <section id="v-staff" hidden></section>
   <section id="v-abs" hidden></section>
   <section id="v-pz" hidden></section>
+  <section id="v-obj" hidden></section>
   <section id="v-tpl" hidden></section>
   <section id="v-send" hidden></section>
   <section id="v-roul" hidden></section>
@@ -646,6 +659,7 @@ function render(){
   if(S.view==="staff") renderStaff();
   if(S.view==="abs") renderAbs();
   if(S.view==="pz") renderPz();
+  if(S.view==="obj") renderObj();
   if(S.view==="tpl") renderTpl();
   if(S.view==="send") renderSend();
   if(S.view==="roul") renderRoul();
@@ -1033,10 +1047,10 @@ $("#impData").onchange=ev=>{ const f=ev.target.files[0]; if(!f) return; const r=
   localStorage.setItem(LKEY,JSON.stringify(d)); startLocal("import"); toast("Données importées"); }catch(e){ toast("Fichier non reconnu : choisissez une sauvegarde du planning (.json)"); } }; r.readAsText(f); ev.target.value=""; };
 
 /* ---------- onglets ---------- */
-const VIEW_TITLES={home:"Accueil",team:"Planning équipe",indiv:"Plannings individuels",staff:"Collaborateurs",abs:"Absences",pz:"Pauses",tpl:"Horaires types",send:"Transmettre",roul:"Roulements",dem:"Demandes",cpt:"Compteurs et paie"};
+const VIEW_TITLES={home:"Accueil",team:"Planning équipe",indiv:"Plannings individuels",staff:"Collaborateurs",abs:"Absences",pz:"Pauses",obj:"Objectifs",tpl:"Horaires types",send:"Transmettre",roul:"Roulements",dem:"Demandes",cpt:"Compteurs et paie"};
 function go(v){ S.view=v;
   document.querySelectorAll("#tabs button").forEach(x=>x.setAttribute("aria-selected",x.dataset.v===v));
-  for(const k of ["home","team","indiv","staff","abs","pz","tpl","send","roul","dem","cpt"]) $("#v-"+k).hidden=(k!==v);
+  for(const k of ["home","team","indiv","staff","abs","pz","obj","tpl","send","roul","dem","cpt"]) $("#v-"+k).hidden=(k!==v);
   document.body.dataset.view=v; $("#mTitle").textContent=VIEW_TITLES[v]||""; $("#mBack").hidden=(v==="home");
   try{localStorage.setItem("pf890-view",v)}catch(e){}
   render(); if(isPhone()) window.scrollTo({top:0}); }
@@ -1204,6 +1218,83 @@ function renderPz(){
   $("#pzPrint")&&($("#pzPrint").onclick=pzPoster);
 }
 function pzOverMonth(empId, ym){ const days=new Set((S.pauses||[]).filter(p=>p.empId===empId&&p.day&&p.day.startsWith(ym)).map(p=>p.day)); let t=0; days.forEach(d=>{ t+=pzDay(empId,d).over; }); return Math.round(t/60); }
+
+/* ---------- objectifs (PO et services) ---------- */
+const DEF_SVC = [
+  {id:"ih",name:"Infinity Home",type:"taux"},{id:"is",name:"Infinity Smartphone",type:"taux"},{id:"ass",name:"Assurances",type:"taux"},
+  {id:"trc",name:"TRC",type:"taux"},{id:"acc",name:"Accessoires",type:"taux"},{id:"nps",name:"NPS",type:"note"},
+  {id:"zagg",name:"Zagg",type:"volume"},{id:"club",name:"Club+",type:"taux"}];
+const SVC_TYPES = {taux:"Taux (%)", volume:"Volume (nombre)", note:"Note / score"};
+const objAll = () => (S.team.objectifs ||= {});
+const objW = () => { const w=(S.team.settings||{}).objWeights; return Array.isArray(w)&&w.length===6?w:[1,1,1,1,1,1]; };
+const objIn = e => e.obj!=null ? !!e.obj : fonctionOf(e)==="vente";
+function objMonth(ym, create){ const A=objAll(); if(!A[ym] && create){ const prev=Object.keys(A).filter(k=>k<ym).sort().pop(); const base=prev?clone(A[prev]):{po:0,services:clone(DEF_SVC).map(x=>({...x,target:null}))}; base.po=prev?base.po:0; A[ym]=base; } return A[ym]||null; }
+const ymOf = day => day.slice(0,7);
+function monthWorkDays(ym){ const [Y,M]=ym.split("-").map(Number); const n=new Date(Date.UTC(Y,M,0)).getUTCDate(); const out=[];
+  for(let i=1;i<=n;i++){ const dt=new Date(Date.UTC(Y,M-1,i)); const d=(dt.getUTCDay()+6)%7; if(d===6||holName(dt)) continue; out.push({day:ymd(dt),d}); } return out; }
+function objStoreDay(day){ const ym=ymOf(day), M=objMonth(ym); if(!M) return null; const W=objW(); const L=monthWorkDays(ym); const f=L.find(x=>x.day===day); if(!f) return null;
+  const tw=L.reduce((t,x)=>t+(+W[x.d]||0),0)||1; const k=(+W[f.d]||0)/tw;
+  const v={}; (M.services||[]).forEach(sv=>{ if(sv.target==null||sv.target==="") return; v[sv.id]= sv.type==="volume" ? +sv.target*k : +sv.target; });
+  return {po:(+M.po||0)*k, v, M}; }
+function objForWeek(wid, w){
+  const ds=weekDays(wid); const out={store:[], emp:{}}; const P=emps().filter(objIn);
+  P.forEach(e=>out.emp[e.id]={days:[], week:{po:0,v:{}}});
+  ds.forEach((dt,d)=>{ const day=ymd(dt); const st=d<6?objStoreDay(day):null; out.store[d]=st;
+    const hrs=P.map(e=>{ const x=((w.entries||{})[e.id]||[])[d]; return x&&x.s==="T"?mins(x):0; }); const tot=hrs.reduce((a,b)=>a+b,0);
+    P.forEach((e,i)=>{ const o=out.emp[e.id]; if(!st||!hrs[i]||!tot){ o.days[d]=null; return; } const k=hrs[i]/tot; const v={};
+      (st.M.services||[]).forEach(sv=>{ if(st.v[sv.id]==null) return; v[sv.id]= sv.type==="volume" ? st.v[sv.id]*k : st.v[sv.id]; });
+      o.days[d]={po:st.po*k, v}; o.week.po+=st.po*k;
+      (st.M.services||[]).forEach(sv=>{ if(v[sv.id]==null) return; if(sv.type==="volume") o.week.v[sv.id]=(o.week.v[sv.id]||0)+v[sv.id]; else o.week.v[sv.id]=v[sv.id]; }); }); });
+  return out; }
+const eur = n => Math.round(n).toLocaleString("fr-FR")+" €";
+const svcVal = (sv,val) => val==null?"–": sv.type==="taux" ? String(Math.round(val*10)/10).replace(".",",")+" %" : sv.type==="volume" ? String(Math.round(val*10)/10).replace(".",",") : String(val).replace(".",",");
+function svcMeta(wid){ const ds=weekDays(wid); const map={}; ds.slice(0,6).forEach(dt=>{ const M=objMonth(ymOf(ymd(dt))); (M&&M.services||[]).forEach(sv=>{ if(sv.target!=null&&sv.target!=="") map[sv.id]={id:sv.id,name:sv.name,type:sv.type}; }); }); return Object.values(map); }
+async function republishMonth(ym){ if(!S.db) return; const [Y,M]=ym.split("-").map(Number); const ids=new Set(); for(let i=1;i<=new Date(Y,M,0).getDate();i++) ids.add(isoWeekId(new Date(Y,M-1,i)));
+  for(const wid of ids){ const w = wid===S.weekId ? S.week : await loadWeek(wid); if(w&&w.pub) await publishWeek(wid,w); } }
+let objRepubT=null; const objChanged = ym => { teamChanged(true); clearTimeout(objRepubT); objRepubT=setTimeout(()=>republishMonth(ym),1500); };
+async function renderObj(){
+  const v=$("#v-obj"); if(!S.objMonth){ const n=new Date(); S.objMonth=n.getFullYear()+"-"+pad(n.getMonth()+1); } const ym=S.objMonth; const M=objMonth(ym,false);
+  const [Y,Mo]=ym.split("-").map(Number); const mName=["janvier","février","mars","avril","mai","juin","juillet","août","septembre","octobre","novembre","décembre"][Mo-1]+" "+Y;
+  const months=[]; for(let i=-3;i<=6;i++){ const d=new Date(Y,Mo-1+i,1); months.push(d.getFullYear()+"-"+pad(d.getMonth()+1)); }
+  const W=objW(); const WD=monthWorkDays(ym);
+  const weeks=[...new Set(WD.map(x=>weekOfDate(x.day)))];
+  if(!S.objWeek || !weeks.includes(S.objWeek)) S.objWeek = weeks.includes(S.weekId)?S.weekId:weeks[0];
+  let html='<div class="panel"><div style="display:flex;gap:10px;flex-wrap:wrap;align-items:center;justify-content:space-between"><h2>Objectifs · '+mName+'</h2><select id="ob-m" class="btn">'+months.map(m=>'<option value="'+m+'"'+(m===ym?" selected":"")+'>'+m.split("-").reverse().join("/")+'</option>').join("")+'</select></div>'+
+    '<p class="lead">Saisissez les objectifs mensuels du magasin. La PO (prise d\'ordre HT) et les services en volume sont répartis sur les jours d\'ouverture du mois selon le poids de chaque jour, puis entre les vendeurs présents au prorata de leurs heures planifiées. Les objectifs en taux et les notes s\'appliquent tels quels à chacun. Les collaborateurs voient leurs objectifs du jour et de la semaine dans leur espace (semaines publiées).</p>';
+  if(!M){ html+='<button class="btn primary" id="ob-create">Créer les objectifs de '+mName+'</button>'+(Object.keys(objAll()).length?' <span class="st-mut">(services repris du mois précédent)</span>':'')+'</div>'; v.innerHTML=html; $("#ob-m").onchange=e=>{ S.objMonth=e.target.value; renderObj(); }; $("#ob-create").onclick=()=>{ objMonth(ym,true); objChanged(ym); renderObj(); }; return; }
+  html+='<div class="obgrid"><div><label class="oblbl">PO du mois (HT, magasin)</label><div class="obpo"><input id="ob-po" class="mono" inputmode="decimal" value="'+esc(M.po?String(M.po):"")+'" placeholder="0"><span>€ HT</span></div>'+
+    '<p class="st-mut">'+WD.length+' jours d\'ouverture · moyenne '+eur((+M.po||0)/(WD.length||1))+' par jour</p>'+
+    '<label class="oblbl">Poids des jours</label><div class="obw">'+["Lun","Mar","Mer","Jeu","Ven","Sam"].map((d,i)=>'<label>'+d+'<input data-w="'+i+'" inputmode="decimal" value="'+String(W[i]).replace(".",",")+'"></label>').join("")+'</div><p class="st-mut">Ex. 1,5 le samedi = 50 % de PO en plus qu\'un jour à 1.</p></div>'+
+    '<div><label class="oblbl">Services</label><div class="tbl"><table class="obsvc"><thead><tr><th>Service</th><th>Type</th><th>Objectif mensuel</th><th></th></tr></thead><tbody>'+
+    (M.services||[]).map((sv,i)=>'<tr data-si="'+i+'"><td><input data-k="name" value="'+esc(sv.name)+'"></td><td><select data-k="type">'+Object.entries(SVC_TYPES).map(([k,l])=>'<option value="'+k+'"'+(sv.type===k?" selected":"")+'>'+l+'</option>').join("")+'</select></td><td><div class="obpo sm"><input data-k="target" class="mono" inputmode="decimal" value="'+esc(sv.target==null?"":String(sv.target).replace(".",","))+'" placeholder="–"><span>'+(sv.type==="taux"?"%":sv.type==="volume"?"u.":"pts")+'</span></div></td><td><button class="btn ghost danger" data-k="del" title="Retirer">✕</button></td></tr>').join("")+
+    '</tbody></table></div><button class="btn" id="ob-add">+ Ajouter un service</button></div></div>'+
+    '<label class="oblbl" style="margin-top:14px">Collaborateurs avec objectifs</label><div class="obemp">'+emps().map(e=>'<label class="chk"><input type="checkbox" data-oe="'+esc(e.id)+'"'+(objIn(e)?" checked":"")+'> '+esc(e.name)+'</label>').join("")+'</div></div>';
+  // répartition
+  html+='<div class="panel"><div style="display:flex;gap:10px;flex-wrap:wrap;align-items:center;justify-content:space-between"><h2>Répartition</h2><div class="obwk">'+weeks.map(w=>'<button class="btn'+(w===S.objWeek?" primary":" ghost")+'" data-ow="'+w+'">S'+wnum(w)+'</button>').join("")+'</div></div><div id="ob-rep"><p class="st-mut">Calcul…</p></div></div>';
+  v.innerHTML=html;
+  $("#ob-m").onchange=e=>{ S.objMonth=e.target.value; renderObj(); };
+  const num=x=>{ const t=String(x).trim().replace(/\s/g,"").replace(",","."); return t===""?null:(parseFloat(t)||0); };
+  $("#ob-po").oninput=e=>{ M.po=num(e.target.value)||0; objChanged(ym); }; $("#ob-po").onchange=()=>renderObj();
+  v.querySelectorAll("[data-w]").forEach(i=>i.onchange=()=>{ const w=objW().slice(); w[+i.dataset.w]=num(i.value)??1; S.team.settings=S.team.settings||{}; S.team.settings.objWeights=w; objChanged(ym); renderObj(); });
+  v.querySelectorAll(".obsvc tr[data-si]").forEach(tr=>{ const sv=M.services[+tr.dataset.si];
+    tr.querySelectorAll("[data-k]").forEach(el=>{ const k=el.dataset.k;
+      if(k==="del") el.onclick=()=>{ M.services.splice(+tr.dataset.si,1); objChanged(ym); renderObj(); };
+      else { const ap=q=>{ if(k==="target") sv.target=num(el.value); else sv[k]=el.value.trim()||sv[k]; objChanged(ym); if(!q) renderObj(); }; el.onchange=()=>ap(false); if(el.tagName==="INPUT") el.oninput=()=>ap(true); } }); });
+  $("#ob-add").onclick=()=>{ M.services.push({id:"s"+Date.now().toString(36),name:"Nouveau service",type:"volume",target:null}); objChanged(ym); renderObj(); setTimeout(()=>{ const r=v.querySelectorAll(".obsvc tr[data-si]"); const i=r[r.length-1]&&r[r.length-1].querySelector("input"); i&&(i.focus(),i.select()); },50); };
+  v.querySelectorAll("[data-oe]").forEach(c=>c.onchange=()=>{ const e=S.team.employees.find(x=>x.id===c.dataset.oe); e.obj=c.checked; objChanged(ym); renderObj(); });
+  v.querySelectorAll("[data-ow]").forEach(b=>b.onclick=()=>{ S.objWeek=b.dataset.ow; renderObj(); });
+  // tableau de répartition
+  const wid=S.objWeek; const wk = wid===S.weekId ? S.week : (await loadWeek(wid)) || {entries:{}}; if(S.view!=="obj" || S.objWeek!==wid) return;
+  const O=objForWeek(wid, wk); const ds=weekDays(wid); const P=emps().filter(objIn); const meta=svcMeta(wid); const vol=meta.filter(m=>m.type==="volume"); const rates=meta.filter(m=>m.type!=="volume");
+  const inMonth=d=>ymOf(ymd(ds[d]))===ym;
+  let t='<div class="tbl"><table class="obrep"><thead><tr><th>PO HT</th>'+[0,1,2,3,4,5].map(d=>'<th'+(inMonth(d)?'':' class="st-mut"')+'>'+DAYN[d].slice(0,3)+' '+ds[d].getUTCDate()+'</th>').join("")+'<th>Semaine</th></tr></thead><tbody>'+
+    P.map(e=>{ const o=O.emp[e.id]; return '<tr><td><b>'+esc(e.name)+'</b></td>'+[0,1,2,3,4,5].map(d=>'<td class="n mono">'+(o.days[d]?eur(o.days[d].po):'<span class="st-mut">–</span>')+'</td>').join("")+'<td class="n mono"><b>'+eur(o.week.po)+'</b></td></tr>'; }).join("")+
+    '<tr class="obtot"><td><b>Magasin</b></td>'+[0,1,2,3,4,5].map(d=>'<td class="n mono">'+(O.store[d]?eur(O.store[d].po):'–')+'</td>').join("")+'<td class="n mono"><b>'+eur(O.store.reduce((a,x)=>a+(x?x.po:0),0))+'</b></td></tr></tbody></table></div>';
+  if(vol.length) t+='<div class="tbl" style="margin-top:12px"><table class="obrep"><thead><tr><th>Volumes (semaine)</th>'+vol.map(m=>'<th>'+esc(m.name)+'</th>').join("")+'</tr></thead><tbody>'+P.map(e=>'<tr><td><b>'+esc(e.name)+'</b></td>'+vol.map(m=>'<td class="n mono">'+svcVal(m,O.emp[e.id].week.v[m.id])+'</td>').join("")+'</tr>').join("")+'</tbody></table></div>';
+  if(rates.length) t+='<p class="st-mut" style="margin-top:10px">Objectifs identiques pour chaque vendeur : '+rates.map(m=>esc(m.name)+' '+svcVal(m,(M.services.find(x=>x.id===m.id)||{}).target)).join(" · ")+'</p>';
+  const unpl=P.filter(e=>!O.emp[e.id].days.some(Boolean)); if(unpl.length) t+='<p class="st-mut">Sans heures de vente planifiées cette semaine : '+unpl.map(e=>esc(e.name)).join(", ")+'. Leur part revient aux vendeurs présents.</p>';
+  $("#ob-rep").innerHTML=t;
+}
 
 /* ---------- horaires types ---------- */
 function renderTpl(){
@@ -1865,15 +1956,17 @@ async function decide(id, ok){
 }
 
 /* ---------- publication pour les collaborateurs ---------- */
-function pubDoc(wid, w, e){
+function pubDoc(wid, w, e, O, meta){
   const ds=weekDays(wid); const r=(w.entries||{})[e.id]||[]; const b=w.bases&&w.bases[e.id]!=null?+w.bases[e.id]:(+e.base||0);
-  return { weekId:wid, empId:e.id, name:e.name, role:e.role||"", base:b, total:r.reduce((a,x)=>a+mins(x),0),
+  const oe=O&&O.emp[e.id]; const obj = oe && (oe.week.po || Object.keys(oe.week.v).length) ? {svc:meta, week:{po:Math.round(oe.week.po), v:oe.week.v}, days:oe.days.map(x=>x?{po:Math.round(x.po), v:x.v}:null)} : null;
+  return { obj, weekId:wid, empId:e.id, name:e.name, role:e.role||"", base:b, total:r.reduce((a,x)=>a+mins(x),0),
     days:ds.map((dt,d)=>{ const x=r[d]||null; return {date:ymd(dt), hol:holName(dt)||"", open:!!(w.open&&w.open[d]), s:x?x.s:"", m1:x&&x.m1||"", m2:x&&x.m2||"", a1:x&&x.a1||"", a2:x&&x.a2||"", p:!!(x&&x.p), tag:x&&x.tag||"", min:mins(x)}; }),
     publishedAt:new Date().toISOString() };
 }
 async function publishWeek(wid, w){
   if(!S.db) return; const b=S.db.batch();
-  for(const e of emps()) b.set(S.db.rawDoc("publies/"+e.id+"/semaines/"+wid), pubDoc(wid,w,e));
+  let O=null, meta=[]; try{ O=objForWeek(wid,w); meta=svcMeta(wid); }catch(e){}
+  for(const e of emps()) b.set(S.db.rawDoc("publies/"+e.id+"/semaines/"+wid), JSON.parse(JSON.stringify(pubDoc(wid,w,e,O,meta))));
   await b.commit();
 }
 async function unpublishWeek(wid){ if(!S.db) return; const b=S.db.batch(); for(const e of S.team.employees) b.delete(S.db.rawDoc("publies/"+e.id+"/semaines/"+wid)); await b.commit(); }
@@ -1924,6 +2017,7 @@ const ICO = {
   send:'<path d="M3 11l18-8-8 18-2-8z"/>',
   tpl:'<rect x="3" y="4" width="18" height="16" rx="2"/><path d="M7 9h10M7 13h6"/>',
   pz:'<path d="M6 3h12M6 21h12M7 3c0 5 10 5 10 9s-10 4-10 9M17 3c0 5-10 5-10 9"/>',
+  obj:'<circle cx="12" cy="12" r="9"/><circle cx="12" cy="12" r="5"/><circle cx="12" cy="12" r="1.5"/>',
   gen:'<path d="M12 3v3M12 18v3M3 12h3M18 12h3M5.6 5.6l2.1 2.1M16.3 16.3l2.1 2.1M5.6 18.4l2.1-2.1M16.3 7.7l2.1-2.1"/>',
   pub:'<path d="M12 16V4M7 9l5-5 5 5"/><path d="M4 16v4h16v-4"/>'
 };
@@ -1949,6 +2043,7 @@ function renderHome(){
       tile("team","team","Planning","Semaine "+wnum(S.weekId),"t-or")+
       tile("dem","dem","Demandes","Congés, échanges","t-bl",pend)+
       tile("abs","abs","Absences","Maladie, retards…","t-rd")+
+      tile("obj","obj","Objectifs","PO et services","t-or")+
       tile("pz","pz","Pauses",((S.pauses||[]).filter(p=>!pzEnd(p)&&p.day===todayStr()).length||"Aucun")+" en pause","t-tl")+
       tile("staff","staff","Équipe",L.length+" collaborateurs","t-nv")+
       tile("roul","roul","Roulements","Cycles et horaires","t-vi")+
