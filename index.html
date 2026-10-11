@@ -265,6 +265,15 @@ code.code{font-family:var(--font-mono);background:var(--surface-2);padding:2px 6
 .cw-tot{margin-left:auto;font-family:var(--font-mono)}.cw-tot em{font-style:normal;font-size:12px;margin-left:4px}.cw-tot em.ok{color:#1a7f37}.cw-tot em.warn{color:#b26a00}.cw-tot em.bad{color:#c62828}
 .cwb{width:60px;padding:4px 6px;border:1px solid var(--line);border-radius:6px}
 @media(max-width:700px){.roul-weeks{grid-template-columns:1fr}}
+.absform{display:grid;grid-template-columns:repeat(auto-fill,minmax(190px,1fr));gap:10px;align-items:end;margin:6px 0 16px;padding:12px;border:1px solid var(--line);border-radius:10px;background:var(--surface)}
+.absform label{display:grid;gap:4px;font-size:12px;font-weight:600;color:var(--muted)}.absform label.wide{grid-column:1/-1}
+.absform input,.absform select{padding:7px 9px;border:1px solid var(--line);border-radius:7px;font:inherit;font-size:14px;color:inherit;background:var(--bg,#fff)}
+.absform label.chk{display:flex;align-items:center;gap:6px;font-weight:500}.absform .acts{display:flex;gap:8px;grid-column:1/-1}
+.absfilters{display:flex;gap:8px;flex-wrap:wrap;align-items:center;margin-bottom:8px}.absfilters select{padding:6px 8px;border:1px solid var(--line);border-radius:7px}
+.abst{display:inline-block;padding:2px 8px;border-radius:20px;font-size:12px;font-weight:600;background:#eef1f6}
+.abst.MAL,.abst.AT{background:#fde8e8;color:#a61b1b}.abst.AI{background:#fff1e0;color:#9a4b00}.abst.RET{background:#fff7d6;color:#7a5d00}.abst.FO{background:#e6f0ff;color:#1d4ed8}.abst.CP{background:#e7f6ec;color:#17663a}
+tr.abs-cur td{background:rgba(227,6,19,.04)}
+.cret{font-size:10px;color:#9a4b00;font-weight:600}
 </style>
 
 </head><body>
@@ -276,6 +285,7 @@ code.code{font-family:var(--font-mono);background:var(--surface-2);padding:2px 6
       <button role="tab" data-v="team" aria-selected="true">Équipe</button>
       <button role="tab" data-v="indiv" aria-selected="false">Individuel</button>
       <button role="tab" data-v="staff" aria-selected="false">Collaborateurs</button>
+      <button role="tab" data-v="abs" aria-selected="false">Absences</button>
       <button role="tab" data-v="tpl" aria-selected="false">Horaires types</button>
       <button role="tab" data-v="roul" aria-selected="false">Roulements</button>
       <button role="tab" data-v="send" aria-selected="false">Transmettre</button>
@@ -325,6 +335,7 @@ code.code{font-family:var(--font-mono);background:var(--surface-2);padding:2px 6
 
   <section id="v-indiv" hidden></section>
   <section id="v-staff" hidden></section>
+  <section id="v-abs" hidden></section>
   <section id="v-tpl" hidden></section>
   <section id="v-send" hidden></section>
   <section id="v-roul" hidden></section>
@@ -503,6 +514,7 @@ function render(){
   if(S.view==="team") { renderGrid(); renderAlerts(); renderEditor(); }
   if(S.view==="indiv") renderIndiv();
   if(S.view==="staff") renderStaff();
+  if(S.view==="abs") renderAbs();
   if(S.view==="tpl") renderTpl();
   if(S.view==="send") renderSend();
   if(S.view==="roul") renderRoul();
@@ -531,7 +543,7 @@ function renderCopyZone(){
 }
 function cellHTML(e, d){
   if(!e) return '<div class="empty">·</div>';
-  if(!TIMED(e.s)) return '<div class="st '+e.s+'">'+STATUS[e.s].l+'</div>';
+  if(!TIMED(e.s)) return '<div class="st '+e.s+'" title="'+esc(e.lib||STATUS[e.s].l)+'">'+esc(e.lib||STATUS[e.s].l)+'</div>';
   if(!hasTimes(e)) return '<div class="cin">'+(e.s==="FO"?'<span class="lbl-fo">Formation</span>':'')+'<span class="todo">Horaires à définir</span>'+(e.tag?'<div class="cfoot"><span class="tag '+esc(e.tag.split(" ")[0])+'">'+esc(e.tag)+'</span></div>':'')+'</div>';
   const l1 = e.m1 ? e.m1+"–"+e.m2 : '<span class="na">—</span>';
   const l2 = e.a1 ? e.a1+"–"+e.a2 : '<span class="na">—</span>';
@@ -539,6 +551,7 @@ function cellHTML(e, d){
     (e.s==="FO"?'<span class="lbl-fo">Formation</span>':'')+
     (e.tag?'<span class="tag '+esc(e.tag.split(" ")[0])+'">'+esc(e.tag)+'</span>':'')+
     (e.p?'<span class="pz" title="Pause 10 min déduite">P</span>':'')+
+    (e.retard?'<span class="cret" title="Retard">⏱ '+e.retard+' min</span>':'')+
     '<span class="dur">'+fmt(mins(e))+'</span></div></div>';
 }
 function renderGrid(){
@@ -736,7 +749,7 @@ function localSave(){ if(S.db) return true; try{ S.cache[S.weekId]={entries:clon
   S.savedAt=new Date().toISOString(); driveSchedule();
   localStorage.setItem(LKEY,JSON.stringify({team:S.team,weeks:S.cache,savedAt:S.savedAt})); return true; }catch(e){ return false; } }
 function startLocal(why){
-  S.local=true; const d=localLoad(); S.savedAt=d.savedAt||""; S.team={employees:d.team.employees||[],templates:(d.team.templates&&d.team.templates.length)?d.team.templates:DEFAULT_TPL.slice(),settings:d.team.settings||{}};
+  S.local=true; const d=localLoad(); S.savedAt=d.savedAt||""; S.team={...d.team, employees:d.team.employees||[],templates:(d.team.templates&&d.team.templates.length)?d.team.templates:DEFAULT_TPL.slice(),settings:d.team.settings||{}};
   S.cache=d.weeks||{}; const w=S.cache[S.weekId]||{}; S.week={entries:clone(w.entries||{}),open:clone(w.open||{}),sent:clone(w.sent||{}),sentStore:w.sentStore||null,bases:clone(w.bases||{})};
   S.openSunWeeks=Object.keys(S.cache).filter(id=>S.cache[id]&&S.cache[id].open&&S.cache[id].open["6"]);
   let ok=true; try{ localStorage.setItem("pf890-probe","1"); }catch(e){ ok=false; }
@@ -822,18 +835,35 @@ async function gmailApi(input, draft){
 
 const snapData = snap => { if(!snap||!snap.exists) return null; const d = typeof snap.data==="function" ? snap.data() : snap.data; return d ? JSON.parse(JSON.stringify(d)) : null; };
 
-let saveTimer=null;
-function changed(){ S.dirty=true; setSave("pending","Modifications non enregistrées…"); render(); clearTimeout(saveTimer); saveTimer=setTimeout(flush,700); }
+let saveTimer=null, retryTimer=null;
+const nowHM = () => { const d=new Date(); return pad(d.getHours())+":"+pad(d.getMinutes())+":"+pad(d.getSeconds()); };
+function changed(){ S.dirty=true; setSave("pending","Enregistrement…"); render(); clearTimeout(saveTimer); saveTimer=setTimeout(flush,250); }
 async function flush(){
-  if(!S.db){ const ok=localSave(); S.dirty=false; setSave(ok?"ok":"off",ok?"Enregistré sur cet ordinateur":"Non enregistré : exportez vos données"); return; }
-  if(S.writing){ clearTimeout(saveTimer); saveTimer=setTimeout(flush,400); return; }
+  clearTimeout(saveTimer);
+  if(!S.db){ const ok=localSave(); S.dirty=false; setSave(ok?"ok":"off",ok?"Enregistré sur cet ordinateur · "+nowHM():"Non enregistré : exportez vos données"); return; }
+  if(S.writing){ saveTimer=setTimeout(flush,300); return; }
   S.writing=true; const id=S.weekId; const body={entries:clone(S.week.entries),pub:!!S.week.pub,bases:clone(S.week.bases||{}),open:clone(S.week.open||{}),sent:clone(S.week.sent||{}),sentStore:S.week.sentStore||null,updatedAt:new Date().toISOString()};
-  try{ await S.db.doc("weeks/"+id).set(body); if(id===S.weekId){ S.dirty=false; setSave("ok","Enregistré"); schedulePublish(); } }
-  catch(e){ setSave("off","Échec d'enregistrement · "+(e&&e.code||"")); }
+  S.dirty=false;
+  try{ await S.db.doc("weeks/"+id).set(body); if(!S.dirty && !S.teamDirty) setSave("ok","Enregistré · "+nowHM()); if(id===S.weekId) schedulePublish(); }
+  catch(e){ S.dirty=true; setSave("off","Échec d'enregistrement, nouvel essai… "+(e&&e.code||"")); clearTimeout(retryTimer); retryTimer=setTimeout(flush,3000); }
   finally{ S.writing=false; }
 }
-let teamTimer=null;
-function teamChanged(){ S.teamDirty=true; setSave("pending","Modifications non enregistrées…"); render(); clearTimeout(teamTimer); teamTimer=setTimeout(async()=>{ S.teamDirty=false; if(!S.db){ const ok=localSave(); setSave(ok?"ok":"off",ok?"Enregistré sur cet ordinateur":"Non enregistré : exportez vos données"); return; } try{ await S.db.doc("config/team").set(clone(S.team)); setSave("ok","Enregistré"); if(S.fb) publishAnnuaire(); }catch(e){ setSave("off","Échec d'enregistrement"); } },600); }
+let teamTimer=null, teamWriting=false;
+async function flushTeam(){
+  clearTimeout(teamTimer); if(!S.teamDirty) return;
+  if(!S.db){ S.teamDirty=false; const ok=localSave(); setSave(ok?"ok":"off",ok?"Enregistré sur cet ordinateur · "+nowHM():"Non enregistré : exportez vos données"); return; }
+  if(teamWriting){ teamTimer=setTimeout(flushTeam,300); return; }
+  teamWriting=true; const body=clone(S.team); S.teamDirty=false;
+  try{ await S.db.doc("config/team").set(body); if(!S.dirty && !S.teamDirty) setSave("ok","Enregistré · "+nowHM()); if(S.fb) publishAnnuaire(); }
+  catch(e){ S.teamDirty=true; setSave("off","Échec d'enregistrement, nouvel essai…"); teamTimer=setTimeout(flushTeam,3000); }
+  finally{ teamWriting=false; }
+}
+let renderPending=false;
+function teamChanged(quiet){ S.teamDirty=true; setSave("pending","Enregistrement…"); if(quiet!==true && !renderPending){ renderPending=true; setTimeout(()=>{ renderPending=false; render(); },0); } clearTimeout(teamTimer); teamTimer=setTimeout(flushTeam,300); }
+const flushAll = () => { if(S.dirty) flush(); if(S.teamDirty) flushTeam(); };
+document.addEventListener("visibilitychange",()=>{ if(document.visibilityState==="hidden") flushAll(); });
+window.addEventListener("pagehide",flushAll);
+window.addEventListener("beforeunload",ev=>{ flushAll(); if(S.dirty||S.teamDirty||S.writing||teamWriting){ ev.preventDefault(); ev.returnValue=""; } });
 function setSave(c,t){ const s=$("#save"); s.className="save "+(c==="ok"?"":c); s.querySelector("span").textContent=t; }
 async function loadWeek(id){
   if(id===S.weekId) return S.week;
@@ -849,7 +879,8 @@ function subscribeWeek(){
   },()=>setSave("off","Connexion perdue"));
 }
 async function gotoWeek(id){
-  if(S.dirty){ clearTimeout(saveTimer); await flush(); }
+  for(let k=0; k<100 && S.writing; k++) await new Promise(r=>setTimeout(r,50));
+  if(S.dirty){ await flush(); }
   S.weekId=id; S.week={entries:{},open:{},sent:{},sentStore:null,bases:{}}; S.sendSel=null; S.sendStatus={}; S.confirmSend=null; S.undo=[]; $("#undoB").disabled=true; S.sel.clear(); S.anchor=null; S.confirmCopy=false;
   if(!S.db){ const w=S.cache?.[id]||{}; S.week={entries:clone(w.entries||{}),open:clone(w.open||{}),sent:clone(w.sent||{}),sentStore:w.sentStore||null,bases:clone(w.bases||{})}; }
   render(); subscribeWeek();
@@ -869,7 +900,7 @@ $("#impData").onchange=ev=>{ const f=ev.target.files[0]; if(!f) return; const r=
 /* ---------- onglets ---------- */
 $("#tabs").addEventListener("click",ev=>{ const b=ev.target.closest("button[data-v]"); if(!b) return; S.view=b.dataset.v;
   document.querySelectorAll("#tabs button").forEach(x=>x.setAttribute("aria-selected",x===b));
-  for(const v of ["team","indiv","staff","tpl","send","roul","dem","cpt"]) $("#v-"+v).hidden=(v!==S.view);
+  for(const v of ["team","indiv","staff","abs","tpl","send","roul","dem","cpt"]) $("#v-"+v).hidden=(v!==S.view);
   try{localStorage.setItem("pf890-view",S.view)}catch(e){}
   render(); });
 
@@ -899,7 +930,8 @@ function renderStaff(){
   '<td style="white-space:nowrap"><button class="btn ghost" data-a="up" title="Monter">↑</button><button class="btn ghost" data-a="down" title="Descendre">↓</button><button class="btn ghost'+(e.archived?"":" danger")+'" data-a="arch">'+(e.archived?"Réactiver":"Archiver")+'</button></td></tr>').join("")+
   '</tbody></table></div><div style="margin-top:12px"><button class="btn primary" id="addEmp">+ Ajouter un collaborateur</button></div></div>';
   v.querySelectorAll("tr[data-i]").forEach(tr=>{ const i=+tr.dataset.i;
-    tr.querySelectorAll("[data-f]").forEach(inp=>inp.onchange=()=>{ const f=inp.dataset.f; let val=inp.value.trim(); if(f==="base"){ val=parseFloat(val.replace(",","."))||0; } if(f==="cpSolde"){ val=val===""?null:(parseFloat(val.replace(",","."))||0); } S.team.employees[i][f]=val; teamChanged(); });
+    tr.querySelectorAll("[data-f]").forEach(inp=>{ const apply=quiet=>{ const f=inp.dataset.f; let val=inp.value.trim(); if(f==="base"){ val=parseFloat(val.replace(",","."))||0; } if(f==="cpSolde"){ val=val===""?null:(parseFloat(val.replace(",","."))||0); } S.team.employees[i][f]=val; teamChanged(quiet); };
+      inp.onchange=()=>apply(false); if(inp.tagName==="INPUT" && inp.type!=="date") inp.oninput=()=>apply(true); });
     tr.querySelectorAll("[data-rh]").forEach(b=>b.onclick=()=>{ const emp=S.team.employees[i], d=+b.dataset.rh; const L=(emp.rh||[]).filter(x=>x!==d); if(!(emp.rh||[]).includes(d)) L.push(d); L.sort(); emp.rh=L; teamChanged(); });
     tr.querySelectorAll("[data-acc]").forEach(b=>b.onclick=()=>{ const emp=S.team.employees[i]; if(b.dataset.acc==="new") createAccess(emp); else sendAccess(emp); });
     tr.querySelectorAll("[data-a]").forEach(b=>b.onclick=()=>{ const a=b.dataset.a, L=S.team.employees;
@@ -907,6 +939,79 @@ function renderStaff(){
       if(a==="arch") L[i].archived=!L[i].archived; teamChanged(); });
   });
   $("#addEmp").onclick=()=>{ const id="e"+Date.now().toString(36); S.team.employees.push({id,name:"Nouveau",role:"Vendeur(se) Polyvalent(e)",base:35,team:"vente"}); teamChanged(); setTimeout(()=>{const i=$("#s-n-"+(S.team.employees.length-1)); i&&(i.focus(),i.select());},0); };
+}
+
+/* ---------- absences et événements ---------- */
+const ABS_TYPES = {
+  MAL:{l:"Arrêt maladie", s:"M"}, AT:{l:"Accident du travail", s:"M"}, MAT:{l:"Congé maternité / paternité", s:"AB"},
+  AA:{l:"Absence autorisée", s:"AB"}, AI:{l:"Absence injustifiée", s:"AB"}, CSS:{l:"Congé sans solde", s:"AB"}, EVF:{l:"Événement familial", s:"AB"},
+  FO:{l:"Formation", s:"FO"}, CP:{l:"Congés payés", s:"CP"}, RET:{l:"Retard", s:null}
+};
+const absList = () => (S.team.absences ||= []);
+const absOverlap = (a,day) => a.from<=day && (a.to||a.from)>=day;
+function absEntry(a, e, d){
+  const T=ABS_TYPES[a.type]; if(!T||!T.s) return null;
+  if(T.s==="FO"){ const t=favTemplate(e); return {s:"FO",m1:t.m1,m2:t.m2,a1:t.a1,a2:t.a2,p:!!t.p,tag:"",abs:a.id,lib:"Formation"}; }
+  return {s:T.s, abs:a.id, lib:T.l};
+}
+async function applyAbs(a, remove){
+  const e=S.team.employees.find(x=>x.id===a.empId); if(!e) return;
+  const byW={}; datesBetween(a.from, a.to||a.from).forEach(day=>{ const d=dayIdxOfDate(day); (byW[weekOfDate(day)] ||= []).push(d); });
+  for(const [wid,ds] of Object.entries(byW)) await editWeekDoc(wid, w=>{ const row=(w.entries[a.empId] ||= [null,null,null,null,null,null,null]);
+    ds.forEach(d=>{ const x=row[d];
+      if(a.type==="RET"){ if(x&&TIMED(x.s)){ if(remove) delete x.retard; else x.retard=+a.min||0; } return; }
+      if(remove){ if(x&&x.abs===a.id) row[d]=null; return; }
+      if(d===6 && !(x&&TIMED(x.s))) return; // dimanche non travaillé : inchangé
+      row[d]=absEntry(a,e,d); }); });
+}
+function absDays(a, from, to){ return datesBetween(a.from<from?from:a.from, (a.to||a.from)>to?to:(a.to||a.from)).filter(day=>dayIdxOfDate(day)<6).length; }
+function renderAbs(){
+  const v=$("#v-abs"); const list=emps(); const F=S.absF||(S.absF={emp:"",type:"",year:String(new Date().getFullYear())});
+  const today=ymd(new Date(Date.UTC(new Date().getFullYear(),new Date().getMonth(),new Date().getDate())));
+  const all=absList().slice().sort((a,b)=>b.from.localeCompare(a.from));
+  const shown=all.filter(a=>(!F.emp||a.empId===F.emp)&&(!F.type||a.type===F.type)&&(!F.year||a.from.startsWith(F.year)||(a.to||"").startsWith(F.year)));
+  const nm=id=>(S.team.employees.find(e=>e.id===id)||{}).name||id;
+  const dFR=x=>{ if(!x) return ""; const [y,m,d]=x.split("-"); return d+"/"+m+"/"+y; };
+  const years=[...new Set(all.map(a=>a.from.slice(0,4)).concat([String(new Date().getFullYear())]))].sort().reverse();
+  const ed=S.absEdit? absList().find(a=>a.id===S.absEdit) : null; const f=ed||{empId:F.emp||"",type:"MAL",from:today,to:today,min:"",note:"",justif:false};
+  v.innerHTML='<div class="panel"><h2>Absences et événements</h2><p class="lead">Arrêts maladie, accidents du travail, absences, retards, formations… Chaque saisie est reportée automatiquement dans le planning des semaines concernées (lundi au samedi) et dans les compteurs de paie. Supprimer une saisie libère les jours dans le planning.</p>'+
+  '<form id="absForm" class="absform">'+
+    '<label>Collaborateur<select id="a-emp" required><option value="">Choisir…</option>'+list.map(e=>'<option value="'+esc(e.id)+'"'+(f.empId===e.id?" selected":"")+'>'+esc(e.name)+'</option>').join("")+'</select></label>'+
+    '<label>Type<select id="a-type">'+Object.entries(ABS_TYPES).map(([k,t])=>'<option value="'+k+'"'+(f.type===k?" selected":"")+'>'+t.l+'</option>').join("")+'</select></label>'+
+    '<label id="a-from-l">Du<input type="date" id="a-from" required value="'+esc(f.from)+'"></label>'+
+    '<label id="a-to-l">Au (inclus)<input type="date" id="a-to" value="'+esc(f.to||f.from)+'"></label>'+
+    '<label id="a-min-l">Retard (minutes)<input id="a-min" inputmode="numeric" value="'+esc(String(f.min||""))+'" placeholder="15"></label>'+
+    '<label class="chk"><input type="checkbox" id="a-just"'+(f.justif?" checked":"")+'> Justificatif reçu</label>'+
+    '<label class="wide">Commentaire<input id="a-note" value="'+esc(f.note||"")+'" placeholder="n° d\'arrêt, motif, organisme de formation…"></label>'+
+    '<div class="acts"><button class="btn primary" type="submit">'+(ed?"Enregistrer la modification":"Ajouter")+'</button>'+(ed?'<button class="btn ghost" type="button" id="a-cancel">Annuler</button>':'')+'</div>'+
+  '</form>'+
+  '<div class="absfilters"><select id="af-emp"><option value="">Tous les collaborateurs</option>'+list.map(e=>'<option value="'+esc(e.id)+'"'+(F.emp===e.id?" selected":"")+'>'+esc(e.name)+'</option>').join("")+'</select>'+
+    '<select id="af-type"><option value="">Tous les types</option>'+Object.entries(ABS_TYPES).map(([k,t])=>'<option value="'+k+'"'+(F.type===k?" selected":"")+'>'+t.l+'</option>').join("")+'</select>'+
+    '<select id="af-year"><option value="">Toutes les années</option>'+years.map(y=>'<option'+(F.year===y?" selected":"")+'>'+y+'</option>').join("")+'</select>'+
+    '<span class="st-mut">'+shown.length+' saisie'+(shown.length>1?"s":"")+'</span></div>'+
+  '<div class="tbl"><table><thead><tr><th>Collaborateur</th><th>Type</th><th>Période</th><th>Durée</th><th>Justificatif</th><th>Commentaire</th><th></th></tr></thead><tbody>'+
+  (shown.length?shown.map(a=>{ const T=ABS_TYPES[a.type]||{l:a.type}; const nd=a.type==="RET"?null:absDays(a,a.from,a.to||a.from); const cur=absOverlap(a,today);
+    return '<tr data-aid="'+esc(a.id)+'"'+(cur?' class="abs-cur"':'')+'><td><b>'+esc(nm(a.empId))+'</b></td><td><span class="abst '+esc(a.type)+'">'+esc(T.l)+'</span>'+(cur?' <span class="pill info">en cours</span>':'')+'</td><td>'+dFR(a.from)+(a.to&&a.to!==a.from?' → '+dFR(a.to):'')+'</td><td class="mono">'+(a.type==="RET"?(+a.min||0)+" min":nd+" j"+(nd>1?"":""))+'</td>'+
+      '<td><button class="btn ghost" data-ab="just">'+(a.justif?"✓ reçu":"✗ à recevoir")+'</button></td><td>'+esc(a.note||"")+'</td><td style="white-space:nowrap"><button class="btn ghost" data-ab="edit">Modifier</button><button class="btn ghost danger" data-ab="del">Supprimer</button></td></tr>'; }).join(""):'<tr><td colspan="7" class="st-mut">Aucune saisie</td></tr>')+
+  '</tbody></table></div></div>';
+  const syncType=()=>{ const ret=$("#a-type").value==="RET"; $("#a-to-l").hidden=ret; $("#a-min-l").hidden=!ret; $("#a-from-l").firstChild.textContent=ret?"Le":"Du"; };
+  $("#a-type").onchange=syncType; syncType();
+  $("#a-from").onchange=()=>{ const t=$("#a-to"); if(!t.value||t.value<$("#a-from").value) t.value=$("#a-from").value; };
+  $("#a-cancel")&&($("#a-cancel").onclick=()=>{ S.absEdit=null; renderAbs(); });
+  $("#absForm").onsubmit=async ev=>{ ev.preventDefault();
+    const empId=$("#a-emp").value, type=$("#a-type").value, from=$("#a-from").value; let to=type==="RET"?from:($("#a-to").value||from);
+    if(!empId){ toast("Choisissez un collaborateur"); return; } if(!from){ toast("Indiquez la date"); return; } if(to<from){ toast("La date de fin est avant la date de début"); return; }
+    if(type!=="RET" && datesBetween(from,to).length>400){ toast("Période trop longue (400 jours maximum par saisie)"); return; }
+    const rec={id: ed?ed.id:("a"+Date.now().toString(36)), empId, type, from, to, min:type==="RET"?(parseInt($("#a-min").value,10)||0):null, note:$("#a-note").value.trim(), justif:$("#a-just").checked, createdAt: ed?ed.createdAt:new Date().toISOString()};
+    const old=ed?clone(ed):null; if(ed){ const i=absList().findIndex(x=>x.id===ed.id); absList()[i]=rec; } else absList().push(rec);
+    teamChanged(true); S.absEdit=null;
+    if(old) await applyAbs(old,true); await applyAbs(rec,false); S.allWeeks=null; teamChanged(); toast((ABS_TYPES[type]||{}).l+" : saisie enregistrée"+(type==="RET"?"":" et reportée dans le planning")); };
+  $("#af-emp").onchange=e=>{ F.emp=e.target.value; renderAbs(); }; $("#af-type").onchange=e=>{ F.type=e.target.value; renderAbs(); }; $("#af-year").onchange=e=>{ F.year=e.target.value; renderAbs(); };
+  v.querySelectorAll("tr[data-aid] [data-ab]").forEach(b=>b.onclick=async()=>{ const id=b.closest("tr").dataset.aid; const a=absList().find(x=>x.id===id); if(!a) return; const k=b.dataset.ab;
+    if(k==="just"){ a.justif=!a.justif; teamChanged(); }
+    if(k==="edit"){ S.absEdit=id; renderAbs(); $("#absForm").scrollIntoView({behavior:"smooth"}); }
+    if(k==="del"){ if(b.dataset.sure!=="1"){ b.dataset.sure="1"; b.textContent="Confirmer ?"; setTimeout(()=>{ if(b.isConnected){ b.dataset.sure=""; b.textContent="Supprimer"; } },3000); return; }
+      S.team.absences=absList().filter(x=>x.id!==id); teamChanged(true); await applyAbs(a,true); S.allWeeks=null; teamChanged(); toast("Saisie supprimée, jours libérés dans le planning"); } });
 }
 
 /* ---------- horaires types ---------- */
@@ -1297,6 +1402,7 @@ async function generateWeek(){
     const old=S.week.entries[e.id]||[], r=[null,null,null,null,null,null,null];
     for(let d=0; d<7; d++){
       const day=ymd(ds[d]);
+      const ra=absList().find(a=>a.empId===e.id && a.type!=="RET" && absOverlap(a,day)); if(ra && (d<6 || (old[d]&&TIMED(old[d].s)))){ r[d]=absEntry(ra,e,d); continue; }
       if(old[d] && ["CP","M","AB","FO"].includes(old[d].s)){ r[d]=clone(old[d]); continue; }
       if(d<6 && approved.some(q=>q.empId===e.id && q.from<=day && (q.to||q.from)>=day)){ r[d]={s:"CP"}; nCP++; continue; }
       if(isClosed(d)) r[d]= d===6?{s:"RH"}:{s:"FE"};
@@ -1331,6 +1437,12 @@ async function generateWeek(){
     }
   };
   caisse.forEach(e=>chooseRest(e,caisse));
+  // au moins une caissière chaque jour : on déplace un repos si deux caissières sont en repos le même jour
+  const cCount=d=>caisse.filter(e=>free(e,d)).length;
+  for(const d of workDays){ if(cCount(d)>0) continue;
+    for(const e of caisse){ const x=W[e.id][d]; if(!x||x.s!=="RH"||x.fixe) continue;
+      const d2=workDays.filter(k=>k!==d && free(e,k)).sort((a,b)=>cCount(b)-cCount(a))[0];
+      if(d2!=null && cCount(d2)>=2){ W[e.id][d]=null; W[e.id][d2]={s:"RH"}; break; } } }
   // jours où le secours doit tenir la caisse : une caissière absente (CP/maladie) et moins de 2 caissières présentes
   const secNeed=workDays.filter(d=>caisse.some(e=>isAbs(e,d)) && caisse.filter(e=>!W[e.id][d]).length<2);
   const groups={}; auto.filter(e=>!caisse.includes(e)).forEach(e=>{ (groups[fonctionOf(e)] ||= []).push(e); });
@@ -1364,7 +1476,7 @@ async function generateWeek(){
     vend.forEach((e,i)=>give(e,d, i<ranked.length?ranked[i]:"V3"));
     Object.entries(groups).forEach(([f,grp])=>{ if(f==="vente") return; grp.filter(e=>free(e,d)).forEach(e=>{ const t=fav[e.id]; W[e.id][d]={...clone(t),tag:t.tag||""}; used[e.id]+=mins(t); }); });
   }
-  for(const e of list){ for(let d=0; d<7; d++){ if(!W[e.id][d]) W[e.id][d]={s:"RH"}; if(W[e.id][d].fixe) delete W[e.id][d].fixe; } delete e._cyc; S.week.entries[e.id]=W[e.id]; }
+  for(const e of list){ for(let d=0; d<7; d++){ const rt=absList().find(a=>a.empId===e.id&&a.type==="RET"&&a.from===ymd(ds[d])); if(rt&&W[e.id][d]&&TIMED(W[e.id][d].s)) W[e.id][d].retard=+rt.min||0; if(!W[e.id][d]) W[e.id][d]={s:"RH"}; if(W[e.id][d].fixe) delete W[e.id][d].fixe; } delete e._cyc; S.week.entries[e.id]=W[e.id]; }
   changed();
   toast("Semaine générée"+(nCycle?" · "+nCycle+" roulement"+(nCycle>1?"s":""):"")+(nCP?" · "+nCP+" jour(s) de CP posés":"")+(secDays.length?" · "+secAuto.name+" en caisse "+secDays.map(d=>DAYN[d]).join(", "):"")+(nMove?" (repos déplacé)":""));
 }
@@ -1414,7 +1526,7 @@ function renderRoul(){
     else { if(!x||!TIMED(x.s)) x=r[d]={s:"T",m1:"",m2:"",a1:"",a2:"",p:false,tag:""}; x[k]=el.value; }
     teamChanged(); });
   v.querySelectorAll(".hab [data-k]").forEach(el=>el.onchange=()=>{ const e=S.team.employees.find(x=>x.id===el.closest("[data-hab]").dataset.hab); const h=e.horaire=e.horaire||{...(DEF_HORAIRE(e)||{})}; if(el.dataset.k==="p") h.p=el.checked; else h[el.dataset.k]=el.value; teamChanged(); });
-  v.querySelectorAll(".cw [data-k=base]").forEach(el=>el.onchange=()=>{ const {c,i}=getC(el); c.bases=c.bases||[]; const t=el.value.trim().replace(",","."); c.bases[i]=t===""?null:(parseFloat(t)||0); teamChanged(); });
+  v.querySelectorAll(".cw [data-k=base]").forEach(el=>{ const apply=q=>{ const {c,i}=getC(el); c.bases=c.bases||[]; const t=el.value.trim().replace(",","."); c.bases[i]=t===""?null:(parseFloat(t)||0); teamChanged(q); }; el.oninput=()=>apply(true); el.onchange=()=>apply(false); });
   v.querySelectorAll(".cw button[data-k]").forEach(b=>b.onclick=()=>{ const {e,i,c}=getC(b); const k=b.dataset.k;
     if(k==="take"){ const row=cleanCycleRow(S.week.entries[e.id]); if(!row.some(Boolean)){ toast("La ligne de "+e.name+" est vide en S"+wnum(S.weekId)); return; } c.weeks[i]=row; c.start=shiftWeek(S.weekId,-i); toast(e.name+" : semaine "+(i+1)+" = S"+wnum(S.weekId)); }
     if(k==="copy"&&i>0){ c.weeks[i]=clone(c.weeks[i-1]||[]); c.bases=c.bases||[]; c.bases[i]=(c.bases[i-1]??null); }
@@ -1432,7 +1544,8 @@ function monthCounters(ym){
   const [Y,M]=ym.split("-").map(Number); const first=new Date(Date.UTC(Y,M-1,1)), last=new Date(Date.UTC(Y,M,0));
   const W=S.allWeeks||{}; const res=[];
   for(const e of emps()){
-    const c={emp:e, work:0, cp:0, m:0, ab:0, fo:0, fe:0, sunN:0, sunM:0, holN:0, holM:0, hs25:0, hs50:0, hc10:0, hc25:0, weeks:0, cpSince:0};
+    const rets=absList().filter(a=>a.empId===e.id&&a.type==="RET"&&a.from.startsWith(ym));
+    const c={retN:rets.length, retM:rets.reduce((t,a)=>t+(+a.min||0),0), emp:e, work:0, cp:0, m:0, ab:0, fo:0, fe:0, sunN:0, sunM:0, holN:0, holM:0, hs25:0, hs50:0, hc10:0, hc25:0, weeks:0, cpSince:0};
     for(let t=first.getTime(); t<=last.getTime(); t+=864e5){
       const dt=new Date(t), wid=isoWeekId(new Date(dt.getUTCFullYear(),dt.getUTCMonth(),dt.getUTCDate())), d=(dt.getUTCDay()+6)%7;
       const x=((W[wid]||{}).entries||{})[e.id]?.[d]; if(!x) continue; const m=mins(x);
@@ -1466,8 +1579,8 @@ async function renderCpt(){
   '<div style="display:flex;gap:8px;flex-wrap:wrap"><select id="cpt-m" class="btn">'+[...new Set([...months,S.cptMonth])].sort().map(m=>'<option value="'+m+'"'+(m===S.cptMonth?" selected":"")+'>'+mName(m)+'</option>').join("")+'</select>'+
   '<button class="btn" id="cpt-reload">Actualiser</button><button class="btn primary" id="cpt-xlsx">Export paie Excel</button><button class="btn primary" id="cpt-pdf">Récapitulatif PDF</button></div></div>'+
   '<p class="lead">Heures supplémentaires et complémentaires calculées sur les semaines qui se terminent dans le mois (+25 % de 35h à 43h, +50 % au-delà ; temps partiels : +10 % jusqu\'à 1/10e du contrat, +25 % au-delà). CP en jours ouvrables.</p>'+
-  '<div class="tbl"><table class="cpt"><thead><tr><th>Collaborateur</th><th>Contrat</th><th>Heures travaillées</th><th>HS 25 %</th><th>HS 50 %</th><th>HC 10 %</th><th>HC 25 %</th><th>Dimanches</th><th>Fériés travaillés</th><th>Fériés chômés</th><th>CP pris</th><th>CP restants</th><th>Maladie (j)</th><th>Absences (j)</th><th>Formation</th></tr></thead><tbody>'+
-  rows.map(c=>'<tr><td><b>'+esc(c.emp.name)+'</b></td><td>'+fmtH(+c.emp.base||0)+'h</td><td class="n">'+hh(c.work)+'</td><td class="n">'+hh(c.hs25)+'</td><td class="n">'+hh(c.hs50)+'</td><td class="n">'+hh(c.hc10)+'</td><td class="n">'+hh(c.hc25)+'</td><td class="n">'+(c.sunN?c.sunN+" · "+fmt(c.sunM):"–")+'</td><td class="n">'+(c.holN?c.holN+" · "+fmt(c.holM):"–")+'</td><td class="n">'+(c.fe||"–")+'</td><td class="n">'+(c.cp||"–")+'</td><td class="n">'+(c.cpLeft==null?'<span class="st-mut">à saisir</span>':fmtH(c.cpLeft))+'</td><td class="n">'+(c.m||"–")+'</td><td class="n">'+(c.ab||"–")+'</td><td class="n">'+hh(c.fo)+'</td></tr>').join("")+
+  '<div class="tbl"><table class="cpt"><thead><tr><th>Collaborateur</th><th>Contrat</th><th>Heures travaillées</th><th>HS 25 %</th><th>HS 50 %</th><th>HC 10 %</th><th>HC 25 %</th><th>Dimanches</th><th>Fériés travaillés</th><th>Fériés chômés</th><th>CP pris</th><th>CP restants</th><th>Maladie (j)</th><th>Absences (j)</th><th>Formation</th><th>Retards</th></tr></thead><tbody>'+
+  rows.map(c=>'<tr><td><b>'+esc(c.emp.name)+'</b></td><td>'+fmtH(+c.emp.base||0)+'h</td><td class="n">'+hh(c.work)+'</td><td class="n">'+hh(c.hs25)+'</td><td class="n">'+hh(c.hs50)+'</td><td class="n">'+hh(c.hc10)+'</td><td class="n">'+hh(c.hc25)+'</td><td class="n">'+(c.sunN?c.sunN+" · "+fmt(c.sunM):"–")+'</td><td class="n">'+(c.holN?c.holN+" · "+fmt(c.holM):"–")+'</td><td class="n">'+(c.fe||"–")+'</td><td class="n">'+(c.cp||"–")+'</td><td class="n">'+(c.cpLeft==null?'<span class="st-mut">à saisir</span>':fmtH(c.cpLeft))+'</td><td class="n">'+(c.m||"–")+'</td><td class="n">'+(c.ab||"–")+'</td><td class="n">'+hh(c.fo)+'</td><td class="n">'+(c.retN?c.retN+" · "+c.retM+" min":"–")+'</td></tr>').join("")+
   '</tbody></table></div><p class="st-mut" style="margin-top:8px">Les soldes CP se saisissent dans l\'onglet Collaborateurs (solde et date de référence).</p></div>';
   $("#cpt-m").onchange=ev=>{ S.cptMonth=ev.target.value; renderCpt(); };
   $("#cpt-reload").onclick=async()=>{ S.allWeeks=null; renderCpt(); };
@@ -1477,10 +1590,16 @@ async function renderCpt(){
 const dec = m => Math.round(m/60*100)/100;
 function exportPaieXlsx(rows, label){
   if(!window.XLSX){ toast("Le module Excel n'a pas pu se charger. Rechargez la page."); return; }
-  const head=["Salarié","Poste","Contrat (h/sem)","Heures travaillées","HS 25 %","HS 50 %","H. compl. 10 %","H. compl. 25 %","Dimanches (nb)","Dimanches (h)","Fériés travaillés (nb)","Fériés travaillés (h)","Fériés chômés (j)","CP pris (j ouvrables)","CP restants (j)","Maladie (j)","Absences (j)","Formation (h)"];
-  const data=[["SAS ANA – Boulanger Flers F890 · Éléments variables de paie · "+label],[],head, ...rows.map(c=>[c.emp.name,c.emp.role||"",+c.emp.base||0,dec(c.work),dec(c.hs25),dec(c.hs50),dec(c.hc10),dec(c.hc25),c.sunN,dec(c.sunM),c.holN,dec(c.holM),c.fe,c.cp,c.cpLeft==null?"":c.cpLeft,c.m,c.ab,dec(c.fo)])];
+  const head=["Salarié","Poste","Contrat (h/sem)","Heures travaillées","HS 25 %","HS 50 %","H. compl. 10 %","H. compl. 25 %","Dimanches (nb)","Dimanches (h)","Fériés travaillés (nb)","Fériés travaillés (h)","Fériés chômés (j)","CP pris (j ouvrables)","CP restants (j)","Maladie (j)","Absences (j)","Formation (h)","Retards (nb)","Retards (min)"];
+  const data=[["SAS ANA – Boulanger Flers F890 · Éléments variables de paie · "+label],[],head, ...rows.map(c=>[c.emp.name,c.emp.role||"",+c.emp.base||0,dec(c.work),dec(c.hs25),dec(c.hs50),dec(c.hc10),dec(c.hc25),c.sunN,dec(c.sunM),c.holN,dec(c.holM),c.fe,c.cp,c.cpLeft==null?"":c.cpLeft,c.m,c.ab,dec(c.fo),c.retN,c.retM])];
   const ws=XLSX.utils.aoa_to_sheet(data); ws["!cols"]=head.map((h,i)=>({wch:i<2?22:14}));
   const wb=XLSX.utils.book_new(); XLSX.utils.book_append_sheet(wb,ws,"Paie");
+  { const ym=S.cptMonth, [Y,M]=ym.split("-").map(Number), f=ym+"-01", l=ym+"-"+pad(new Date(Y,M,0).getDate());
+    const L=absList().filter(a=>a.from<=l && (a.to||a.from)>=f).sort((a,b)=>a.from.localeCompare(b.from));
+    const nm=id=>(S.team.employees.find(e=>e.id===id)||{}).name||id;
+    const aoa=[["Absences et événements · "+label],[],["Salarié","Type","Du","Au","Jours ouvrables dans le mois","Retard (min)","Justificatif","Commentaire"],
+      ...L.map(a=>[nm(a.empId),(ABS_TYPES[a.type]||{}).l||a.type,a.from,a.to||a.from,a.type==="RET"?"":absDays(a,f,l),a.type==="RET"?(+a.min||0):"",a.justif?"reçu":"à recevoir",a.note||""])];
+    const w2=XLSX.utils.aoa_to_sheet(aoa); w2["!cols"]=[{wch:16},{wch:26},{wch:12},{wch:12},{wch:14},{wch:12},{wch:12},{wch:40}]; XLSX.utils.book_append_sheet(wb,w2,"Absences"); }
   const out=XLSX.write(wb,{bookType:"xlsx",type:"array"});
   save("Elements_paie_F890_"+fileSafe(label)+".xlsx", new Blob([out],{type:"application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"}));
 }
@@ -1663,7 +1782,7 @@ function startFirebase(){
     S.db=window.FB.adapter; S.local=false;
     try{ const seeded=await seedIfEmpty(); if(seeded) toast("Installation terminée"); }catch(e){ setSave("off","Accès refusé : vérifiez les règles Firestore"); toast("Firestore refuse l'accès. Collez les règles de sécurité fournies, puis rechargez."); return; }
     setSave("ok","Synchronisé");
-    S.db.doc("config/team").onSnapshot(snap=>{ if(S.teamDirty) return; const d=snapData(snap); if(d){ S.team={employees:d.employees||[],templates:(d.templates&&d.templates.length)?d.templates:DEFAULT_TPL.slice(),settings:d.settings||{}}; } S.teamLoaded=true; render(); },()=>setSave("off","Connexion perdue"));
+    S.db.doc("config/team").onSnapshot(snap=>{ if(S.teamDirty) return; const d=snapData(snap); if(d){ S.team={...d, employees:d.employees||[],templates:(d.templates&&d.templates.length)?d.templates:DEFAULT_TPL.slice(),settings:d.settings||{}}; } S.teamLoaded=true; render(); },()=>setSave("off","Connexion perdue"));
     subscribeWeek(); subscribeDemandes();
     S.db.collection("weeks").get().then(q=>{ S.openSunWeeks=q.docs.filter(x=>{const d=snapData(x); return d&&d.open&&d.open["6"];}).map(x=>x.id); render(); }).catch(()=>{});
   });
@@ -1687,7 +1806,7 @@ function start(){
     if(!db){ startLocal("nodb"); return; }
     S.db=db; setSave("ok","Synchronisé");
     db.doc("config/team").onSnapshot(snap=>{
-      const d=snapData(snap); if(d){ S.team={employees:d.employees||[],templates:(d.templates&&d.templates.length)?d.templates:DEFAULT_TPL.slice(),settings:d.settings||{}}; }
+      const d=snapData(snap); if(d){ S.team={...d, employees:d.employees||[],templates:(d.templates&&d.templates.length)?d.templates:DEFAULT_TPL.slice(),settings:d.settings||{}}; }
       S.teamLoaded=true; render();
     },()=>setSave("off","Connexion perdue"));
     subscribeWeek();
