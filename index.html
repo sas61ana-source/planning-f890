@@ -417,7 +417,13 @@ tr.abs-cur td{background:rgba(227,6,19,.04)}
 .hobjm.empty{background:var(--surface);color:var(--fg);border:1px dashed var(--accent)}.hobjm.empty b{font-size:20px;color:var(--accent)}
 .tkind{display:inline-flex;background:var(--surface-2);border-radius:9px;padding:2px;gap:2px}.tkind button{border:0;background:transparent;border-radius:7px;padding:5px 9px;font-weight:600;font-size:12.5px;color:var(--muted);white-space:nowrap}.tkind button[aria-pressed="true"]{background:var(--surface);color:var(--fg);box-shadow:0 1px 2px rgba(0,0,0,.1)}
 .tadd{display:flex;gap:8px;flex-wrap:wrap;margin-top:12px}
-</style>
+
+.obmode{display:flex;align-items:center;gap:12px;flex-wrap:wrap;margin:6px 0 14px}
+.obk3{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-bottom:10px}.obk3 div{border:1px solid var(--line);border-radius:12px;padding:10px;background:var(--surface)}.obk3 small{display:block;color:var(--muted);font-size:12px}.obk3 b{font-family:var(--font-display);font-size:22px}
+.obk3 .hl{background:linear-gradient(135deg,#e8620f,#c24400);color:#fff;border:0}.obk3 .hl small{color:#ffe3cf}
+.obpaste{width:100%;min-height:90px;padding:8px;border:1px solid var(--line);border-radius:10px;font-family:var(--font-mono);font-size:13px;margin-bottom:6px;background:var(--surface)}
+.obn1 input{width:120px;padding:5px 8px;border:1px solid var(--line);border-radius:8px;text-align:right;background:var(--surface)}.obn1 input.n1r{width:80px}
+.appver{text-align:center;color:var(--muted);font-size:12px;margin:0 0 20px}</style>
 
 </head><body>
 <div class="wrap" id="app">
@@ -1015,7 +1021,9 @@ async function flushTeam(){
   finally{ teamWriting=false; }
 }
 let renderPending=false;
-function teamChanged(quiet){ S.teamDirty=true; setSave("pending","Enregistrement…"); if(quiet!==true && !renderPending){ renderPending=true; setTimeout(()=>{ renderPending=false; render(); },0); } clearTimeout(teamTimer); teamTimer=setTimeout(flushTeam,300); }
+const typingIn = () => { const a=document.activeElement; if(!a||!a.closest||!a.closest("#app")) return false; if(a.tagName==="TEXTAREA") return true; return a.tagName==="INPUT" && !["checkbox","radio","button","submit","file","date","color","range"].includes(a.type); };
+document.addEventListener("focusout",()=>setTimeout(()=>{ if(S.renderOnBlur && !typingIn()){ S.renderOnBlur=false; render(); } if(S.teamPendingSnap && !typingIn() && !S.teamDirty){ const d=snapData(S.teamPendingSnap); S.teamPendingSnap=null; if(d && JSON.stringify(d)!==JSON.stringify(clone(S.team))){ S.team={...d, employees:d.employees||[],templates:(d.templates&&d.templates.length)?d.templates:DEFAULT_TPL.slice(),settings:d.settings||{}}; render(); } } },50));
+function teamChanged(quiet){ S.teamDirty=true; setSave("pending","Enregistrement…"); if(quiet!==true && !renderPending){ renderPending=true; setTimeout(()=>{ renderPending=false; if(typingIn()) S.renderOnBlur=true; else render(); },0); } clearTimeout(teamTimer); teamTimer=setTimeout(flushTeam,300); }
 const flushAll = () => { if(S.dirty) flush(); if(S.teamDirty) flushTeam(); };
 document.addEventListener("visibilitychange",()=>{ if(document.visibilityState==="hidden") flushAll(); });
 window.addEventListener("pagehide",flushAll);
@@ -1240,8 +1248,16 @@ function objMonth(ym, create){ const A=objAll(); if(!A[ym] && create){ const pre
 const ymOf = day => day.slice(0,7);
 function monthWorkDays(ym){ const [Y,M]=ym.split("-").map(Number); const n=new Date(Date.UTC(Y,M,0)).getUTCDate(); const out=[];
   for(let i=1;i<=n;i++){ const dt=new Date(Date.UTC(Y,M-1,i)); const d=(dt.getUTCDay()+6)%7; if(d===6||holName(dt)) continue; out.push({day:ymd(dt),d}); } return out; }
+const n1Day = day => { const [y,m,d]=day.split("-").map(Number); return ymd(new Date(Date.UTC(y,m-1,d)-364*864e5)); };
+const dayRate = (M,day) => { const r=(M.rate||{})[day]; return r!=null&&r!=="" ? +r : (+M.rateAll||0); };
+const dayObjN1 = (M,day) => { const b=(M.n1||{})[day]; return b==null||b==="" ? 0 : +b*(1+dayRate(M,day)/100); };
+function monthPO(M, ym){ return M.mode==="n1" ? monthWorkDays(ym).reduce((t,x)=>t+dayObjN1(M,x.day),0) : (+M.po||0); }
 function objStoreDay(day){ const ym=ymOf(day), M=objMonth(ym); if(!M) return null; const W=objW(); const L=monthWorkDays(ym); const f=L.find(x=>x.day===day); if(!f) return null;
-  const tw=L.reduce((t,x)=>t+(+W[x.d]||0),0)||1; const k=(+W[f.d]||0)/tw;
+  let k;
+  if(M.mode==="n1"){ const tot=monthPO(M,ym); const po=dayObjN1(M,day); k = tot ? po/tot : 0;
+    const v={}; (M.services||[]).forEach(sv=>{ if(sv.target==null||sv.target==="") return; v[sv.id]= sv.type==="volume" ? +sv.target*k : +sv.target; });
+    return {po, v, M, n1:+((M.n1||{})[day]||0), rate:dayRate(M,day)}; }
+  const tw=L.reduce((t,x)=>t+(+W[x.d]||0),0)||1; k=(+W[f.d]||0)/tw;
   const v={}; (M.services||[]).forEach(sv=>{ if(sv.target==null||sv.target==="") return; v[sv.id]= sv.type==="volume" ? +sv.target*k : +sv.target; });
   return {po:(+M.po||0)*k, v, M}; }
 function objForWeek(wid, w){
@@ -1268,30 +1284,62 @@ async function renderObj(){
   const weeks=[...new Set(WD.map(x=>weekOfDate(x.day)))];
   if(!S.objWeek || !weeks.includes(S.objWeek)) S.objWeek = weeks.includes(S.weekId)?S.weekId:weeks[0];
   let html='<div class="panel"><div style="display:flex;gap:10px;flex-wrap:wrap;align-items:center;justify-content:space-between"><h2>Objectifs · '+mName+'</h2><select id="ob-m" class="btn">'+months.map(m=>'<option value="'+m+'"'+(m===ym?" selected":"")+'>'+m.split("-").reverse().join("/")+'</option>').join("")+'</select></div>'+
-    '<p class="lead">Saisissez les objectifs mensuels du magasin. La PO (prise d\'ordre HT) et les services en volume sont répartis sur les jours d\'ouverture du mois selon le poids de chaque jour, puis entre les vendeurs présents au prorata de leurs heures planifiées. Les objectifs en taux et les notes s\'appliquent tels quels à chacun. Les collaborateurs voient leurs objectifs du jour et de la semaine dans leur espace (semaines publiées).</p>';
+    '<p class="lead">Deux méthodes pour la PO (prise d\'ordre HT) : soit la PO du mois répartie selon le poids des jours, soit la PO réalisée N-1 jour par jour avec un taux d\'évolution (par défaut ou par jour) qui donne les objectifs journaliers, hebdomadaires et mensuels. La PO et les services en volume sont ensuite répartis entre les vendeurs présents au prorata de leurs heures planifiées. Les objectifs en taux et les notes s\'appliquent tels quels à chacun. Les collaborateurs voient leurs objectifs du jour et de la semaine dans leur espace (semaines publiées).</p>';
   if(!M){ html+='<button class="btn primary" id="ob-create">Créer les objectifs de '+mName+'</button>'+(Object.keys(objAll()).length?' <span class="st-mut">(services repris du mois précédent)</span>':'')+'</div>'; v.innerHTML=html; $("#ob-m").onchange=e=>{ S.objMonth=e.target.value; renderObj(); }; $("#ob-create").onclick=()=>{ objMonth(ym,true); objChanged(ym); renderObj(); }; return; }
-  html+='<div class="obgrid"><div><label class="oblbl">PO du mois (HT, magasin)</label><div class="obpo"><input id="ob-po" class="mono" inputmode="decimal" value="'+esc(M.po?String(M.po):"")+'" placeholder="0"><span>€ HT</span></div>'+
-    '<p class="st-mut">'+WD.length+' jours d\'ouverture · moyenne '+eur((+M.po||0)/(WD.length||1))+' par jour</p>'+
-    '<label class="oblbl">Poids des jours</label><div class="obw">'+["Lun","Mar","Mer","Jeu","Ven","Sam"].map((d,i)=>'<label>'+d+'<input data-w="'+i+'" inputmode="decimal" value="'+String(W[i]).replace(".",",")+'"></label>').join("")+'</div><p class="st-mut">Ex. 1,5 le samedi = 50 % de PO en plus qu\'un jour à 1.</p></div>'+
+  const isN1=M.mode==="n1"; const sumN1=WD.reduce((t,x)=>t+(+((M.n1||{})[x.day]||0)),0), mpo=monthPO(M,ym);
+  html+='<div class="obmode"><span class="oblbl" style="margin:0">Calcul de la PO</span><div class="tkind"><button type="button" data-mode="po" aria-pressed="'+(!isN1)+'">PO du mois + poids des jours</button><button type="button" data-mode="n1" aria-pressed="'+isN1+'">PO N-1 + taux d\'évolution par jour</button></div></div>';
+  html+='<div class="obgrid"><div>'+(isN1?
+    '<div class="obk3"><div><small>PO réalisée N-1</small><b id="ob-n1t">'+eur(sumN1)+'</b></div><div class="hl"><small>Objectif du mois</small><b id="ob-mt">'+eur(mpo)+'</b></div><div><small>Évolution</small><b id="ob-ev">'+(sumN1?((mpo/sumN1-1)*100).toFixed(1).replace(".",",")+" %":"–")+'</b></div></div>'+
+    '<label class="oblbl">Taux d\'évolution par défaut (tous les jours)</label><div class="obpo sm"><input id="ob-rall" class="mono" inputmode="decimal" value="'+esc(M.rateAll==null?"":String(M.rateAll).replace(".",","))+'" placeholder="0"><span>%</span><button class="btn ghost" id="ob-rclr" type="button">Effacer les taux par jour</button></div>'+
+    '<p class="st-mut">Le taux d\'un jour saisi dans le calendrier remplace le taux par défaut. Jour comparable N-1 = même jour de la semaine, 52 semaines avant.</p>'+
+    '<label class="oblbl">Coller les PO N-1 depuis Excel</label><textarea id="ob-paste" class="obpaste" placeholder="Une valeur par ligne, dans l\'ordre des '+WD.length+' jours d\'ouverture du mois (lundi au samedi)"></textarea><button class="btn" id="ob-pasteb" type="button">Remplir le calendrier</button>'
+   :'<label class="oblbl">PO du mois (HT, magasin)</label><div class="obpo"><input id="ob-po" class="mono" inputmode="decimal" value="'+esc(M.po?String(M.po):"")+'" placeholder="0"><span>€ HT</span></div>'+
+    '<p class="st-mut">'+WD.length+' jours d\'ouverture · moyenne <span id="ob-avg">'+eur((+M.po||0)/(WD.length||1))+'</span> par jour</p>'+
+    '<label class="oblbl">Poids des jours</label><div class="obw">'+["Lun","Mar","Mer","Jeu","Ven","Sam"].map((d,i)=>'<label>'+d+'<input data-w="'+i+'" inputmode="decimal" value="'+String(W[i]).replace(".",",")+'"></label>').join("")+'</div><p class="st-mut">Ex. 1,5 le samedi = 50 % de PO en plus qu\'un jour à 1.</p>')+'</div>'+
     '<div><label class="oblbl">Services</label><div class="tbl"><table class="obsvc"><thead><tr><th>Service</th><th>Type</th><th>Objectif mensuel</th><th></th></tr></thead><tbody>'+
     (M.services||[]).map((sv,i)=>'<tr data-si="'+i+'"><td><input data-k="name" value="'+esc(sv.name)+'"></td><td><select data-k="type">'+Object.entries(SVC_TYPES).map(([k,l])=>'<option value="'+k+'"'+(sv.type===k?" selected":"")+'>'+l+'</option>').join("")+'</select></td><td><div class="obpo sm"><input data-k="target" class="mono" inputmode="decimal" value="'+esc(sv.target==null?"":String(sv.target).replace(".",","))+'" placeholder="–"><span>'+(sv.type==="taux"?"%":sv.type==="volume"?"u.":"pts")+'</span></div></td><td><button class="btn ghost danger" data-k="del" title="Retirer">✕</button></td></tr>').join("")+
     '</tbody></table></div><button class="btn" id="ob-add">+ Ajouter un service</button></div></div>'+
     '<label class="oblbl" style="margin-top:14px">Collaborateurs avec objectifs</label><div class="obemp">'+emps().map(e=>'<label class="chk"><input type="checkbox" data-oe="'+esc(e.id)+'"'+(objIn(e)?" checked":"")+'> '+esc(e.name)+'</label>').join("")+'</div></div>';
+  if(isN1){ const dFR=x=>{ const [y,m,d]=x.split("-"); return d+"/"+m+"/"+y.slice(2); }; let wk=null, rows="";
+    const wkTot=w=>{ const L=WD.filter(x=>weekOfDate(x.day)===w); return [L.reduce((t,x)=>t+(+((M.n1||{})[x.day]||0)),0), L.reduce((t,x)=>t+dayObjN1(M,x.day),0)]; };
+    WD.forEach((x,i)=>{ const w=weekOfDate(x.day); if(w!==wk){ if(wk){ const [a,b]=wkTot(wk); rows+='<tr class="obtot" data-wt="'+wk+'"><td colspan="3"><b>Total S'+wnum(wk)+'</b></td><td class="n mono">'+eur(a)+'</td><td></td><td class="n mono"><b>'+eur(b)+'</b></td></tr>'; } wk=w; }
+      const r=(M.rate||{})[x.day];
+      rows+='<tr data-n1="'+x.day+'"><td><b>'+DAYN[x.d].slice(0,3)+'. '+dFR(x.day)+'</b></td><td class="st-mut">'+DAYN[(x.d)].slice(0,3)+'. '+dFR(n1Day(x.day))+'</td><td></td><td><input class="mono n1v" data-k="n1" inputmode="decimal" value="'+esc((M.n1||{})[x.day]==null?"":String(M.n1[x.day]).replace(".",","))+'" placeholder="0"></td><td><input class="mono n1r" data-k="rate" inputmode="decimal" value="'+esc(r==null?"":String(r).replace(".",","))+'" placeholder="'+String(+M.rateAll||0).replace(".",",")+'"></td><td class="n mono" data-o>'+eur(dayObjN1(M,x.day))+'</td></tr>'; });
+    if(wk){ const [a,b]=wkTot(wk); rows+='<tr class="obtot" data-wt="'+wk+'"><td colspan="3"><b>Total S'+wnum(wk)+'</b></td><td class="n mono">'+eur(a)+'</td><td></td><td class="n mono"><b>'+eur(b)+'</b></td></tr>'; }
+    html+='<div class="panel"><h2>Calendrier N-1 · '+mName+'</h2><div class="tbl"><table class="obn1"><thead><tr><th>Jour</th><th>Jour comparable N-1</th><th></th><th>PO N-1 (€ HT)</th><th>Évolution (%)</th><th>Objectif PO</th></tr></thead><tbody>'+rows+'</tbody></table></div></div>'; }
   // répartition
   html+='<div class="panel"><div style="display:flex;gap:10px;flex-wrap:wrap;align-items:center;justify-content:space-between"><h2>Répartition</h2><div class="obwk">'+weeks.map(w=>'<button class="btn'+(w===S.objWeek?" primary":" ghost")+'" data-ow="'+w+'">S'+wnum(w)+'</button>').join("")+'</div></div><div id="ob-rep"><p class="st-mut">Calcul…</p></div></div>';
   v.innerHTML=html;
   $("#ob-m").onchange=e=>{ S.objMonth=e.target.value; renderObj(); };
+  let repT=null; const redraw=()=>{ clearTimeout(repT); repT=setTimeout(()=>drawRep(),400); };
   const num=x=>{ const t=String(x).trim().replace(/\s/g,"").replace(",","."); return t===""?null:(parseFloat(t)||0); };
-  $("#ob-po").oninput=e=>{ M.po=num(e.target.value)||0; objChanged(ym); }; $("#ob-po").onchange=()=>renderObj();
+  $("#ob-po")&&($("#ob-po").oninput=e=>{ M.po=num(e.target.value)||0; objChanged(ym); $("#ob-avg").textContent=eur((+M.po||0)/(WD.length||1)); redraw(); });
   v.querySelectorAll("[data-w]").forEach(i=>i.onchange=()=>{ const w=objW().slice(); w[+i.dataset.w]=num(i.value)??1; S.team.settings=S.team.settings||{}; S.team.settings.objWeights=w; objChanged(ym); renderObj(); });
   v.querySelectorAll(".obsvc tr[data-si]").forEach(tr=>{ const sv=M.services[+tr.dataset.si];
     tr.querySelectorAll("[data-k]").forEach(el=>{ const k=el.dataset.k;
       if(k==="del") el.onclick=()=>{ M.services.splice(+tr.dataset.si,1); objChanged(ym); renderObj(); };
-      else { const ap=q=>{ if(k==="target") sv.target=num(el.value); else sv[k]=el.value.trim()||sv[k]; objChanged(ym); if(!q) renderObj(); }; el.onchange=()=>ap(false); if(el.tagName==="INPUT") el.oninput=()=>ap(true); } }); });
+      else { const ap=q=>{ if(k==="target") sv.target=num(el.value); else sv[k]=el.value.trim()||sv[k]; objChanged(ym); if(!q) renderObj(); else redraw(); }; if(el.tagName==="INPUT") el.oninput=()=>ap(true); else el.onchange=()=>ap(false); } }); });
   $("#ob-add").onclick=()=>{ M.services.push({id:"s"+Date.now().toString(36),name:"Nouveau service",type:"volume",target:null}); objChanged(ym); renderObj(); setTimeout(()=>{ const r=v.querySelectorAll(".obsvc tr[data-si]"); const i=r[r.length-1]&&r[r.length-1].querySelector("input"); i&&(i.focus(),i.select()); },50); };
   v.querySelectorAll("[data-oe]").forEach(c=>c.onchange=()=>{ const e=S.team.employees.find(x=>x.id===c.dataset.oe); e.obj=c.checked; objChanged(ym); renderObj(); });
   v.querySelectorAll("[data-ow]").forEach(b=>b.onclick=()=>{ S.objWeek=b.dataset.ow; renderObj(); });
-  // tableau de répartition
+  v.querySelectorAll("[data-mode]").forEach(b=>b.onclick=()=>{ M.mode=b.dataset.mode; M.n1=M.n1||{}; M.rate=M.rate||{}; objChanged(ym); renderObj(); });
+  const refreshN1=()=>{ if(!$("#ob-mt")) return; const sN=WD.reduce((t,x)=>t+(+((M.n1||{})[x.day]||0)),0), mp=monthPO(M,ym);
+    $("#ob-n1t").textContent=eur(sN); $("#ob-mt").textContent=eur(mp); $("#ob-ev").textContent=sN?((mp/sN-1)*100).toFixed(1).replace(".",",")+" %":"–";
+    v.querySelectorAll("tr[data-n1]").forEach(tr=>{ const d=tr.dataset.n1; tr.querySelector("[data-o]").textContent=eur(dayObjN1(M,d)); const ri=tr.querySelector(".n1r"); ri.placeholder=String(+M.rateAll||0).replace(".",","); });
+    v.querySelectorAll("tr[data-wt]").forEach(tr=>{ const L=WD.filter(x=>weekOfDate(x.day)===tr.dataset.wt); const c=tr.querySelectorAll("td"); c[1].textContent=eur(L.reduce((t,x)=>t+(+((M.n1||{})[x.day]||0)),0)); c[3].innerHTML='<b>'+eur(L.reduce((t,x)=>t+dayObjN1(M,x.day),0))+'</b>'; });
+    redraw(); };
+  v.querySelectorAll("tr[data-n1] input").forEach(inp=>inp.oninput=()=>{ const d=inp.closest("tr").dataset.n1, k=inp.dataset.k; const val=num(inp.value);
+    if(k==="n1"){ M.n1=M.n1||{}; if(val==null) delete M.n1[d]; else M.n1[d]=val; } else { M.rate=M.rate||{}; if(val==null) delete M.rate[d]; else M.rate[d]=val; }
+    objChanged(ym); refreshN1(); });
+  v.querySelectorAll("tr[data-n1] input").forEach(inp=>inp.onkeydown=ev=>{ if(ev.key==="Enter"||ev.key==="ArrowDown"||ev.key==="ArrowUp"){ ev.preventDefault(); const all=[...v.querySelectorAll("tr[data-n1] input[data-k='"+inp.dataset.k+"']")]; const i=all.indexOf(inp)+(ev.key==="ArrowUp"?-1:1); if(all[i]){ all[i].focus(); all[i].select(); } } });
+  $("#ob-rall")&&($("#ob-rall").oninput=e=>{ M.rateAll=num(e.target.value); objChanged(ym); refreshN1(); });
+  $("#ob-rclr")&&($("#ob-rclr").onclick=()=>{ M.rate={}; objChanged(ym); renderObj(); });
+  $("#ob-pasteb")&&($("#ob-pasteb").onclick=()=>{ const vals=$("#ob-paste").value.split(/[\r\n\t;]+/).map(x=>x.trim()).filter(Boolean).map(num).filter(x=>x!=null);
+    if(!vals.length){ toast("Collez d'abord une colonne de montants"); return; } M.n1=M.n1||{}; WD.forEach((x,i)=>{ if(vals[i]!=null) M.n1[x.day]=vals[i]; }); objChanged(ym); renderObj(); toast(Math.min(vals.length,WD.length)+" jours remplis"+(vals.length!==WD.length?" ("+vals.length+" valeurs pour "+WD.length+" jours)":"")); });
+  drawRep();
+}
+async function drawRep(){
+  const ym=S.objMonth, M=objMonth(ym,false); if(!M||!$("#ob-rep")) return;
   const wid=S.objWeek; const wk = wid===S.weekId ? S.week : (await loadWeek(wid)) || {entries:{}}; if(S.view!=="obj" || S.objWeek!==wid) return;
   const O=objForWeek(wid, wk); const ds=weekDays(wid); const P=emps().filter(objIn); const meta=svcMeta(wid); const vol=meta.filter(m=>m.type==="volume"); const rates=meta.filter(m=>m.type!=="volume");
   const inMonth=d=>ymOf(ymd(ds[d]))===ym;
@@ -2077,7 +2125,7 @@ function renderHome(){
     '</div>'+
     (curW&&!isClosed(td)?'<div class="today"><div class="today-hd"><b>Aujourd\'hui en magasin</b><button class="lnk" data-go="team" data-today="1">Voir la journée ›</button></div>'+
       (sorted.length?'<div class="today-list">'+sorted.map(e=>{ const x=getE(e.id,td); return '<div class="tp"><span class="av">'+esc((e.name||"?")[0])+'</span><span class="tn"><b>'+esc(e.name)+'</b><small>'+esc(x.tag||({vente:"Vente",caisse:"Caisse",livraison:"Livraison"}[fonctionOf(e)]||""))+'</small></span><span class="tt">'+(hasTimes(x)?(x.m1?x.m1+"–"+x.m2:"")+(x.m1&&x.a1?'<br>':'')+(x.a1?x.a1+"–"+x.a2:""):'<i class="st-mut">à définir</i>')+'</span></div>'; }).join("")+'</div>':'<p class="st-mut" style="margin:6px 0 0">Personne n\'est planifié aujourd\'hui.</p>')+'</div>':'')+
-    '<div class="qa"><button class="qbtn" id="hGen">'+ico("gen")+'<span>Générer la semaine</span></button><button class="qbtn'+(S.week.pub?" on":"")+'" id="hPub">'+ico("pub")+'<span>'+(S.week.pub?"Semaine publiée":"Publier aux collaborateurs")+'</span></button></div>';
+    '<div class="qa"><button class="qbtn" id="hGen">'+ico("gen")+'<span>Générer la semaine</span></button><button class="qbtn'+(S.week.pub?" on":"")+'" id="hPub">'+ico("pub")+'<span>'+(S.week.pub?"Semaine publiée":"Publier aux collaborateurs")+'</span></button></div><p class="appver">Version du 11/10 15:36</p>';
   v.querySelectorAll("[data-go]").forEach(b=>b.onclick=()=>{ if(b.dataset.today && curW) S.mDay=td; go(b.dataset.go); });
   $("#hGen").onclick=()=>{ go("team"); generateWeek(); };
   $("#hPub").onclick=()=>togglePub();
@@ -2145,7 +2193,7 @@ function startFirebase(){
     S.db=window.FB.adapter; S.local=false;
     try{ const seeded=await seedIfEmpty(); if(seeded) toast("Installation terminée"); }catch(e){ setSave("off","Accès refusé : vérifiez les règles Firestore"); toast("Firestore refuse l'accès. Collez les règles de sécurité fournies, puis rechargez."); return; }
     setSave("ok","Synchronisé");
-    S.db.doc("config/team").onSnapshot(snap=>{ if(S.teamDirty) return; const d=snapData(snap); if(d){ S.team={...d, employees:d.employees||[],templates:(d.templates&&d.templates.length)?d.templates:DEFAULT_TPL.slice(),settings:d.settings||{}}; } S.teamLoaded=true; render(); },()=>setSave("off","Connexion perdue"));
+    S.db.doc("config/team").onSnapshot(snap=>{ if(S.teamDirty||teamWriting) return; const d=snapData(snap); if(d && S.teamLoaded && JSON.stringify(d)===JSON.stringify(clone(S.team))) return; if(d && S.teamLoaded && typingIn()){ S.teamPendingSnap=snap; return; } if(d){ S.team={...d, employees:d.employees||[],templates:(d.templates&&d.templates.length)?d.templates:DEFAULT_TPL.slice(),settings:d.settings||{}}; } S.teamLoaded=true; render(); },()=>setSave("off","Connexion perdue"));
     subscribeWeek(); subscribeDemandes(); subscribePauses();
     S.db.collection("weeks").get().then(q=>{ S.openSunWeeks=q.docs.filter(x=>{const d=snapData(x); return d&&d.open&&d.open["6"];}).map(x=>x.id); render(); }).catch(()=>{});
   });

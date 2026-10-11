@@ -154,6 +154,7 @@ h3{margin:0 0 10px;font-family:var(--font-display);font-size:20px;text-transform
 </div>
 <div class="ov" id="ovScan" hidden><h2 id="scT">Scannez le QR code</h2><p id="scP">Visez l'affiche « PAUSE » du magasin.</p><div class="cam"><video id="vid" playsinline muted></video><div class="scanl"></div></div><p id="scMsg"></p><button class="btn ghost" id="scCancel">Annuler</button></div>
 <div class="ov" id="ovPz" hidden></div>
+<p style="text-align:center;color:var(--muted);font-size:12px;margin:0 0 20px">Version du 11/10 15:36</p>
 <div class="toast" id="toast" hidden></div>
 
 <script type="module">
@@ -260,7 +261,7 @@ function renderHome(){
   const used=usedToday(), rem=BUDGET-used, pct=Math.min(100,Math.round(used/BUDGET*100));
   h.innerHTML='<small>'+ds+'</small><h2>Bonjour '+esc((st.me||"").split(" ")[0])+'</h2>'+
     '<div class="hday"><span>Aujourd\'hui</span>'+(!x?'<span class="mut" style="color:#cfd8e6">Planning non publié</span>':timed?'<b>'+(x.m1?x.m1+" – "+x.m2:"")+(x.m1&&x.a1?"<br>":"")+(x.a1?x.a1+" – "+x.a2:"")+'</b>':'<span class="st">'+(LAB[x.s]||x.s)+'</span>')+'</div>'+
-    (()=>{ const t=todayObj(); return t?'<div class="hobj"><small>Objectif du jour</small><div><b>'+eur(t.d.po)+'</b> <small>PO HT</small></div><div class="chips">'+chipsOf(t.svc,t.d.v)+'</div></div>':''; })()+
+    (()=>{ const t=todayObj(); return t?'<div class="hobj"><small>'+(t.today?'Objectif du jour':'Prochain objectif · '+DAYN[t.i]+' '+frD(t.date))+'</small><div><b>'+eur(t.d.po)+'</b> <small>PO HT</small></div><div class="chips">'+chipsOf(t.svc,t.d.v)+'</div></div>':''; })()+
     '<div class="budget'+(rem<0?" over":"")+'"><span>Pause du jour</span><span class="bar"><i style="width:'+pct+'%"></i></span><b>'+(rem<0?"+"+mmss(-rem)+" dépassé":mmss(rem)+" / 10:00")+'</b></div>';
   const o=openPz(); ["cPause","cWc"].forEach(id=>{ const c=$("#"+id); c.classList.toggle("live", !!o && o.type===(id==="cWc"?"wc":"pause")); const old=c.querySelector(".cb"); old&&old.remove();
     if(o && o.type===(id==="cWc"?"wc":"pause")){ const b=document.createElement("span"); b.className="cb"; b.textContent="en cours"; c.appendChild(b); } });
@@ -337,7 +338,8 @@ $("#cWc").onclick=()=>startPz("wc");
 const eur = n => Math.round(n||0).toLocaleString("fr-FR")+" €";
 const sval = (sv,val) => val==null?"–": sv.type==="taux" ? String(Math.round(val*10)/10).replace(".",",")+" %" : sv.type==="volume" ? String(Math.round(val*10)/10).replace(".",",") : String(val).replace(".",",");
 const chipsOf = (svc, v, onlyVol) => (svc||[]).filter(m=>v&&v[m.id]!=null&&(!onlyVol||m.type==="volume")).map(m=>'<span>'+esc(m.name)+' '+sval(m,v[m.id])+'</span>').join("");
-function todayObj(){ for(const w of st.weeks){ const i=(w.days||[]).findIndex(d=>d.date===today); if(i>=0) return w.obj&&w.obj.days&&w.obj.days[i]?{d:w.obj.days[i],svc:w.obj.svc}:null; } return null; }
+function todayObj(){ const all=[]; st.weeks.forEach(w=>(w.days||[]).forEach((d,i)=>{ const o=w.obj&&w.obj.days&&w.obj.days[i]; if(o&&d.date>=today) all.push({date:d.date,i,d:o,svc:w.obj.svc}); }));
+  all.sort((a,b)=>a.date.localeCompare(b.date)); const t=all[0]; if(!t) return null; t.today=t.date===today; return t; }
 function renderObj(){
   const box=$("#objBox"); if(!box) return; const cw=isoWeekId(new Date());
   const list=st.weeks.filter(w=>w.weekId>=prevWeek(cw)&&w.obj); if(!list.length){ $("#owtabs").innerHTML=""; box.innerHTML='<p class="card empty">Pas encore d\'objectifs publiés.</p>'; return; }
