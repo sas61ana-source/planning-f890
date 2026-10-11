@@ -258,6 +258,13 @@ code.code{font-family:var(--font-mono);background:var(--surface-2);padding:2px 6
 .rhd{min-width:24px;height:26px;margin:0 1px;padding:0 4px;border:1px solid var(--line,#ccc);border-radius:6px;background:transparent;color:inherit;font:inherit;font-size:12px;cursor:pointer}
 .rhd.on{background:#e30613;border-color:#e30613;color:#fff;font-weight:600}
 #v-staff input[data-f=name]{min-width:96px}#v-staff input[data-f=role]{min-width:160px}#v-staff input[data-f=email]{min-width:200px}#v-staff .tbl{overflow-x:auto}#v-staff select{min-width:112px}#v-staff table{min-width:1500px}
+.roul-list{display:grid;gap:14px}
+.roul-weeks{grid-template-columns:repeat(auto-fill,minmax(560px,1fr))}
+.rtab{width:100%;font-size:13px}.rtab td{padding:2px 3px}.rtab .tsel{padding:3px 4px;font-size:12px}.rtab .rsel{max-width:240px;padding:3px 6px;font-size:12px}
+.rd{font-weight:600;text-transform:capitalize;width:38px}.rdur{width:52px;text-align:right}
+.cw-tot{margin-left:auto;font-family:var(--font-mono)}.cw-tot em{font-style:normal;font-size:12px;margin-left:4px}.cw-tot em.ok{color:#1a7f37}.cw-tot em.warn{color:#b26a00}.cw-tot em.bad{color:#c62828}
+.cwb{width:60px;padding:4px 6px;border:1px solid var(--line);border-radius:6px}
+@media(max-width:700px){.roul-weeks{grid-template-columns:1fr}}
 </style>
 
 </head><body>
@@ -1262,56 +1269,150 @@ function favTemplate(e){
   if(best){ const [m1,m2,a1,a2,p]=best[0].split("|"); return {s:"T",m1,m2,a1,a2,p:p==="1",tag:""}; }
   const t=S.team.templates[2]||DEFAULT_TPL[2]; return {s:"T",...t,tag:""};
 }
+const SLOTS = {
+  V1:{m1:"09:45",m2:"12:00",a1:"14:00",a2:"18:00"},
+  V2:{m1:"10:00",m2:"12:30",a1:"14:00",a2:"18:30"},
+  V3:{m1:"10:30",m2:"13:00",a1:"14:00",a2:"19:00"},
+  V4:{m1:"10:30",m2:"13:00",a1:"14:00",a2:"19:00"},
+  VF:{m1:"09:45",m2:"13:00",a1:"14:00",a2:"19:00"},
+  C1:{m1:"09:45",m2:"12:00",a1:"14:00",a2:"18:00"},
+  C2:{m1:"10:30",m2:"13:00",a1:"14:00",a2:"19:15"},
+  CF:{m1:"09:45",m2:"13:00",a1:"14:00",a2:"19:15"}
+};
+const VENTE_ORDER = {1:["VF"],2:["V1","V3"],3:["V1","V2","V3"],4:["V1","V2","V3","V4"]};
+const slotE = (k,tag) => ({s:"T",...SLOTS[k],p:false,tag:tag||""});
+const ABS_S = ["CP","M","AB","FO","FE"];
+const secoursOf = () => emps().find(e=>e.secoursCaisse) || emps().find(e=>/^martin/i.test(e.name||""));
 async function generateWeek(){
   const approved=(S.demandes||[]).filter(r=>r.status==="acceptée"&&r.type==="CP");
-  pushUndo(); const ds=weekDays(S.weekId); let nCycle=0, nPrev=0, nFill=0, nCP=0;
-  const fav={}; for(const e of emps()) fav[e.id]=favTemplate(e);
-  for(const e of emps()){
-    let r;
-    if(cycleOf(e)){ r=cleanCycleRow(cycleOf(e).weeks[cycleIndex(e,S.weekId)]); nCycle++; }
-    else r=[];
-    while(r.length<7) r.push(null);
-    (e.rh||[]).forEach(d=>{ r[d]={s:"RH"}; nPrev++; });
+  pushUndo(); const ds=weekDays(S.weekId); const R=rules();
+  let nCycle=0, nRH=0, nCP=0, nMove=0;
+  const list=emps(), fav={}; list.forEach(e=>fav[e.id]=favTemplate(e));
+  const W={}; // nouvelles lignes
+  const workDays=[0,1,2,3,4,5].filter(d=>!isClosed(d));
+  // 1. absences conservées, CP acceptés, fériés, dimanche
+  for(const e of list){
+    const old=S.week.entries[e.id]||[], r=[null,null,null,null,null,null,null];
     for(let d=0; d<7; d++){
       const day=ymd(ds[d]);
-      if(approved.some(q=>q.empId===e.id && q.from<=day && (q.to||q.from)>=day) && d<6){ r[d]={s:"CP"}; nCP++; continue; }
-      if(holName(ds[d]) && !isOpen(d) && r[d] && TIMED(r[d].s)) r[d]={s:"FE"};
-      if(d===6 && !isOpen(6) && r[d] && TIMED(r[d].s)) r[d]={s:"RH"};
+      if(old[d] && ["CP","M","AB","FO"].includes(old[d].s)){ r[d]=clone(old[d]); continue; }
+      if(d<6 && approved.some(q=>q.empId===e.id && q.from<=day && (q.to||q.from)>=day)){ r[d]={s:"CP"}; nCP++; continue; }
+      if(isClosed(d)) r[d]= d===6?{s:"RH"}:{s:"FE"};
+      else if(d===6 && old[d] && TIMED(old[d].s)) r[d]=clone(old[d]); // dimanche ouvert : conservé tel quel
     }
-    S.week.entries[e.id]=r;
+    if(cycleOf(e)){ const ci=cycleIndex(e,S.weekId), cb=(cycleOf(e).bases||[])[ci]; S.week.bases=S.week.bases||{}; if(cb!=null&&cb!=="") S.week.bases[e.id]=+cb; else delete S.week.bases[e.id]; const c=cleanCycleRow(cycleOf(e).weeks[ci]); for(let d=0; d<7; d++) if(!r[d]&&c[d]) r[d]=c[d]; nCycle++; e._cyc=true; } else e._cyc=false;
+    W[e.id]=r;
   }
-  // complétion : atteindre la base contrat sur les jours vides, là où il manque du monde
-  for(const e of emps()){
-    let need=Math.round(baseOf(e)*60)-totals(e).t; if(need<180) continue;
-    const t=fav[e.id], tm=mins(t); if(!tm) continue;
-    const free=[0,1,2,3,4,5].filter(d=>!getE(e.id,d) && !isClosed(d));
-    free.sort((a,b)=>coverage(b).length-coverage(a).length);
-    const restDays=(S.week.entries[e.id]||[]).filter((x,i)=>i<6&&x&&x.s==="RH").length;
-    for(const d of free){ if(need<180) break; if(free.length - (need/tm) < 1 - restDays && false) break; setE(e.id,d,clone(t)); need-=tm; nFill++; }
-    for(let d=0; d<7; d++) if(!getE(e.id,d)) setE(e.id,d,{s:"RH"});
+  const auto=list.filter(e=>!e._cyc);
+  const isAbs=(e,d)=>W[e.id][d] && ABS_S.includes(W[e.id][d].s);
+  const free=(e,d)=>!W[e.id][d];
+  const caisse=auto.filter(e=>fonctionOf(e)==="caisse");
+  const sec=secoursOf(); const secAuto=sec && auto.includes(sec) && fonctionOf(sec)!=="caisse" ? sec : null;
+  const avgOf=e=> fonctionOf(e)==="caisse"?435 : fonctionOf(e)==="vente"?420 : (mins(fav[e.id])||420);
+  // 2. choix des jours de repos
+  const presentCount=(grp,d)=>grp.filter(x=>!W[x.id][d] || TIMED(W[x.id][d].s)).length;
+  const chooseRest=(e,grp,avoid)=>{
+    (e.rh||[]).forEach(d=>{ if(d<6 && free(e,d) && !(avoid&&avoid.includes(d))){ W[e.id][d]={s:"RH",fixe:1}; nRH++; } });
+    const nAbs=workDays.filter(d=>isAbs(e,d)).length;
+    const target=Math.max(0, Math.round(baseOf(e)*60/avgOf(e)) - nAbs);
+    let cand=workDays.filter(d=>free(e,d));
+    let extra=cand.length-target;
+    while(extra>0){
+      cand=workDays.filter(d=>free(e,d) && !(avoid&&avoid.includes(d)));
+      if(!cand.length) cand=workDays.filter(d=>free(e,d));
+      if(!cand.length) break;
+      cand.sort((a,b)=>{
+        const fa=fonctionOf(e)==="livraison"?(+R.livreurs[a]||0):0, fb=fonctionOf(e)==="livraison"?(+R.livreurs[b]||0):0;
+        if(fa!==fb) return fa-fb;
+        return presentCount(grp,b)-presentCount(grp,a) || a-b; });
+      W[e.id][cand[0]]={s:"RH"}; extra--;
+    }
+  };
+  caisse.forEach(e=>chooseRest(e,caisse));
+  // jours où le secours doit tenir la caisse : une caissière absente (CP/maladie) et moins de 2 caissières présentes
+  const secNeed=workDays.filter(d=>caisse.some(e=>isAbs(e,d)) && caisse.filter(e=>!W[e.id][d]).length<2);
+  const groups={}; auto.filter(e=>!caisse.includes(e)).forEach(e=>{ (groups[fonctionOf(e)] ||= []).push(e); });
+  Object.values(groups).forEach(grp=>{
+    grp.slice().sort((a,b)=>(b.rh||[]).length-(a.rh||[]).length).forEach(e=>chooseRest(e,grp, e===secAuto?secNeed:null));
+  });
+  if(secAuto){ // le secours garde son nombre de jours : si un repos fixe tombait un jour de caisse, il est déplacé
+    (sec.rh||[]).forEach(d=>{ if(secNeed.includes(d)){ nMove++; } });
   }
+  // 3. affectation des créneaux
+  const used={}; auto.forEach(e=>used[e.id]=0);
+  const goal=e=>baseOf(e)*60;
+  const secDays=[]; const give=(e,d,k,tag)=>{ W[e.id][d]=slotE(k,tag); used[e.id]+=mins(W[e.id][d]); if(e===secAuto&&tag==='Caisse') secDays.push(d); };
+  for(const d of workDays){
+    const pres=caisse.filter(e=>free(e,d));
+    const cycC=list.filter(e=>e._cyc && fonctionOf(e)==="caisse" && W[e.id][d] && TIMED(W[e.id][d].s));
+    let secCaisse=false;
+    if(cycC.length && pres.length){ const early=cycC.some(e=>(W[e.id][d].m1||"99")<="10:00"); pres.forEach((e,k)=>give(e,d, cycC.length>=2?(k%2?"C1":"C2"):(early?"C2":"C1"),"Caisse")); }
+    else if(cycC.length){ /* caisse tenue par le roulement */ }
+    else if(pres.length>=2){ pres.sort((a,b)=>(used[a.id]-goal(a))-(used[b.id]-goal(b))); give(pres[0],d,"C2","Caisse"); give(pres[1],d,"C1","Caisse"); pres.slice(2).forEach(e=>give(e,d,"C1","Caisse")); }
+    else if(pres.length===1){
+      if(secNeed.includes(d) && secAuto && free(secAuto,d)){ give(pres[0],d,"C1","Caisse"); give(secAuto,d,"C2","Caisse"); secCaisse=true; }
+      else give(pres[0],d,"CF","Caisse");
+    } else if(secAuto && free(secAuto,d)){ give(secAuto,d,"CF","Caisse"); secCaisse=true; }
+    const vend=(groups.vente||[]).filter(e=>free(e,d));
+    vend.sort((a,b)=>(used[a.id]-goal(a))-(used[b.id]-goal(b)));
+    const cycV=list.filter(e=>e._cyc && fonctionOf(e)==="vente" && W[e.id][d] && TIMED(W[e.id][d].s));
+    const order=(VENTE_ORDER[Math.min(vend.length+cycV.length,4)]||[]).slice();
+    cycV.forEach(e=>{ const x=W[e.id][d]; let bi=-1, bd=1e9; order.forEach((k,ix)=>{ const dd=Math.abs(toMin(SLOTS[k].m1)-(toMin(x.m1||x.a1)||0))+Math.abs(toMin(SLOTS[k].a2)-(toMin(x.a2||x.m2)||0)); if(dd<bd){bd=dd;bi=ix;} }); if(bi>=0) order.splice(bi,1); });
+    const ranked=order.slice().sort((a,b)=>tplMin(SLOTS[b])-tplMin(SLOTS[a]));
+    vend.forEach((e,i)=>give(e,d, i<ranked.length?ranked[i]:"V3"));
+    Object.entries(groups).forEach(([f,grp])=>{ if(f==="vente") return; grp.filter(e=>free(e,d)).forEach(e=>{ const t=fav[e.id]; W[e.id][d]={...clone(t),tag:t.tag||""}; used[e.id]+=mins(t); }); });
+  }
+  for(const e of list){ for(let d=0; d<7; d++){ if(!W[e.id][d]) W[e.id][d]={s:"RH"}; if(W[e.id][d].fixe) delete W[e.id][d].fixe; } delete e._cyc; S.week.entries[e.id]=W[e.id]; }
   changed();
-  toast("Semaine générée : "+nCycle+" roulement"+(nCycle>1?"s":"")+", "+nPrev+" jour"+(nPrev>1?"s":"")+" de repos fixe"+(nPrev>1?"s":"")+(nCP?", "+nCP+" jour(s) de CP posés":"")+(nFill?", "+nFill+" journée(s) complétée(s)":""));
+  toast("Semaine générée"+(nCycle?" · "+nCycle+" roulement"+(nCycle>1?"s":""):"")+(nCP?" · "+nCP+" jour(s) de CP posés":"")+(secDays.length?" · "+secAuto.name+" en caisse "+secDays.map(d=>DAYN[d]).join(", "):"")+(nMove?" (repos déplacé)":""));
 }
 
+const ROUL_PRESETS = () => {
+  const L=[["V1","Vente ouverture"],["V2","Vente 10h"],["V3","Vente fermeture"],["VF","Vente journée"],["C1","Caisse ouverture"],["C2","Caisse fermeture"],["CF","Caisse journée"]]
+    .map(([k,l])=>({k:"S:"+k,l:l+" · "+tplTxt(SLOTS[k]),t:SLOTS[k],tag:k[0]==="C"?"Caisse":""}));
+  (S.team.templates||[]).forEach((t,i)=>L.push({k:"T:"+i,l:"Type "+(i+1)+" · "+tplTxt(t),t,tag:""}));
+  return L;
+};
 function renderRoul(){
-  const v=$("#v-roul"); const list=emps();
-  v.innerHTML='<div class="panel"><h2>Roulements</h2><p class="lead">Chaque collaborateur peut avoir son propre cycle de 1 à 4 semaines. « Générer la semaine » ne reprend jamais la semaine précédente : elle applique les cycles, les jours de repos fixes (RH) définis dans Collaborateurs, les congés acceptés et les jours fériés, puis complète les heures du contrat avec l\'horaire habituel. Pour remplir un cycle, affichez une semaine type dans le planning puis cliquez sur la case du cycle à remplir.</p>'+
-  '<div class="roul-grid">'+list.map(e=>{ const c=cycleOf(e); const len=c?c.len:0; const idx=c?cycleIndex(e,S.weekId):-1;
-    return '<div class="roul"><div class="roul-hd"><b>'+esc(e.name)+'</b><span class="st-mut">'+esc(e.role||"")+'</span></div>'+
-    '<div class="roul-row"><label for="cl-'+esc(e.id)+'">Cycle</label><select id="cl-'+esc(e.id)+'" data-clen="'+esc(e.id)+'">'+[0,1,2,3,4].map(n=>'<option value="'+n+'"'+(n===len?" selected":"")+'>'+(n?n+" semaine"+(n>1?"s":""):"Aucun (horaires types)")+'</option>').join("")+'</select>'+
-    (c?'<span class="st-mut">S'+wnum(S.weekId)+' = semaine '+(idx+1)+' du cycle</span>':'')+'</div>'+
-    (c?'<div class="roul-weeks">'+c.weeks.slice(0,len).map((r,i)=>{ const t=(r||[]).reduce((a,x)=>a+mins(x),0); const filled=(r||[]).some(Boolean);
-      return '<div class="cw'+(i===idx?" cur":"")+'"><div class="cw-hd">Semaine '+(i+1)+(i===idx?' <span class="pill info">cette semaine</span>':'')+'<b>'+(filled?fmt(t):"vide")+'</b></div>'+
-      '<div class="cw-days">'+DAYN.map((dn,d)=>{ const x=(r||[])[d]; return '<span title="'+esc(dn)+'">'+dn[0].toUpperCase()+' '+(!x?'·':TIMED(x.s)?(x.m1||x.a1||"")+(x.a2?"–"+x.a2:""):STATUS[x.s].l)+'</span>'; }).join("")+'</div>'+
-      '<button class="btn ghost" data-cfill="'+esc(e.id)+'" data-ci="'+i+'">Prendre la S'+wnum(S.weekId)+'</button></div>'; }).join("")+'</div>':'')+
+  const v=$("#v-roul"); const list=emps(); const P=ROUL_PRESETS();
+  const presetOf=x=>{ if(!x||!TIMED(x.s)) return ""; const f=P.find(q=>q.t.m1===x.m1&&q.t.m2===x.m2&&q.t.a1===x.a1&&q.t.a2===x.a2); return f?f.k:"custom"; };
+  const dayRow=(e,i,d,x)=>{ const id=e.id+"-"+i+"-"+d, on=x&&TIMED(x.s), pk=presetOf(x);
+    return '<tr data-cd="'+d+'"><td class="rd">'+DAYN[d].slice(0,3)+'.</td><td><select class="rsel" data-k="type" aria-label="Horaire du '+DAYN[d]+'">'+
+      '<option value=""'+(!x?" selected":"")+'>— Libre</option><option value="RH"'+(x&&x.s==="RH"?" selected":"")+'>Repos (RH)</option>'+
+      P.map(q=>'<option value="'+q.k+'"'+(pk===q.k?" selected":"")+'>'+esc(q.l)+'</option>').join("")+
+      (pk==="custom"?'<option value="custom" selected>Personnalisé</option>':'')+'</select></td>'+
+      ['m1','m2','a1','a2'].map(f=>'<td>'+timeSel("r-"+f+"-"+id,f,on?x[f]:"",!on,' data-k="'+f+'"')+'</td>').join("")+
+      '<td><input type="checkbox" data-k="p" title="Pause 10 min"'+(on&&x.p?" checked":"")+(on?"":" disabled")+'></td><td class="mono rdur">'+(on?fmt(mins(x)):(x&&x.s==="RH"?"RH":""))+'</td></tr>'; };
+  v.innerHTML='<div class="panel"><h2>Roulements</h2><p class="lead">Un collaborateur avec un roulement a sa semaine bloquée : « Générer la semaine » applique exactement ces horaires et ne le replace pas automatiquement. Saisissez les horaires de chaque semaine du cycle et, si besoin, les heures prévues pour cette semaine (sinon la base du contrat). Les jours laissés « Libre » passent en repos. Sans roulement, la génération place le collaborateur sur les créneaux du magasin : vente 9h45-12h/14h-18h, 10h-12h30/14h-18h30 et 2 × 10h30-13h/14h-19h ; caisse 9h45-12h/14h-18h et 10h30-13h/14h-19h15 (journée complète 9h45-13h/14h-19h15 quand l\'autre caissière est en repos). Si une caissière est en CP ou maladie, Martin passe en caisse et son repos est déplacé si besoin.</p>'+
+  '<div class="roul-list">'+list.map(e=>{ const c=cycleOf(e); const len=c?c.len:0; const idx=c?cycleIndex(e,S.weekId):-1;
+    return '<div class="roul" data-re="'+esc(e.id)+'"><div class="roul-hd"><b>'+esc(e.name)+'</b><span class="st-mut">'+esc(e.role||"")+' · contrat '+esc(String(e.base||0))+' h</span></div>'+
+    '<div class="roul-row"><label for="cl-'+esc(e.id)+'">Roulement</label><select id="cl-'+esc(e.id)+'" data-clen="'+esc(e.id)+'">'+[0,1,2,3,4,5,6].map(n=>'<option value="'+n+'"'+(n===len?" selected":"")+'>'+(n?n+" semaine"+(n>1?"s":""):"Aucun (créneaux automatiques)")+'</option>').join("")+'</select>'+
+    (c?'<span class="st-mut">La S'+wnum(S.weekId)+' est la semaine '+(idx+1)+' du cycle</span>':'')+'</div>'+
+    (c?'<div class="roul-weeks">'+c.weeks.slice(0,len).map((r,i)=>{ r=r||[]; const t=r.reduce((a,x)=>a+mins(x),0); const b=(c.bases||[])[i];
+      const target=(b!=null&&b!=="")?+b*60:(+e.base||0)*60; const diff=t-target;
+      return '<div class="cw'+(i===idx?" cur":"")+'" data-ci="'+i+'"><div class="cw-hd">Semaine '+(i+1)+(i===idx?' <span class="pill info">S'+wnum(S.weekId)+'</span>':' <span class="st-mut">S'+wnum(shiftWeek(S.weekId,i-idx))+'</span>')+
+        '<span class="cw-tot">'+fmt(t)+(t?' <em class="'+(Math.abs(diff)<1?"ok":diff>0?"warn":"bad")+'">'+fmtSigned(diff)+'</em>':'')+'</span></div>'+
+        '<div class="roul-row"><label>Heures prévues</label><input class="mono cwb" data-k="base" inputmode="decimal" placeholder="'+esc(String(e.base||0))+'" value="'+esc(b==null?"":String(b))+'"> h'+
+        '<button class="btn ghost" data-k="take">Prendre la S'+wnum(S.weekId)+'</button><button class="btn ghost" data-k="copy"'+(i?"":" disabled")+'>Copier la semaine '+i+'</button><button class="btn ghost danger" data-k="clear">Vider</button></div>'+
+        '<div class="tbl"><table class="rtab"><thead><tr><th></th><th>Horaire</th><th>Matin</th><th></th><th>Ap.-midi</th><th></th><th>Pause</th><th>Durée</th></tr></thead><tbody>'+
+        [0,1,2,3,4,5,6].map(d=>dayRow(e,i,d,r[d])).join("")+'</tbody></table></div></div>'; }).join("")+'</div>':'')+
     '</div>'; }).join("")+'</div></div>';
+  const getC=el=>{ const e=S.team.employees.find(x=>x.id===el.closest("[data-re]").dataset.re); const i=+el.closest("[data-ci]").dataset.ci; const c=e.cycle; c.weeks[i]=c.weeks[i]||[null,null,null,null,null,null,null]; while(c.weeks[i].length<7) c.weeks[i].push(null); return {e,i,c,r:c.weeks[i]}; };
   v.querySelectorAll("[data-clen]").forEach(s=>s.onchange=()=>{ const e=S.team.employees.find(x=>x.id===s.dataset.clen); const n=+s.value;
     if(!n){ delete e.cycle; } else { const c=e.cycle||{start:S.weekId,weeks:[]}; c.len=n; while(c.weeks.length<n) c.weeks.push(null); if(!c.start) c.start=S.weekId; e.cycle=c; }
     teamChanged(); });
-  v.querySelectorAll("[data-cfill]").forEach(b=>b.onclick=()=>{ const e=S.team.employees.find(x=>x.id===b.dataset.cfill); const i=+b.dataset.ci; const c=e.cycle;
-    c.weeks[i]=cleanCycleRow(S.week.entries[e.id]); if(!c.weeks[i].some(Boolean)){ toast("La ligne de "+e.name+" est vide en S"+wnum(S.weekId)); return; }
-    c.start=shiftWeek(S.weekId,-i); teamChanged(); toast(e.name+" : semaine "+(i+1)+" du cycle = S"+wnum(S.weekId)); });
+  v.querySelectorAll(".rtab [data-k]").forEach(el=>el.onchange=()=>{ const {r}=getC(el); const d=+el.closest("[data-cd]").dataset.cd; const k=el.dataset.k; let x=r[d];
+    if(k==="type"){ const val=el.value;
+      if(!val) r[d]=null; else if(val==="RH") r[d]={s:"RH"}; else if(val!=="custom"){ const q=P.find(z=>z.k===val); r[d]={s:"T",m1:q.t.m1,m2:q.t.m2,a1:q.t.a1,a2:q.t.a2,p:!!q.t.p,tag:q.tag}; } }
+    else if(k==="p"){ if(x&&TIMED(x.s)) x.p=el.checked; }
+    else { if(!x||!TIMED(x.s)) x=r[d]={s:"T",m1:"",m2:"",a1:"",a2:"",p:false,tag:""}; x[k]=el.value; }
+    teamChanged(); });
+  v.querySelectorAll(".cw [data-k=base]").forEach(el=>el.onchange=()=>{ const {c,i}=getC(el); c.bases=c.bases||[]; const t=el.value.trim().replace(",","."); c.bases[i]=t===""?null:(parseFloat(t)||0); teamChanged(); });
+  v.querySelectorAll(".cw button[data-k]").forEach(b=>b.onclick=()=>{ const {e,i,c}=getC(b); const k=b.dataset.k;
+    if(k==="take"){ const row=cleanCycleRow(S.week.entries[e.id]); if(!row.some(Boolean)){ toast("La ligne de "+e.name+" est vide en S"+wnum(S.weekId)); return; } c.weeks[i]=row; c.start=shiftWeek(S.weekId,-i); toast(e.name+" : semaine "+(i+1)+" = S"+wnum(S.weekId)); }
+    if(k==="copy"&&i>0){ c.weeks[i]=clone(c.weeks[i-1]||[]); c.bases=c.bases||[]; c.bases[i]=(c.bases[i-1]??null); }
+    if(k==="clear"){ c.weeks[i]=[null,null,null,null,null,null,null]; }
+    teamChanged(); });
 }
 
 /* ---------- compteurs et paie ---------- */
