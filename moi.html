@@ -28,7 +28,7 @@ h1{font-family:var(--font-display);color:var(--accent);text-transform:uppercase;
 .field textarea{min-height:80px;resize:vertical}
 .code{font-family:var(--font-mono);font-size:22px;letter-spacing:.3em;text-align:center}
 .msg{color:var(--bad);font-weight:600;min-height:1.2em;margin:6px 0 0}
-.wtabs{display:flex;gap:6px;overflow-x:auto;padding-bottom:4px;margin-bottom:10px}
+.wtabs{display:flex;flex-wrap:wrap;gap:6px;padding-bottom:4px;margin-bottom:10px}
 .wtabs button{flex:none;border:1px solid var(--line);background:var(--surface);border-radius:999px;padding:7px 12px;font-weight:600;font-size:13px;cursor:pointer}
 .wtabs button[aria-pressed="true"]{background:var(--navy);border-color:var(--navy);color:var(--navy-fg)}
 .whd{background:var(--navy);color:var(--navy-fg);border-radius:14px 14px 0 0;padding:14px 16px;display:flex;justify-content:space-between;align-items:flex-end;gap:10px}
@@ -59,6 +59,37 @@ h3{margin:0 0 10px;font-family:var(--font-display);font-size:20px;text-transform
 .pill.attente{background:var(--warn-soft);color:var(--warn)}.pill.acceptée,.pill.traitée{background:var(--ok-soft);color:var(--ok)}.pill.refusée{background:var(--bad-soft);color:var(--bad)}
 .mut{color:var(--muted);font-size:13px}
 .toast{position:fixed;left:50%;bottom:calc(20px + env(safe-area-inset-bottom,0px));transform:translateX(-50%);background:var(--navy);color:#fff;padding:10px 16px;border-radius:10px;font-weight:600;max-width:calc(100% - 32px);z-index:9}
+
+/* accueil à cubes, pause QR */
+.hero{background:linear-gradient(135deg,#0d2240 0%,#163a6b 60%,#1d4a85 100%);color:#fff;border-radius:22px;padding:18px;position:relative;overflow:hidden;margin-bottom:14px;box-shadow:0 14px 34px -18px rgba(13,34,64,.7)}
+.hero::after{content:"";position:absolute;right:-60px;top:-60px;width:190px;height:190px;border-radius:50%;background:radial-gradient(circle,rgba(232,98,15,.55),rgba(232,98,15,0) 70%)}
+.hero>*{position:relative;z-index:1}.hero small{opacity:.8;display:block}.hero small::first-letter{text-transform:uppercase}
+.hero h2{font-family:var(--font-display);font-size:30px;margin:2px 0 10px;line-height:1.05}
+.hday{display:flex;justify-content:space-between;align-items:center;gap:10px;background:rgba(255,255,255,.1);border-radius:14px;padding:10px 12px}
+.hday b{font-family:var(--font-mono);font-size:15px;line-height:1.4}.hday .st{background:rgba(255,255,255,.18);color:#fff}
+.budget{margin-top:10px;display:flex;align-items:center;gap:10px;font-size:13px}.budget .bar{flex:1;height:8px;border-radius:6px;background:rgba(255,255,255,.18);overflow:hidden}.budget .bar i{display:block;height:100%;background:#43d17a}.budget.over .bar i{background:#ff6b6b}
+.cubes{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:16px}
+.cube{position:relative;aspect-ratio:1/1;border:1px solid var(--line);border-radius:22px;background:var(--surface);padding:14px;display:flex;flex-direction:column;justify-content:flex-end;align-items:flex-start;text-align:left;gap:2px;cursor:pointer;box-shadow:0 1px 2px rgba(16,24,40,.05),0 8px 20px -14px rgba(16,24,40,.25);transition:transform .12s}
+.cube:active{transform:scale(.97)}.cube b{font-size:18px}.cube small{color:var(--muted);font-size:13px;line-height:1.25}
+.cube .ci{position:absolute;top:14px;left:14px;width:50px;height:50px;border-radius:15px;display:grid;place-items:center;color:#fff}
+.cube.c-pz .ci{background:linear-gradient(135deg,#e8620f,#f59a45)}.cube.c-wc .ci{background:linear-gradient(135deg,#1d5fd1,#5b8ff0)}.cube.c-pl .ci{background:linear-gradient(135deg,#0d2240,#2b4f86)}.cube.c-dm .ci{background:linear-gradient(135deg,#6f42c1,#a37ce8)}
+.cube.live{border-color:var(--accent);box-shadow:0 0 0 3px rgba(232,98,15,.25)}
+.cube .cb{position:absolute;top:14px;right:14px;font-family:var(--font-mono);font-weight:700;font-size:13px;background:var(--accent);color:#fff;border-radius:10px;padding:3px 8px}
+.back{display:inline-flex;align-items:center;gap:6px;border:0;background:var(--surface-2);border-radius:12px;padding:8px 12px;font-weight:600;margin-bottom:12px;cursor:pointer}
+.ov{position:fixed;inset:0;z-index:20;background:#0b1626;color:#fff;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:24px;padding-top:calc(24px + env(safe-area-inset-top));text-align:center;gap:16px}
+.ov h2{font-family:var(--font-display);font-size:28px;margin:0}.ov p{margin:0;opacity:.85;max-width:340px}
+.cam{position:relative;width:min(78vw,320px);aspect-ratio:1/1;border-radius:26px;overflow:hidden;background:#000}
+.cam video{width:100%;height:100%;object-fit:cover}
+.cam::after{content:"";position:absolute;inset:16%;border:3px solid rgba(255,255,255,.9);border-radius:18px;box-shadow:0 0 0 999px rgba(0,0,0,.35)}
+.cam .scanl{position:absolute;left:18%;right:18%;height:2px;background:#ff7a2b;top:20%;animation:scan 2s ease-in-out infinite;z-index:2}
+@keyframes scan{50%{top:78%}}
+.ov .btn{min-width:220px}.ov .btn.ghost{color:#cfd8e6}
+.ring{position:relative;width:min(70vw,260px);aspect-ratio:1/1}
+.ring svg{width:100%;height:100%;transform:rotate(-90deg)}
+.ring .t{position:absolute;inset:0;display:grid;place-items:center;align-content:center;gap:4px}
+.ring .t b{font-family:var(--font-mono);font-size:46px;line-height:1}.ring .t small{opacity:.8}
+.ov.over{background:#3a0d12}.ov.over .ring .t b{color:#ff8a8a}
+.pzlist{display:flex;flex-wrap:wrap;gap:6px;justify-content:center}.pzlist span{font-family:var(--font-mono);font-size:12px;background:rgba(255,255,255,.12);border-radius:8px;padding:3px 8px}
 </style></head><body>
 <div class="wrap">
   <header><div><h1>Mon planning</h1><div class="who" id="who">Boulanger Flers F890</div></div><button class="btn ghost" id="out" hidden>Déconnexion</button></header>
@@ -74,8 +105,22 @@ h3{margin:0 0 10px;font-family:var(--font-display);font-size:20px;text-transform
   </section>
 
   <section id="mainV" hidden>
+   <div id="homeV">
+    <div class="hero" id="hero"></div>
+    <div class="cubes">
+      <button class="cube c-pz" id="cPause"><span class="ci"><svg viewBox="0 0 24 24" width="28" height="28" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M6 3h12M6 21h12M7 3c0 5 10 5 10 9s-10 4-10 9M17 3c0 5-10 5-10 9"/></svg></span><b>Pause</b><small>Scanner le QR code</small></button>
+      <button class="cube c-wc" id="cWc"><span class="ci"><b style="font-size:17px">WC</b></span><b>Toilettes</b><small>Décompté de la pause</small></button>
+      <button class="cube c-pl" data-go="planV"><span class="ci"><svg viewBox="0 0 24 24" width="28" height="28" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 5h18v15H3zM3 10h18M8 5v15M14 5v15"/></svg></span><b>Mon planning</b><small>Semaines publiées</small></button>
+      <button class="cube c-dm" data-go="reqV"><span class="ci"><svg viewBox="0 0 24 24" width="28" height="28" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"><path d="M4 5h16v11H8l-4 4z"/></svg></span><b>Demandes</b><small>Congés, échange, erreur</small></button>
+    </div>
+   </div>
+   <div id="planV" hidden>
+    <button class="back" data-go="homeV">‹ Accueil</button>
     <div class="wtabs" id="wtabs"></div>
     <div id="week"></div>
+   </div>
+   <div id="reqV" hidden>
+    <button class="back" data-go="homeV">‹ Accueil</button>
     <div class="card">
       <h3>Faire une demande</h3>
       <div class="seg" id="rtype"><button data-t="CP" aria-pressed="true">Congés</button><button data-t="ECHANGE" aria-pressed="false">Échange</button><button data-t="ERREUR" aria-pressed="false">Erreur</button></div>
@@ -88,14 +133,17 @@ h3{margin:0 0 10px;font-family:var(--font-display);font-size:20px;text-transform
       </form>
     </div>
     <div class="card"><h3>Mes demandes</h3><div id="reqs"><p class="empty">Aucune demande pour l'instant.</p></div></div>
+   </div>
   </section>
 </div>
+<div class="ov" id="ovScan" hidden><h2 id="scT">Scannez le QR code</h2><p id="scP">Visez l'affiche « PAUSE » du magasin.</p><div class="cam"><video id="vid" playsinline muted></video><div class="scanl"></div></div><p id="scMsg"></p><button class="btn ghost" id="scCancel">Annuler</button></div>
+<div class="ov" id="ovPz" hidden></div>
 <div class="toast" id="toast" hidden></div>
 
 <script type="module">
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
 import { getAuth, onAuthStateChanged, signInWithEmailAndPassword, signOut } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
-import { getFirestore, doc, getDoc, collection, query, where, onSnapshot, addDoc } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
+import { getFirestore, doc, getDoc, collection, query, where, onSnapshot, addDoc, updateDoc, serverTimestamp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
 const cfg = {"apiKey":"AIzaSyDEoDBsdANV89bseWyrIgOryGriPVZLkqo","authDomain":"planning-890.firebaseapp.com","projectId":"planning-890","storageBucket":"planning-890.firebasestorage.app","messagingSenderId":"752375265204","appId":"1:752375265204:web:76652191c3b72f610b64e1"};
 const app = initializeApp(cfg), auth = getAuth(app), db = getFirestore(app);
 const $ = s => document.querySelector(s);
@@ -109,7 +157,7 @@ const frD = s => { const [y,m,d]=s.split("-").map(Number); return d+" "+MON[m-1]
 function isoWeekId(d){ const t=new Date(Date.UTC(d.getFullYear(),d.getMonth(),d.getDate())); const day=t.getUTCDay()||7; t.setUTCDate(t.getUTCDate()+4-day); const y=t.getUTCFullYear(); return y+"-W"+pad(Math.ceil(((t-Date.UTC(y,0,1))/864e5+1)/7)); }
 const today = (()=>{ const n=new Date(); return n.getFullYear()+"-"+pad(n.getMonth()+1)+"-"+pad(n.getDate()); })();
 let toastT; const toast = m => { const t=$("#toast"); t.textContent=m; t.hidden=false; clearTimeout(toastT); toastT=setTimeout(()=>t.hidden=true,3000); };
-const st = { emp:null, weeks:[], cur:null, type:"CP", names:[] };
+const st = { emp:null, weeks:[], cur:null, type:"CP", names:[], pz:[], me:"" };
 
 const DOMAIN="equipe-f890.app";
 const hashId=decodeURIComponent((location.hash||"").slice(1)).toLowerCase();
@@ -129,12 +177,15 @@ onAuthStateChanged(auth, async u=>{
   catch(e){ $("#lmsg").textContent="Cet accès n'est plus valable. Demandez un nouveau code à la direction."; await signOut(auth); return; }
   $("#loginV").hidden=true; $("#mainV").hidden=false; $("#out").hidden=false;
   onSnapshot(collection(db,"publies",st.emp,"semaines"), q=>{ st.weeks=q.docs.map(x=>x.data()).sort((a,b)=>a.weekId.localeCompare(b.weekId));
-    const cw=isoWeekId(new Date()); if(!st.cur || !st.weeks.find(w=>w.weekId===st.cur)) st.cur=(st.weeks.find(w=>w.weekId>=cw)||st.weeks[st.weeks.length-1]||{}).weekId; renderWeeks(); },
+    const cw=isoWeekId(new Date()); if(!st.cur || !st.weeks.find(w=>w.weekId===st.cur)) st.cur=(st.weeks.find(w=>w.weekId>=cw)||st.weeks[st.weeks.length-1]||{}).weekId; renderWeeks(); renderHome(); },
     ()=>{ $("#week").innerHTML='<p class="card empty">Planning indisponible pour le moment.</p>'; });
+
   onSnapshot(query(collection(db,"demandes"),where("empId","==",st.emp)), q=>{ renderReqs(q.docs.map(x=>({id:x.id,...x.data()})).sort((a,b)=>(b.createdAt||"").localeCompare(a.createdAt||""))); }, ()=>{});
   try{ const n=await getDoc(doc(db,"annuaire","equipe")); st.names=(n.exists()?n.data().list:[])||[]; }catch(e){ st.names=[]; }
   $("#r-avec").innerHTML=st.names.filter(x=>x.id!==st.emp).map(x=>'<option value="'+esc(x.id)+'">'+esc(x.name)+'</option>').join("");
-  const me=st.names.find(x=>x.id===st.emp); $("#who").textContent=(me?me.name:st.emp)+" · Boulanger Flers F890";
+  const me=st.names.find(x=>x.id===st.emp); st.me=me?me.name:st.emp; $("#who").textContent=st.me+" · Boulanger Flers F890";
+  onSnapshot(query(collection(db,"pauses"),where("empId","==",st.emp)), q=>{ st.pz=q.docs.map(x=>({id:x.id,...x.data()})).filter(p=>p.day===today); renderHome(); renderPzOv(); }, ()=>{});
+  renderHome();
 });
 
 function renderWeeks(){
@@ -170,5 +221,98 @@ $("#rf").onsubmit=async ev=>{ ev.preventDefault();
   if(st.type==="ERREUR"){ r.weekId=$("#r-week").value; if(!r.note){ toast("Décrivez l'erreur dans le message"); return; } }
   try{ await addDoc(collection(db,"demandes"),r); toast("Demande envoyée à la direction"); $("#rf").reset(); }catch(e){ toast("Envoi impossible : réessayez"); }
 };
+
+/* ---------- navigation ---------- */
+const go = v => { ["homeV","planV","reqV"].forEach(k=>$("#"+k).hidden=(k!==v)); window.scrollTo({top:0}); };
+document.querySelectorAll("[data-go]").forEach(b=>b.onclick=()=>go(b.dataset.go));
+
+/* ---------- accueil ---------- */
+const BUDGET=600;
+const tms = t => !t ? null : t.toMillis ? t.toMillis() : t.seconds!=null ? t.seconds*1000 : Date.parse(t);
+const pStart = p => tms(p.startAt) || Date.parse(p.start);
+const pEnd = p => p.end ? (tms(p.endAt) || Date.parse(p.end)) : null;
+const pDur = (p,now) => Math.max(0, Math.round(((pEnd(p) || now || Date.now()) - pStart(p))/1000));
+const mmss = s => { const n=Math.abs(s); return Math.floor(n/60)+":"+pad(n%60); };
+const usedToday = now => (st.pz||[]).reduce((t,p)=>t+pDur(p,now),0);
+const openPz = () => (st.pz||[]).find(p=>!p.end);
+function renderHome(){
+  const h=$("#hero"); if(!h||!st.emp) return; const n=new Date();
+  const ds=["dimanche","lundi","mardi","mercredi","jeudi","vendredi","samedi"][n.getDay()]+" "+n.getDate()+" "+["janvier","février","mars","avril","mai","juin","juillet","août","septembre","octobre","novembre","décembre"][n.getMonth()];
+  let x=null; for(const w of st.weeks){ const f=(w.days||[]).find(d=>d.date===today); if(f){ x=f; break; } }
+  const timed=x&&(x.s==="T"||x.s==="FO");
+  const used=usedToday(), rem=BUDGET-used, pct=Math.min(100,Math.round(used/BUDGET*100));
+  h.innerHTML='<small>'+ds+'</small><h2>Bonjour '+esc((st.me||"").split(" ")[0])+'</h2>'+
+    '<div class="hday"><span>Aujourd\'hui</span>'+(!x?'<span class="mut" style="color:#cfd8e6">Planning non publié</span>':timed?'<b>'+(x.m1?x.m1+" – "+x.m2:"")+(x.m1&&x.a1?"<br>":"")+(x.a1?x.a1+" – "+x.a2:"")+'</b>':'<span class="st">'+(LAB[x.s]||x.s)+'</span>')+'</div>'+
+    '<div class="budget'+(rem<0?" over":"")+'"><span>Pause du jour</span><span class="bar"><i style="width:'+pct+'%"></i></span><b>'+(rem<0?"+"+mmss(-rem)+" dépassé":mmss(rem)+" / 10:00")+'</b></div>';
+  const o=openPz(); ["cPause","cWc"].forEach(id=>{ const c=$("#"+id); c.classList.toggle("live", !!o && o.type===(id==="cWc"?"wc":"pause")); const old=c.querySelector(".cb"); old&&old.remove();
+    if(o && o.type===(id==="cWc"?"wc":"pause")){ const b=document.createElement("span"); b.className="cb"; b.textContent="en cours"; c.appendChild(b); } });
+}
+setInterval(()=>{ if(!document.hidden && openPz()){ renderHome(); renderPzOv(); } },1000);
+
+/* ---------- lecture du QR code ---------- */
+let scanStop=null;
+const loadScript = src => new Promise((res,rej)=>{ const sc=document.createElement("script"); sc.src=src; sc.onload=res; sc.onerror=rej; document.head.appendChild(sc); });
+function loadJsQR(){ if(window.jsQR) return Promise.resolve(); return loadScript("https://cdn.jsdelivr.net/npm/jsqr@1.4.0/dist/jsQR.js").catch(()=>loadScript("https://unpkg.com/jsqr@1.4.0/dist/jsQR.js")); }
+function scanQR(title, sub){
+  return new Promise(async (resolve,reject)=>{
+    $("#scT").textContent=title; $("#scP").textContent=sub; $("#scMsg").textContent=""; $("#ovScan").hidden=false;
+    let stream=null, raf=null, done=false; const v=$("#vid");
+    const finish=(val,err)=>{ if(done) return; done=true; cancelAnimationFrame(raf); clearTimeout(raf); if(stream) stream.getTracks().forEach(t=>t.stop()); $("#ovScan").hidden=true; scanStop=null; window.__qrScan=null; err?reject(err):resolve(val); };
+    scanStop=()=>finish(null,"cancel"); window.__qrScan=t=>finish(t);
+    $("#scCancel").onclick=()=>finish(null,"cancel");
+    try{ stream=await navigator.mediaDevices.getUserMedia({video:{facingMode:"environment"},audio:false}); v.srcObject=stream; await v.play(); }
+    catch(e){ $("#scMsg").textContent="Caméra indisponible : autorisez l'accès à la caméra pour ce site dans les réglages du navigateur."; return; }
+    let det=null; try{ if("BarcodeDetector" in window){ const f=await BarcodeDetector.getSupportedFormats(); if(f.includes("qr_code")) det=new BarcodeDetector({formats:["qr_code"]}); } }catch(e){}
+    if(!det){ try{ await loadJsQR(); }catch(e){ $("#scMsg").textContent="Lecteur QR indisponible : vérifiez la connexion."; return; } }
+    const cv=document.createElement("canvas"), cx=cv.getContext("2d",{willReadFrequently:true});
+    const tick=async()=>{ if(done) return;
+      try{ if(v.readyState>=2){
+        if(det){ const r=await det.detect(v); if(r&&r[0]&&r[0].rawValue){ finish(r[0].rawValue); return; } }
+        else { const w=v.videoWidth, h=v.videoHeight; const sc=Math.min(1,640/Math.max(w,h)); cv.width=w*sc; cv.height=h*sc; cx.drawImage(v,0,0,cv.width,cv.height); const im=cx.getImageData(0,0,cv.width,cv.height); const c=window.jsQR(im.data,im.width,im.height,{inversionAttempts:"dontInvert"}); if(c&&c.data){ finish(c.data); return; } } } }catch(e){}
+      raf=setTimeout(tick,180); };
+    tick();
+  });
+}
+const tokenOf = txt => { const m=/^F890-PAUSE:([A-Z0-9]+)$/i.exec(String(txt||"").trim()); return m?m[1].toUpperCase():null; };
+
+/* ---------- pause ---------- */
+async function startPz(type){
+  const o=openPz(); if(o){ if(o.type!==type) toast("Terminez d'abord la "+(o.type==="wc"?"pause toilettes":"pause")+" en cours"); renderPzOv(true); return; }
+  let txt; try{ txt=await scanQR(type==="wc"?"Toilettes":"Pause","Scannez l'affiche « PAUSE » du magasin pour démarrer."); }catch(e){ return; }
+  const tk=tokenOf(txt); if(!tk){ toast("Ce QR code n'est pas celui de la pause F890"); return; }
+  try{ await addDoc(collection(db,"pauses"),{empId:st.emp, day:today, type, start:new Date().toISOString(), startAt:serverTimestamp(), end:null, qr:tk}); if(navigator.vibrate) navigator.vibrate(60); st.showPz=true; renderPzOv(true); }
+  catch(e){ toast(String(e&&e.code||"").includes("permission")?"QR code non reconnu : utilisez l'affiche à jour du magasin":"Enregistrement impossible : vérifiez la connexion"); }
+}
+async function endPz(noScan){
+  const o=openPz(); if(!o) return; let tk=null;
+  if(!noScan){ try{ const txt=await scanQR("Fin de pause","Scannez à nouveau l'affiche pour reprendre le travail."); tk=tokenOf(txt); }catch(e){ return; } if(!tk){ toast("Ce QR code n'est pas celui de la pause F890"); return; } }
+  try{ await updateDoc(doc(db,"pauses",o.id), noScan?{end:new Date().toISOString(), endAt:serverTimestamp(), noScan:true}:{end:new Date().toISOString(), endAt:serverTimestamp(), endQr:tk});
+    const rem=BUDGET-usedToday(); toast(rem<0?"Pause terminée · dépassement de "+mmss(-rem)+" déduit du temps de travail":"Pause terminée · il vous reste "+mmss(rem)); $("#ovPz").hidden=true; }
+  catch(e){ toast(String(e&&e.code||"").includes("permission")?"QR code non reconnu":"Enregistrement impossible : réessayez"); }
+}
+let vibrated=false;
+function renderPzOv(open){
+  const ov=$("#ovPz"); const o=openPz(); if(!o){ ov.hidden=true; ov.dataset.id=""; return; } if(open||st.showPz){ ov.hidden=false; st.showPz=false; } if(ov.hidden) return;
+  const R=46, C=2*Math.PI*R;
+  if(ov.dataset.id!==o.id){ ov.dataset.id=o.id;
+    ov.innerHTML='<h2>'+(o.type==="wc"?"Toilettes":"Pause")+' en cours</h2><p id="pzSince"></p>'+
+      '<div class="ring"><svg viewBox="0 0 100 100"><circle cx="50" cy="50" r="'+R+'" fill="none" stroke="rgba(255,255,255,.12)" stroke-width="7"/><circle id="pzArc" cx="50" cy="50" r="'+R+'" fill="none" stroke="#43d17a" stroke-width="7" stroke-linecap="round" stroke-dasharray="'+C.toFixed(1)+'"/></svg>'+
+      '<div class="t"><b id="pzRem"></b><small id="pzLbl"></small></div></div><div class="pzlist" id="pzDone"></div>'+
+      '<button class="btn primary" id="pzEnd">Reprendre le travail · scanner</button><button class="btn ghost" id="pzNoScan">Je ne peux pas scanner</button><button class="btn ghost" id="pzHide">Réduire</button>';
+    $("#pzEnd").onclick=()=>endPz(false);
+    $("#pzNoScan").onclick=ev=>{ const b=ev.currentTarget; if(b.dataset.sure!=="1"){ b.dataset.sure="1"; b.textContent="Confirmer la fin sans scan (signalée à la direction)"; return; } endPz(true); };
+    $("#pzHide").onclick=()=>{ ov.hidden=true; };
+  }
+  const now=Date.now(), used=usedToday(now), rem=BUDGET-used, cur=pDur(o,now), frac=Math.max(0,Math.min(1,rem/BUDGET));
+  if(rem<=0 && !vibrated){ vibrated=true; if(navigator.vibrate) navigator.vibrate([300,150,300]); } if(rem>0) vibrated=false;
+  ov.classList.toggle("over",rem<0);
+  $("#pzSince").textContent="Depuis "+mmss(cur)+" · démarrée à "+new Date(pStart(o)).toLocaleTimeString("fr-FR",{hour:"2-digit",minute:"2-digit"});
+  const arc=$("#pzArc"); arc.setAttribute("stroke-dashoffset",(C*(1-frac)).toFixed(1)); arc.setAttribute("stroke",rem<0?"#ff6b6b":rem<120?"#f2b052":"#43d17a");
+  $("#pzRem").textContent=rem<0?"+"+mmss(-rem):mmss(rem);
+  $("#pzLbl").textContent=rem<0?"de dépassement · déduit du temps de travail":"restant sur 10:00 aujourd'hui";
+  $("#pzDone").innerHTML=(st.pz||[]).filter(p=>p.end).map(p=>'<span>'+(p.type==="wc"?"WC ":"Pause ")+mmss(pDur(p))+'</span>').join("");
+}
+$("#cPause").onclick=()=>startPz("pause");
+$("#cWc").onclick=()=>startPz("wc");
 </script>
 </body></html>
