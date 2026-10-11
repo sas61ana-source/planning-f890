@@ -410,6 +410,11 @@ tr.abs-cur td{background:rgba(227,6,19,.04)}
 .obwk{display:flex;gap:6px;flex-wrap:wrap}.obrep td,.obrep th{white-space:nowrap}.obtot td{background:var(--surface-2)}
 @media(max-width:900px){.obgrid{grid-template-columns:1fr}}
 @media(max-width:760px){.obw{grid-template-columns:repeat(3,1fr)}}
+
+.hobjm{display:block;width:100%;text-align:left;margin-top:14px;border:0;border-radius:18px;padding:14px 16px;color:#fff;background:linear-gradient(135deg,#e8620f,#c24400);box-shadow:0 12px 26px -16px rgba(232,98,15,.8)}
+.hobjm small{display:block;opacity:.9;font-size:13px}.hobjm b{display:block;font-family:var(--font-display);font-size:30px;line-height:1.1}.hobjm b span{font-family:var(--font-ui);font-size:14px;font-weight:600;opacity:.9}
+.hobjm .chips{display:flex;flex-wrap:wrap;gap:5px;margin-top:8px}.hobjm .chips i{font-style:normal;font-size:12px;background:rgba(255,255,255,.18);border-radius:8px;padding:2px 7px}
+.hobjm.empty{background:var(--surface);color:var(--fg);border:1px dashed var(--accent)}.hobjm.empty b{font-size:20px;color:var(--accent)}
 </style>
 
 </head><body>
@@ -2038,6 +2043,10 @@ function renderHome(){
     '<button class="kpi'+(nAl?" warn":"")+'" data-go="team"><b>'+nAl+'</b><span>points à<br>vérifier</span></button>'+
     '<button class="kpi'+(pend?" hot":"")+'" data-go="dem"><b>'+pend+'</b><span>demandes<br>en attente</span></button>'+
     '<button class="kpi" data-go="abs"><b>'+absent.length+'</b><span>absences<br>en cours</span></button></div></div>'+
+    (()=>{ let day=null, st=null; for(let k=0;k<10&&!st;k++){ const dt=new Date(now.getFullYear(),now.getMonth(),now.getDate()+k); day=dt.getFullYear()+"-"+pad(dt.getMonth()+1)+"-"+pad(dt.getDate()); st=objStoreDay(day); }
+      if(!st) return '<button class="hobjm empty" data-go="obj"><b>Objectifs du mois</b><small>Non saisis : touchez pour définir la PO et les services</small></button>';
+      const isT=day===todayKey; const [yy,mm,dd]=day.split("-").map(Number); const dn=["dimanche","lundi","mardi","mercredi","jeudi","vendredi","samedi"][new Date(yy,mm-1,dd).getDay()];
+      return '<button class="hobjm" data-go="obj"><small>'+(isT?"Objectif magasin du jour":"Prochain objectif magasin · "+dn+" "+dd+"/"+pad(mm))+'</small><b>'+eur(st.po)+' <span>PO HT</span></b><span class="chips">'+(st.M.services||[]).filter(sv=>st.v[sv.id]!=null).map(sv=>'<i>'+esc(sv.name)+' '+svcVal(sv,st.v[sv.id])+'</i>').join("")+'</span></button>'; })()+
     '<div id="homeLive">'+homeLiveHTML()+'</div>'+
     '<div class="tiles">'+
       tile("team","team","Planning","Semaine "+wnum(S.weekId),"t-or")+
