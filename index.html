@@ -434,7 +434,9 @@ tr.abs-cur td{background:rgba(227,6,19,.04)}
 .reapo{width:110px;padding:5px 8px;border:1px solid var(--line);border-radius:8px;text-align:right;background:var(--surface)}
 .reamonth{display:flex;gap:10px;flex-wrap:wrap;margin-bottom:12px}.reamonth label{display:grid;gap:4px;font-size:12px;font-weight:600;color:var(--muted)}.reamonth input{width:120px;padding:6px 8px;border:1px solid var(--line);border-radius:8px;background:var(--surface)}
 .bartab input,.bartab select{width:100%;padding:5px 8px;border:1px solid var(--line);border-radius:8px;background:var(--surface)}
-</style>
+.hrow{display:flex;flex-wrap:wrap;gap:10px;align-items:center;padding:8px 0;border-bottom:1px solid var(--line)}.hrow>b{min-width:150px}.hseg{display:flex;gap:6px;align-items:center}.hseg .tsel{min-width:86px}
+.hmonths{display:flex;flex-wrap:wrap;gap:6px 14px;margin-bottom:6px}.hmonths .chk{display:flex;gap:5px;align-items:center}
+.crel{font-size:10px;font-weight:700;color:#fff;background:var(--tag-caisse);border-radius:4px;padding:0 4px}</style>
 
 </head><body>
 <div class="wrap" id="app">
@@ -731,6 +733,7 @@ function cellHTML(e, d){
     (e.tag?'<span class="tag '+esc(e.tag.split(" ")[0])+'">'+esc(e.tag)+'</span>':'')+
     (e.p?'<span class="pz" title="Pause 10 min déduite">P</span>':'')+
     (e.retard?'<span class="cret" title="Retard">⏱ '+e.retard+' min</span>':'')+
+    (e.rel?'<span class="crel" title="Relève caisse">Caisse '+e.rel[0].replace(":00","h")+'–'+e.rel[1].replace(":00","h")+'</span>':'')+
     '<span class="dur">'+fmt(mins(e))+'</span></div></div>';
 }
 function renderGrid(){
@@ -1467,6 +1470,20 @@ async function renderRea(){
 }
 
 /* ---------- horaires types ---------- */
+function hoursPanel(){ const H=storeHours(); const MO=["Janv.","Févr.","Mars","Avr.","Mai","Juin","Juil.","Août","Sept.","Oct.","Nov.","Déc."];
+  const seg=(per,day)=>{ const L=H[per][day]||[]; const two=L.length>1; const a=L[0]||["10:00","19:00"], b=L[1]||["14:00","19:00"];
+    return '<div class="hrow" data-per="'+per+'" data-day="'+day+'"><b>'+(day==="wk"?"Lundi au vendredi":"Samedi")+'</b><div class="tkind"><button type="button" data-hm="cont" aria-pressed="'+(!two)+'">En continu</button><button type="button" data-hm="cut" aria-pressed="'+two+'">Coupure midi</button></div>'+
+      '<span class="hseg">'+timeSel("h-"+per+day+"-0a","m1",a[0],false,' data-hi="0" data-hj="0"')+' – '+timeSel("h-"+per+day+"-0b",two?"m2":"a2",a[1],false,' data-hi="0" data-hj="1"')+'</span>'+
+      (two?'<span class="hseg">puis '+timeSel("h-"+per+day+"-1a","a1",b[0],false,' data-hi="1" data-hj="0"')+' – '+timeSel("h-"+per+day+"-1b","a2",b[1],false,' data-hi="1" data-hj="1"')+'</span>':'')+'</div>'; };
+  return '<div class="panel"><h2>Heures d\'ouverture du magasin</h2><p class="lead">Utilisées pour les contrôles de présence (caisse, ouverture, fermeture) et par « Générer la semaine ». Les jours en continu reçoivent des horaires avec des pauses déjeuner décalées pour que la vente et la caisse restent tenues entre 13h et 14h.</p>'+
+    '<h3 class="obh">Période normale</h3>'+seg("normal","wk")+seg("normal","sat")+
+    '<h3 class="obh" style="margin-top:14px">Haute période</h3><div class="hmonths">'+MO.map((m,i)=>'<label class="chk"><input type="checkbox" data-hmo="'+(i+1)+'"'+((H.high.months||[]).includes(i+1)?" checked":"")+'> '+m+'</label>').join("")+'</div>'+seg("high","wk")+seg("high","sat")+'</div>'; }
+function bindHours(v){ const H=storeHours(); const save=()=>{ S.team.settings=S.team.settings||{}; S.team.settings.hours=H; teamChanged(); };
+  v.querySelectorAll(".hrow").forEach(r=>{ const per=r.dataset.per, day=r.dataset.day;
+    r.querySelectorAll("[data-hm]").forEach(b=>b.onclick=()=>{ const L=H[per][day]; if(b.dataset.hm==="cont") H[per][day]=[[L[0][0], (L[L.length-1]||L[0])[1]]]; else H[per][day]=[[L[0][0],"13:00"],["14:00",L[L.length-1][1]]]; save(); });
+    r.querySelectorAll("[data-hi]").forEach(sel=>sel.onchange=()=>{ H[per][day][+sel.dataset.hi][+sel.dataset.hj]=sel.value; save(); }); });
+  v.querySelectorAll("[data-hmo]").forEach(c=>c.onchange=()=>{ const m=+c.dataset.hmo; const L=new Set(H.high.months||[]); c.checked?L.add(m):L.delete(m); H.high.months=[...L].sort((a,b)=>a-b); save(); }); }
+
 function renderTpl(){
   const v=$("#v-tpl"); const T=S.team.templates;
   const KL={day:"Journée",am:"Matin",pm:"Après-midi"};
@@ -1476,7 +1493,7 @@ function renderTpl(){
     '<td><div class="tkind">'+["day","am","pm"].map(x=>'<button type="button" data-k="'+x+'" aria-pressed="'+(x===k)+'">'+KL[x]+'</button>').join("")+'</div></td>'+
     ["m1","m2","a1","a2"].map(f=>{ const off=(k==="am"&&f[0]==="a")||(k==="pm"&&f[0]==="m"); return '<td>'+(off?'<span class="st-mut">—</span>':timeSel("t-"+f+"-"+i,f,t[f],false,' data-f="'+f+'"'))+'</td>'; }).join("")+
     '<td><input type="checkbox" id="t-p-'+i+'" data-f="p"'+(t.p?" checked":"")+'></td><td style="font-family:var(--font-mono);font-weight:600">'+fmt(tplMin(t))+'</td><td style="white-space:nowrap"><button class="btn ghost" data-a="up">↑</button><button class="btn ghost" data-a="down">↓</button><button class="btn ghost danger" data-a="del">Supprimer</button></td></tr>'; }).join("")+
-  '</tbody></table></div><div class="tadd"><button class="btn primary" data-add="day">+ Journée</button><button class="btn" data-add="am">+ Matin</button><button class="btn" data-add="pm">+ Après-midi</button></div></div>';
+  '</tbody></table></div><div class="tadd"><button class="btn primary" data-add="day">+ Journée</button><button class="btn" data-add="am">+ Matin</button><button class="btn" data-add="pm">+ Après-midi</button></div></div>'+hoursPanel();
   v.querySelectorAll("tr[data-i]").forEach(tr=>{ const i=+tr.dataset.i; const t=T[i];
     tr.querySelectorAll("[data-f]").forEach(inp=>inp.onchange=()=>{ const f=inp.dataset.f;
       if(f==="p") t.p=inp.checked; else t[f]=inp.value;
@@ -1491,6 +1508,7 @@ function renderTpl(){
     tr.querySelectorAll("[data-a]").forEach(b=>b.onclick=()=>{ const a=b.dataset.a;
       if(a==="up"&&i>0) [T[i-1],T[i]]=[T[i],T[i-1]]; if(a==="down"&&i<T.length-1) [T[i+1],T[i]]=[T[i],T[i+1]]; if(a==="del") T.splice(i,1); teamChanged(); });
   });
+  bindHours(v);
   v.querySelectorAll("[data-add]").forEach(b=>b.onclick=()=>{ const k=b.dataset.add;
     T.push(k==="am"?{m1:"09:45",m2:"13:00",a1:"",a2:"",p:false}:k==="pm"?{m1:"",m2:"",a1:"14:00",a2:"19:00",p:false}:{m1:"09:45",m2:"13:00",a1:"14:00",a2:"18:00",p:true}); teamChanged(); });
 }
@@ -1810,18 +1828,20 @@ const frDate = s => { if(!s) return ""; const [y,m,d]=s.split("-").map(Number); 
 function intervals(e){ if(!e||!TIMED(e.s)) return []; const r=[]; if(e.m1&&e.m2) r.push([toMin(e.m1),toMin(e.m2)]); if(e.a1&&e.a2) r.push([toMin(e.a1),toMin(e.a2)]); return r.filter(x=>x[1]>x[0]); }
 function coverage(d){
   if(isClosed(d)) return [];
-  const R=rules(), o=toMin(R.open), c=toMin(R.close), list=emps(), out=[];
+  const R=rules(), list=emps(), out=[]; const OI=openIntervals(d).length?openIntervals(d):[[toMin(R.open),toMin(R.close)]]; const o=OI[0][0], c=OI[OI.length-1][1];
+  const inOpen = t => OI.some(([a,b])=>t>=a&&t<b);
   const at = (t, pred) => list.filter(e=>pred(e,getE(e.id,d)) && intervals(getE(e.id,d)).some(([a,b])=>a<=t&&b>t)).length;
+  const relAt = t => list.filter(e=>{ const x=getE(e.id,d); return x&&x.rel&&toMin(x.rel[0])<=t&&toMin(x.rel[1])>t; }).length;
   const isCaisse = (e,x) => !!x && TIMED(x.s) && (x.tag==="Caisse" || (fonctionOf(e)==="caisse" && (!x.tag || x.tag==="Caisse")));
   // caisse : trous de couverture
   if(R.caisseMin>0){ let gap=null; const gaps=[];
-    for(let t=o; t<c; t+=5){ const ok=at(t,isCaisse)>=R.caisseMin; if(!ok&&gap===null) gap=t; if(ok&&gap!==null){ gaps.push([gap,t]); gap=null; } }
+    for(let t=o; t<c; t+=5){ const ok=!inOpen(t) || at(t,isCaisse)+relAt(t)>=R.caisseMin; if(!ok&&gap===null) gap=t; if(ok&&gap!==null){ gaps.push([gap,t]); gap=null; } }
     if(gap!==null) gaps.push([gap,c]);
     gaps.forEach(([a,b])=>out.push({k:"caisse",t:"Caisse non tenue "+pad(Math.floor(a/60))+":"+pad(a%60)+"–"+pad(Math.floor(b/60))+":"+pad(b%60)}));
   }
   const nOpen=at(o,(e,x)=>!!x), nClose=at(c-1,(e,x)=>!!x);
-  if(nOpen<R.openMin) out.push({k:"ouv",t:"Ouverture "+R.open+" : "+nOpen+" présent"+(nOpen>1?"s":"")+" sur "+R.openMin});
-  if(nClose<R.closeMin) out.push({k:"ferm",t:"Fermeture "+R.close+" : "+nClose+" présent"+(nClose>1?"s":"")+" sur "+R.closeMin});
+  if(nOpen<R.openMin) out.push({k:"ouv",t:"Ouverture "+pad(Math.floor(o/60))+":"+pad(o%60)+" : "+nOpen+" présent"+(nOpen>1?"s":"")+" sur "+R.openMin});
+  if(nClose<R.closeMin) out.push({k:"ferm",t:"Fermeture "+pad(Math.floor(c/60))+":"+pad(c%60)+" : "+nClose+" présent"+(nClose>1?"s":"")+" sur "+R.closeMin});
   const need=+R.livreurs[d]||0; if(need){ const n=list.filter(e=>fonctionOf(e)==="livraison"&&intervals(getE(e.id,d)).length).length; if(n<need) out.push({k:"liv",t:"Livreurs : "+n+" sur "+need}); }
   return out;
 }
@@ -1847,10 +1867,22 @@ const SLOTS = {
   VF:{m1:"09:45",m2:"13:00",a1:"14:00",a2:"19:00"},
   C1:{m1:"09:45",m2:"12:00",a1:"14:00",a2:"18:00"},
   C2:{m1:"10:30",m2:"13:00",a1:"14:00",a2:"19:15"},
-  CF:{m1:"09:45",m2:"13:00",a1:"14:00",a2:"19:15"}
+  CF:{m1:"09:45",m2:"13:00",a1:"14:00",a2:"19:15"},
+  // journées en continu (samedi, haute période) : pauses déjeuner décalées pour couvrir 13h-14h
+  V1s:{m1:"09:45",m2:"12:30",a1:"13:30",a2:"18:00"},
+  V2s:{m1:"10:00",m2:"13:00",a1:"14:00",a2:"18:30"},
+  V3s:{m1:"10:30",m2:"12:00",a1:"13:00",a2:"19:00"},
+  V4s:{m1:"10:30",m2:"13:30",a1:"14:30",a2:"19:00"},
+  C1s:{m1:"09:45",m2:"12:30",a1:"13:30",a2:"18:00"},
+  C2s:{m1:"10:30",m2:"13:30",a1:"14:30",a2:"19:15"}
 };
+const DEF_HOURS = { normal:{wk:[["10:00","13:00"],["14:00","19:00"]], sat:[["10:00","19:00"]]}, high:{months:[11,12], wk:[["10:00","19:00"]], sat:[["10:00","19:00"]]} };
+const storeHours = () => { const h=(S.team.settings||{}).hours; return h&&h.normal&&h.high ? h : clone(DEF_HOURS); };
+function openIntervalsDate(dt, d){ const H=storeHours(); const m=dt.getUTCMonth()+1; const P=(H.high.months||[]).includes(m)?H.high:H.normal; const L=(d>=5?P.sat:P.wk)||[]; return L.map(([a,b])=>[toMin(a),toMin(b)]).filter(([a,b])=>a!=null&&b!=null&&b>a); }
+const openIntervals = d => openIntervalsDate(weekDays(S.weekId)[d], d);
+const contDay = d => openIntervals(d).length===1;
 const VENTE_ORDER = {1:["VF"],2:["V1","V3"],3:["V1","V2","V3"],4:["V1","V2","V3","V4"]};
-const slotE = (k,tag) => ({s:"T",...SLOTS[k],p:false,tag:tag||""});
+const slotE = (k,tag,d) => { const kk = d!=null && contDay(d) && SLOTS[k+"s"] ? k+"s" : k; return {s:"T",...SLOTS[kk],p:false,tag:tag||""}; };
 const ABS_S = ["CP","M","AB","FO","FE"];
 const secoursOf = () => emps().find(e=>e.secoursCaisse) || emps().find(e=>/^martin/i.test(e.name||""));
 async function generateWeek(){
@@ -1918,7 +1950,7 @@ async function generateWeek(){
   // 3. affectation des créneaux
   const used={}; auto.forEach(e=>used[e.id]=0);
   const goal=e=>baseOf(e)*60;
-  const secDays=[]; const give=(e,d,k,tag)=>{ W[e.id][d]=slotE(k,tag); used[e.id]+=mins(W[e.id][d]); if(e===secAuto&&tag==='Caisse') secDays.push(d); };
+  const secDays=[]; const give=(e,d,k,tag)=>{ W[e.id][d]=slotE(k,tag,d); used[e.id]+=mins(W[e.id][d]); if(e===secAuto&&tag==='Caisse') secDays.push(d); };
   for(const d of workDays){
     const pres=caisse.filter(e=>free(e,d));
     const cycC=list.filter(e=>e._cyc && fonctionOf(e)==="caisse" && W[e.id][d] && TIMED(W[e.id][d].s));
@@ -1937,6 +1969,12 @@ async function generateWeek(){
     cycV.forEach(e=>{ const x=W[e.id][d]; let bi=-1, bd=1e9; order.forEach((k,ix)=>{ const dd=Math.abs(toMin(SLOTS[k].m1)-(toMin(x.m1||x.a1)||0))+Math.abs(toMin(SLOTS[k].a2)-(toMin(x.a2||x.m2)||0)); if(dd<bd){bd=dd;bi=ix;} }); if(bi>=0) order.splice(bi,1); });
     const ranked=order.slice().sort((a,b)=>tplMin(SLOTS[b])-tplMin(SLOTS[a]));
     vend.forEach((e,i)=>give(e,d, i<ranked.length?ranked[i]:"V3"));
+    // relève caisse : sur les jours en continu, un vendeur couvre la pause de la caissière seule
+    { const OI=openIntervals(d); const cas=list.filter(e=>W[e.id][d]&&TIMED(W[e.id][d].s)&&(W[e.id][d].tag==="Caisse")); const ivs=x=>[[toMin(x.m1),toMin(x.m2)],[toMin(x.a1),toMin(x.a2)]].filter(([a,b])=>a!=null&&b!=null&&b>a);
+      const covered=t=>cas.some(e=>ivs(W[e.id][d]).some(([a,b])=>a<=t&&b>t));
+      const gaps=[]; let g=null; OI.forEach(([oa,ob])=>{ for(let t=oa;t<ob;t+=5){ const ok=covered(t); if(!ok&&g===null) g=t; if(ok&&g!==null){ gaps.push([g,t]); g=null; } } if(g!==null){ gaps.push([g,ob]); g=null; } });
+      gaps.filter(([a,b])=>b-a<=90 && a>OI[0][0] && b<OI[OI.length-1][1]).forEach(([a,b])=>{ const cand=list.filter(e=>!cas.includes(e)&&fonctionOf(e)!=="livraison"&&W[e.id][d]&&TIMED(W[e.id][d].s)&&!W[e.id][d].rel&&ivs(W[e.id][d]).some(([x,y])=>x<=a&&y>=b));
+        const pick=cand.find(e=>e===secAuto)||cand[0]; if(pick) W[pick.id][d].rel=[pad(Math.floor(a/60))+":"+pad(a%60), pad(Math.floor(b/60))+":"+pad(b%60)]; }); }
     Object.entries(groups).forEach(([f,grp])=>{ if(f==="vente") return; grp.filter(e=>free(e,d)).forEach(e=>{ const t=fav[e.id]; W[e.id][d]={...clone(t),tag:t.tag||""}; used[e.id]+=mins(t); }); });
   }
   for(const e of list){ for(let d=0; d<7; d++){ const rt=absList().find(a=>a.empId===e.id&&a.type==="RET"&&a.from===ymd(ds[d])); if(rt&&W[e.id][d]&&TIMED(W[e.id][d].s)) W[e.id][d].retard=+rt.min||0; if(!W[e.id][d]) W[e.id][d]={s:"RH"}; if(W[e.id][d].fixe) delete W[e.id][d].fixe; } delete e._cyc; S.week.entries[e.id]=W[e.id]; }
@@ -1960,7 +1998,7 @@ function renderRoul(){
       (pk==="custom"?'<option value="custom" selected>Personnalisé</option>':'')+'</select></td>'+
       ['m1','m2','a1','a2'].map(f=>'<td>'+timeSel("r-"+f+"-"+id,f,on?x[f]:"",!on,' data-k="'+f+'"')+'</td>').join("")+
       '<td><input type="checkbox" data-k="p" title="Pause 10 min"'+(on&&x.p?" checked":"")+(on?"":" disabled")+'></td><td class="mono rdur">'+(on?fmt(mins(x)):(x&&x.s==="RH"?"RH":""))+'</td></tr>'; };
-  v.innerHTML='<div class="panel"><h2>Roulements</h2><p class="lead">Un collaborateur avec un roulement a sa semaine bloquée : « Générer la semaine » applique exactement ces horaires et ne le replace pas automatiquement. Saisissez les horaires de chaque semaine du cycle et, si besoin, les heures prévues pour cette semaine (sinon la base du contrat). Les jours laissés « Libre » passent en repos. Sans roulement, la génération place le collaborateur sur les créneaux du magasin : vente 9h45-12h/14h-18h, 10h-12h30/14h-18h30 et 2 × 10h30-13h/14h-19h ; caisse 9h45-12h/14h-18h et 10h30-13h/14h-19h15 (journée complète 9h45-13h/14h-19h15 quand l\'autre caissière est en repos). Si une caissière est en CP ou maladie, Martin passe en caisse et son repos est déplacé si besoin.</p>'+
+  v.innerHTML='<div class="panel"><h2>Roulements</h2><p class="lead">Un collaborateur avec un roulement a sa semaine bloquée : « Générer la semaine » applique exactement ces horaires et ne le replace pas automatiquement. Saisissez les horaires de chaque semaine du cycle et, si besoin, les heures prévues pour cette semaine (sinon la base du contrat). Les jours laissés « Libre » passent en repos. Sans roulement, la génération place le collaborateur sur les créneaux du magasin : vente 9h45-12h/14h-18h, 10h-12h30/14h-18h30 et 2 × 10h30-13h/14h-19h ; caisse 9h45-12h/14h-18h et 10h30-13h/14h-19h15 (journée complète 9h45-13h/14h-19h15 quand l\'autre caissière est en repos). Les jours en continu (samedi, haute période) utilisent des pauses déjeuner décalées (heures d\'ouverture dans Horaires types). Si une caissière est en CP ou maladie, Martin passe en caisse et son repos est déplacé si besoin.</p>'+
   '<div class="roul-list">'+list.map(e=>{ const c=cycleOf(e); const len=c?c.len:0; const idx=c?cycleIndex(e,S.weekId):-1;
     return '<div class="roul" data-re="'+esc(e.id)+'"><div class="roul-hd"><b>'+esc(e.name)+'</b><span class="st-mut">'+esc(e.role||"")+' · contrat '+esc(String(e.base||0))+' h</span></div>'+
     '<div class="roul-row"><label for="cl-'+esc(e.id)+'">Roulement</label><select id="cl-'+esc(e.id)+'" data-clen="'+esc(e.id)+'">'+[0,1,2,3,4,5,6].map(n=>'<option value="'+n+'"'+(n===len?" selected":"")+'>'+(n?n+" semaine"+(n>1?"s":""):"Aucun (créneaux automatiques)")+'</option>').join("")+'</select>'+
@@ -2142,7 +2180,7 @@ function pubDoc(wid, w, e, O, meta){
   const oe=O&&O.emp[e.id]; const months={}; Object.entries((O&&O.months)||{}).forEach(([ym,r])=>{ const m=r.res[e.id]; if(m) months[ym]={po:Math.round(m.po), v:m.v, est:r.est}; });
   const obj = oe && (oe.week.po || Object.keys(oe.week.v).length || Object.keys(months).length) ? {svc:meta, week:{po:Math.round(oe.week.po), v:oe.week.v}, days:oe.days.map(x=>x?{po:Math.round(x.po), v:x.v}:null), months} : null;
   return { obj, weekId:wid, empId:e.id, name:e.name, role:e.role||"", base:b, total:r.reduce((a,x)=>a+mins(x),0),
-    days:ds.map((dt,d)=>{ const x=r[d]||null; return {date:ymd(dt), hol:holName(dt)||"", open:!!(w.open&&w.open[d]), s:x?x.s:"", m1:x&&x.m1||"", m2:x&&x.m2||"", a1:x&&x.a1||"", a2:x&&x.a2||"", p:!!(x&&x.p), tag:x&&x.tag||"", min:mins(x)}; }),
+    days:ds.map((dt,d)=>{ const x=r[d]||null; return {date:ymd(dt), hol:holName(dt)||"", open:!!(w.open&&w.open[d]), s:x?x.s:"", m1:x&&x.m1||"", m2:x&&x.m2||"", a1:x&&x.a1||"", a2:x&&x.a2||"", p:!!(x&&x.p), tag:(x&&x.tag||"")+(x&&x.rel?((x&&x.tag)?" · ":"")+"Relève caisse "+x.rel[0]+"–"+x.rel[1]:""), min:mins(x)}; }),
     publishedAt:new Date().toISOString() };
 }
 async function objMonthEmp(ym, wid0, w0){
@@ -2258,7 +2296,7 @@ function renderHome(){
     '</div>'+
     (curW&&!isClosed(td)?'<div class="today"><div class="today-hd"><b>Aujourd\'hui en magasin</b><button class="lnk" data-go="team" data-today="1">Voir la journée ›</button></div>'+
       (sorted.length?'<div class="today-list">'+sorted.map(e=>{ const x=getE(e.id,td); return '<div class="tp"><span class="av">'+esc((e.name||"?")[0])+'</span><span class="tn"><b>'+esc(e.name)+'</b><small>'+esc(x.tag||({vente:"Vente",caisse:"Caisse",livraison:"Livraison"}[fonctionOf(e)]||""))+'</small></span><span class="tt">'+(hasTimes(x)?(x.m1?x.m1+"–"+x.m2:"")+(x.m1&&x.a1?'<br>':'')+(x.a1?x.a1+"–"+x.a2:""):'<i class="st-mut">à définir</i>')+'</span></div>'; }).join("")+'</div>':'<p class="st-mut" style="margin:6px 0 0">Personne n\'est planifié aujourd\'hui.</p>')+'</div>':'')+
-    '<div class="qa"><button class="qbtn" id="hGen">'+ico("gen")+'<span>Générer la semaine</span></button><button class="qbtn'+(S.week.pub?" on":"")+'" id="hPub">'+ico("pub")+'<span>'+(S.week.pub?"Semaine publiée":"Publier aux collaborateurs")+'</span></button></div><p class="appver">Version du 12/10 11:15</p>';
+    '<div class="qa"><button class="qbtn" id="hGen">'+ico("gen")+'<span>Générer la semaine</span></button><button class="qbtn'+(S.week.pub?" on":"")+'" id="hPub">'+ico("pub")+'<span>'+(S.week.pub?"Semaine publiée":"Publier aux collaborateurs")+'</span></button></div><p class="appver">Version du 12/10 12:40</p>';
   v.querySelectorAll("[data-go]").forEach(b=>b.onclick=()=>{ if(b.dataset.today && curW) S.mDay=td; go(b.dataset.go); });
   $("#hGen").onclick=()=>{ go("team"); generateWeek(); };
   $("#hPub").onclick=()=>togglePub();
