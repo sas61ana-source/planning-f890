@@ -321,7 +321,7 @@ tr.abs-cur td{background:rgba(227,6,19,.04)}
   body:not([data-view="home"]) .mtitle{display:block;flex:1;min-width:0;font-family:var(--font-display);font-size:21px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
   header.top .save{margin-left:auto;font-size:0;gap:0} header.top .save i{width:10px;height:10px}
   #logoutB{padding:6px 10px;font-size:13px}
-  body[data-view="home"] .bar, body[data-view="staff"] .bar, body[data-view="abs"] .bar, body[data-view="pz"] .bar, body[data-view="obj"] .bar, body[data-view="tpl"] .bar, body[data-view="dem"] .bar, body[data-view="cpt"] .bar{display:none}
+  body[data-view="home"] .bar, body[data-view="staff"] .bar, body[data-view="abs"] .bar, body[data-view="pz"] .bar, body[data-view="obj"] .bar, body[data-view="apv"] .bar, body[data-view="tpl"] .bar, body[data-view="dem"] .bar, body[data-view="cpt"] .bar{display:none}
   .bar{display:grid!important;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:10px}
   .bar .weeknav{grid-column:1/-1;display:flex;justify-content:space-between;width:100%}
   .bar .weeknav .lbl{flex:1;text-align:center}
@@ -423,7 +423,14 @@ tr.abs-cur td{background:rgba(227,6,19,.04)}
 .obk3 .hl{background:linear-gradient(135deg,#e8620f,#c24400);color:#fff;border:0}.obk3 .hl small{color:#ffe3cf}
 .obpaste{width:100%;min-height:90px;padding:8px;border:1px solid var(--line);border-radius:10px;font-family:var(--font-mono);font-size:13px;margin-bottom:6px;background:var(--surface)}
 .obn1 input{width:120px;padding:5px 8px;border:1px solid var(--line);border-radius:8px;text-align:right;background:var(--surface)}.obn1 input.n1r{width:80px}
-.appver{text-align:center;color:var(--muted);font-size:12px;margin:0 0 20px}</style>
+.appver{text-align:center;color:var(--muted);font-size:12px;margin:0 0 20px}.obh{font-family:var(--font-display);font-size:18px;margin:6px 0 8px;text-transform:uppercase}
+.apvhd{display:flex;justify-content:space-between;gap:14px;flex-wrap:wrap;align-items:flex-start;margin-bottom:14px}
+.apvsel{display:flex;gap:8px;flex-wrap:wrap;align-items:center}.apvsel .chk{display:flex;gap:6px;align-items:center;font-size:13px}
+.phone{position:relative;width:390px;max-width:100%;height:780px;margin:0 auto 12px;border-radius:44px;background:#0b1626;padding:14px;box-shadow:0 30px 60px -30px rgba(13,34,64,.6),inset 0 0 0 2px #26344b}
+.phone iframe{width:100%;height:100%;border:0;border-radius:32px;background:#f4f6f9}
+.phone-notch{position:absolute;top:14px;left:50%;transform:translateX(-50%);width:120px;height:24px;border-radius:0 0 16px 16px;background:#0b1626;z-index:2}
+@media(max-width:760px){.phone{width:100%;height:72vh;border-radius:28px;padding:8px}.phone iframe{border-radius:22px}.phone-notch{display:none}}
+</style>
 
 </head><body>
 <div class="wrap" id="app">
@@ -438,6 +445,7 @@ tr.abs-cur td{background:rgba(227,6,19,.04)}
       <button role="tab" data-v="abs" aria-selected="false">Absences</button>
       <button role="tab" data-v="pz" aria-selected="false">Pauses</button>
       <button role="tab" data-v="obj" aria-selected="false">Objectifs</button>
+      <button role="tab" data-v="apv" aria-selected="false">Vue collaborateur</button>
       <button role="tab" data-v="tpl" aria-selected="false">Horaires types</button>
       <button role="tab" data-v="roul" aria-selected="false">Roulements</button>
       <button role="tab" data-v="send" aria-selected="false">Transmettre</button>
@@ -491,6 +499,7 @@ tr.abs-cur td{background:rgba(227,6,19,.04)}
   <section id="v-abs" hidden></section>
   <section id="v-pz" hidden></section>
   <section id="v-obj" hidden></section>
+  <section id="v-apv" hidden></section>
   <section id="v-tpl" hidden></section>
   <section id="v-send" hidden></section>
   <section id="v-roul" hidden></section>
@@ -674,6 +683,7 @@ function render(){
   if(S.view==="abs") renderAbs();
   if(S.view==="pz") renderPz();
   if(S.view==="obj") renderObj();
+  if(S.view==="apv") renderApv();
   if(S.view==="tpl") renderTpl();
   if(S.view==="send") renderSend();
   if(S.view==="roul") renderRoul();
@@ -1063,10 +1073,10 @@ $("#impData").onchange=ev=>{ const f=ev.target.files[0]; if(!f) return; const r=
   localStorage.setItem(LKEY,JSON.stringify(d)); startLocal("import"); toast("Données importées"); }catch(e){ toast("Fichier non reconnu : choisissez une sauvegarde du planning (.json)"); } }; r.readAsText(f); ev.target.value=""; };
 
 /* ---------- onglets ---------- */
-const VIEW_TITLES={home:"Accueil",team:"Planning équipe",indiv:"Plannings individuels",staff:"Collaborateurs",abs:"Absences",pz:"Pauses",obj:"Objectifs",tpl:"Horaires types",send:"Transmettre",roul:"Roulements",dem:"Demandes",cpt:"Compteurs et paie"};
+const VIEW_TITLES={home:"Accueil",team:"Planning équipe",indiv:"Plannings individuels",staff:"Collaborateurs",abs:"Absences",pz:"Pauses",obj:"Objectifs",apv:"Vue collaborateur",tpl:"Horaires types",send:"Transmettre",roul:"Roulements",dem:"Demandes",cpt:"Compteurs et paie"};
 function go(v){ S.view=v;
   document.querySelectorAll("#tabs button").forEach(x=>x.setAttribute("aria-selected",x.dataset.v===v));
-  for(const k of ["home","team","indiv","staff","abs","pz","obj","tpl","send","roul","dem","cpt"]) $("#v-"+k).hidden=(k!==v);
+  for(const k of ["home","team","indiv","staff","abs","pz","obj","apv","tpl","send","roul","dem","cpt"]) $("#v-"+k).hidden=(k!==v);
   document.body.dataset.view=v; $("#mTitle").textContent=VIEW_TITLES[v]||""; $("#mBack").hidden=(v==="home");
   try{localStorage.setItem("pf890-view",v)}catch(e){}
   render(); if(isPhone()) window.scrollTo({top:0}); }
@@ -1273,8 +1283,8 @@ function objForWeek(wid, w){
 const eur = n => Math.round(n).toLocaleString("fr-FR")+" €";
 const svcVal = (sv,val) => val==null?"–": sv.type==="taux" ? String(Math.round(val*10)/10).replace(".",",")+" %" : sv.type==="volume" ? String(Math.round(val*10)/10).replace(".",",") : String(val).replace(".",",");
 function svcMeta(wid){ const ds=weekDays(wid); const map={}; ds.slice(0,6).forEach(dt=>{ const M=objMonth(ymOf(ymd(dt))); (M&&M.services||[]).forEach(sv=>{ if(sv.target!=null&&sv.target!=="") map[sv.id]={id:sv.id,name:sv.name,type:sv.type}; }); }); return Object.values(map); }
-async function republishMonth(ym){ if(!S.db) return; const [Y,M]=ym.split("-").map(Number); const ids=new Set(); for(let i=1;i<=new Date(Y,M,0).getDate();i++) ids.add(isoWeekId(new Date(Y,M-1,i)));
-  for(const wid of ids){ const w = wid===S.weekId ? S.week : await loadWeek(wid); if(w&&w.pub) await publishWeek(wid,w); } }
+async function republishMonth(ym, skip){ if(!S.db) return; const [Y,M]=ym.split("-").map(Number); const ids=new Set(); for(let i=1;i<=new Date(Y,M,0).getDate();i++) ids.add(isoWeekId(new Date(Y,M-1,i)));
+  for(const wid of ids){ if(wid===skip) continue; const w = wid===S.weekId ? S.week : await loadWeek(wid); if(w&&w.pub) await publishWeek(wid,w); } }
 let objRepubT=null; const objChanged = ym => { teamChanged(true); clearTimeout(objRepubT); objRepubT=setTimeout(()=>republishMonth(ym),1500); };
 async function renderObj(){
   const v=$("#v-obj"); if(!S.objMonth){ const n=new Date(); S.objMonth=n.getFullYear()+"-"+pad(n.getMonth()+1); } const ym=S.objMonth; const M=objMonth(ym,false);
@@ -1349,7 +1359,24 @@ async function drawRep(){
   if(vol.length) t+='<div class="tbl" style="margin-top:12px"><table class="obrep"><thead><tr><th>Volumes (semaine)</th>'+vol.map(m=>'<th>'+esc(m.name)+'</th>').join("")+'</tr></thead><tbody>'+P.map(e=>'<tr><td><b>'+esc(e.name)+'</b></td>'+vol.map(m=>'<td class="n mono">'+svcVal(m,O.emp[e.id].week.v[m.id])+'</td>').join("")+'</tr>').join("")+'</tbody></table></div>';
   if(rates.length) t+='<p class="st-mut" style="margin-top:10px">Objectifs identiques pour chaque vendeur : '+rates.map(m=>esc(m.name)+' '+svcVal(m,(M.services.find(x=>x.id===m.id)||{}).target)).join(" · ")+'</p>';
   const unpl=P.filter(e=>!O.emp[e.id].days.some(Boolean)); if(unpl.length) t+='<p class="st-mut">Sans heures de vente planifiées cette semaine : '+unpl.map(e=>esc(e.name)).join(", ")+'. Leur part revient aux vendeurs présents.</p>';
+  const MO=await objMonthEmp(ym); if(MO){ t='<div class="tbl" style="margin-bottom:14px"><table class="obrep"><thead><tr><th>Objectif du mois</th><th>PO HT</th>'+vol.map(m=>'<th>'+esc(m.name)+'</th>').join("")+'</tr></thead><tbody>'+P.map(e=>{ const r=MO.res[e.id]||{po:0,v:{}}; return '<tr><td><b>'+esc(e.name)+'</b></td><td class="n mono"><b>'+eur(r.po)+'</b></td>'+vol.map(m=>'<td class="n mono">'+svcVal(m,r.v[m.id])+'</td>').join("")+'</tr>'; }).join("")+'<tr class="obtot"><td><b>Magasin</b></td><td class="n mono"><b>'+eur(MO.store)+'</b></td>'+vol.map(()=>'<td></td>').join("")+'</tr></tbody></table></div>'+(MO.est?'<p class="st-mut">Estimation : certaines semaines du mois ne sont pas encore planifiées, leur PO est répartie à parts égales. Le chiffre s\'ajuste quand vous planifiez.</p>':'')+'<h3 class="obh">Semaine '+wnum(wid)+'</h3>'+t; }
+  if(S.view!=="obj" || S.objWeek!==wid) return;
   $("#ob-rep").innerHTML=t;
+}
+
+/* ---------- vue collaborateur (aperçu) ---------- */
+function renderApv(){
+  const v=$("#v-apv"); const L=emps(); if(!S.apvEmp || !L.find(e=>e.id===S.apvEmp)) S.apvEmp=(L.find(objIn)||L[0]||{}).id;
+  if(v.dataset.built===S.apvEmp+"|"+(S.apvAll?1:0)){ return; }
+  v.dataset.built=S.apvEmp+"|"+(S.apvAll?1:0);
+  v.innerHTML='<div class="panel"><div class="apvhd"><div><h2>Vue collaborateur</h2><p class="lead" style="margin:0">Exactement ce que le collaborateur voit sur son téléphone : accueil, objectifs du mois, de la semaine et du jour, planning, pauses et demandes. Aperçu en lecture seule.</p></div>'+
+    '<div class="apvsel"><select id="apv-e" class="btn">'+L.map(e=>'<option value="'+esc(e.id)+'"'+(e.id===S.apvEmp?" selected":"")+'>'+esc(e.name)+'</option>').join("")+'</select>'+
+    '<label class="chk"><input type="checkbox" id="apv-all"'+(S.apvAll?" checked":"")+'> Inclure les semaines non publiées</label><button class="btn" id="apv-r">Actualiser</button></div></div>'+
+    '<div class="phone"><iframe id="apv-f" title="Aperçu de l\'espace collaborateur" src="moi.html?apercu='+encodeURIComponent(S.apvEmp)+(S.apvAll?'&tout=1':'')+'&t='+Date.now()+'"></iframe></div>'+
+    (!S.apvAll?'<p class="st-mut" style="text-align:center">Seules les semaines publiées sont visibles par le collaborateur. Cochez « Inclure les semaines non publiées » pour vérifier avant de publier.</p>':'<p class="st-mut" style="text-align:center"><b>Attention :</b> l\'aperçu montre aussi des semaines que le collaborateur ne voit pas encore.</p>')+'</div>';
+  $("#apv-e").onchange=e=>{ S.apvEmp=e.target.value; v.dataset.built=""; renderApv(); };
+  $("#apv-all").onchange=e=>{ S.apvAll=e.target.checked; v.dataset.built=""; renderApv(); };
+  $("#apv-r").onclick=()=>{ v.dataset.built=""; renderApv(); };
 }
 
 /* ---------- horaires types ---------- */
@@ -2025,20 +2052,37 @@ async function decide(id, ok){
 /* ---------- publication pour les collaborateurs ---------- */
 function pubDoc(wid, w, e, O, meta){
   const ds=weekDays(wid); const r=(w.entries||{})[e.id]||[]; const b=w.bases&&w.bases[e.id]!=null?+w.bases[e.id]:(+e.base||0);
-  const oe=O&&O.emp[e.id]; const obj = oe && (oe.week.po || Object.keys(oe.week.v).length) ? {svc:meta, week:{po:Math.round(oe.week.po), v:oe.week.v}, days:oe.days.map(x=>x?{po:Math.round(x.po), v:x.v}:null)} : null;
+  const oe=O&&O.emp[e.id]; const months={}; Object.entries((O&&O.months)||{}).forEach(([ym,r])=>{ const m=r.res[e.id]; if(m) months[ym]={po:Math.round(m.po), v:m.v, est:r.est}; });
+  const obj = oe && (oe.week.po || Object.keys(oe.week.v).length || Object.keys(months).length) ? {svc:meta, week:{po:Math.round(oe.week.po), v:oe.week.v}, days:oe.days.map(x=>x?{po:Math.round(x.po), v:x.v}:null), months} : null;
   return { obj, weekId:wid, empId:e.id, name:e.name, role:e.role||"", base:b, total:r.reduce((a,x)=>a+mins(x),0),
     days:ds.map((dt,d)=>{ const x=r[d]||null; return {date:ymd(dt), hol:holName(dt)||"", open:!!(w.open&&w.open[d]), s:x?x.s:"", m1:x&&x.m1||"", m2:x&&x.m2||"", a1:x&&x.a1||"", a2:x&&x.a2||"", p:!!(x&&x.p), tag:x&&x.tag||"", min:mins(x)}; }),
     publishedAt:new Date().toISOString() };
 }
+async function objMonthEmp(ym, wid0, w0){
+  const M=objMonth(ym); if(!M) return null; const WD=monthWorkDays(ym); const P=emps().filter(objIn); const res={}; let est=false;
+  P.forEach(e=>res[e.id]={po:0,v:{}}); const cache={};
+  for(const x of WD){ const wid=weekOfDate(x.day); if(!(wid in cache)) cache[wid] = wid===wid0 ? w0 : wid===S.weekId ? S.week : await loadWeek(wid);
+    const w=cache[wid]||{entries:{}}; const st=objStoreDay(x.day); if(!st) continue;
+    const hrs=P.map(e=>{ const r=((w.entries||{})[e.id]||[])[x.d]; return r&&r.s==="T"?mins(r):0; }); const tot=hrs.reduce((a,b)=>a+b,0);
+    if(!tot) est=true;
+    P.forEach((e,i)=>{ const k= tot ? hrs[i]/tot : 1/(P.length||1); res[e.id].po+=st.po*k;
+      (M.services||[]).forEach(sv=>{ if(st.v[sv.id]==null) return; if(sv.type==="volume") res[e.id].v[sv.id]=(res[e.id].v[sv.id]||0)+st.v[sv.id]*k; else res[e.id].v[sv.id]=st.v[sv.id]; }); }); }
+  return {res, est, store:monthPO(M,ym)}; }
+async function weekObjData(wid, w){ let O=null, meta=[], MO={}; try{ O=objForWeek(wid,w); meta=svcMeta(wid); const yms=[...new Set(weekDays(wid).slice(0,6).map(dt=>ymOf(ymd(dt))))]; for(const ym of yms){ const r=await objMonthEmp(ym,wid,w); if(r) MO[ym]=r; } }catch(e){} if(O) O.months=MO; return {O,meta}; }
+window.F890_PREVIEW = async (empId, all) => {
+  const e=S.team.employees.find(x=>x.id===empId); if(!e) return null; const cw=isoWeekId(new Date()); const weeks=[];
+  for(let k=-1;k<=4;k++){ const wid=shiftWeek(cw,k); const w = wid===S.weekId ? S.week : await loadWeek(wid); if(!w || (!all && !w.pub)) continue; const {O,meta}=await weekObjData(wid,w); weeks.push(JSON.parse(JSON.stringify(pubDoc(wid,w,e,O,meta)))); }
+  const td=todayStr(); return { emp:e.id, name:e.name, weeks, names:emps().map(x=>({id:x.id,name:x.name})), demandes:(S.demandes||[]).filter(r=>r.empId===e.id), pauses:(S.pauses||[]).filter(p=>p.empId===e.id&&p.day===td) };
+};
 async function publishWeek(wid, w){
   if(!S.db) return; const b=S.db.batch();
-  let O=null, meta=[]; try{ O=objForWeek(wid,w); meta=svcMeta(wid); }catch(e){}
+  const {O,meta}=await weekObjData(wid,w);
   for(const e of emps()) b.set(S.db.rawDoc("publies/"+e.id+"/semaines/"+wid), JSON.parse(JSON.stringify(pubDoc(wid,w,e,O,meta))));
   await b.commit();
 }
 async function unpublishWeek(wid){ if(!S.db) return; const b=S.db.batch(); for(const e of S.team.employees) b.delete(S.db.rawDoc("publies/"+e.id+"/semaines/"+wid)); await b.commit(); }
 let pubTimer=null;
-function schedulePublish(){ if(!S.db||!S.week.pub) return; clearTimeout(pubTimer); const wid=S.weekId, w=clone(S.week); pubTimer=setTimeout(()=>publishWeek(wid,w).catch(()=>setSave("off","Publication impossible")),1500); }
+function schedulePublish(){ if(!S.db||!S.week.pub) return; clearTimeout(pubTimer); const wid=S.weekId, w=clone(S.week); pubTimer=setTimeout(()=>publishWeek(wid,w).then(()=>{ clearTimeout(S.monthRepubT); S.monthRepubT=setTimeout(()=>{ const yms=[...new Set(weekDays(wid).slice(0,6).map(dt=>ymOf(ymd(dt))))].filter(ym=>objMonth(ym)); yms.forEach(ym=>republishMonth(ym,wid)); },8000); }).catch(()=>setSave("off","Publication impossible")),1500); }
 async function togglePub(){
   if(!S.db){ toast("La publication aux collaborateurs fonctionne dans la version en ligne"); return; }
   S.week.pub=!S.week.pub; changed();
@@ -2115,6 +2159,7 @@ function renderHome(){
       tile("dem","dem","Demandes","Congés, échanges","t-bl",pend)+
       tile("abs","abs","Absences","Maladie, retards…","t-rd")+
       tile("obj","obj","Objectifs","PO et services","t-or")+
+      tile("apv","indiv","Vue collaborateur","Ce que voit l\'équipe","t-gy")+
       tile("pz","pz","Pauses",((S.pauses||[]).filter(p=>!pzEnd(p)&&p.day===todayStr()).length||"Aucun")+" en pause","t-tl")+
       tile("staff","staff","Équipe",L.length+" collaborateurs","t-nv")+
       tile("roul","roul","Roulements","Cycles et horaires","t-vi")+
@@ -2125,7 +2170,7 @@ function renderHome(){
     '</div>'+
     (curW&&!isClosed(td)?'<div class="today"><div class="today-hd"><b>Aujourd\'hui en magasin</b><button class="lnk" data-go="team" data-today="1">Voir la journée ›</button></div>'+
       (sorted.length?'<div class="today-list">'+sorted.map(e=>{ const x=getE(e.id,td); return '<div class="tp"><span class="av">'+esc((e.name||"?")[0])+'</span><span class="tn"><b>'+esc(e.name)+'</b><small>'+esc(x.tag||({vente:"Vente",caisse:"Caisse",livraison:"Livraison"}[fonctionOf(e)]||""))+'</small></span><span class="tt">'+(hasTimes(x)?(x.m1?x.m1+"–"+x.m2:"")+(x.m1&&x.a1?'<br>':'')+(x.a1?x.a1+"–"+x.a2:""):'<i class="st-mut">à définir</i>')+'</span></div>'; }).join("")+'</div>':'<p class="st-mut" style="margin:6px 0 0">Personne n\'est planifié aujourd\'hui.</p>')+'</div>':'')+
-    '<div class="qa"><button class="qbtn" id="hGen">'+ico("gen")+'<span>Générer la semaine</span></button><button class="qbtn'+(S.week.pub?" on":"")+'" id="hPub">'+ico("pub")+'<span>'+(S.week.pub?"Semaine publiée":"Publier aux collaborateurs")+'</span></button></div><p class="appver">Version du 11/10 15:36</p>';
+    '<div class="qa"><button class="qbtn" id="hGen">'+ico("gen")+'<span>Générer la semaine</span></button><button class="qbtn'+(S.week.pub?" on":"")+'" id="hPub">'+ico("pub")+'<span>'+(S.week.pub?"Semaine publiée":"Publier aux collaborateurs")+'</span></button></div><p class="appver">Version du 12/10 11:00</p>';
   v.querySelectorAll("[data-go]").forEach(b=>b.onclick=()=>{ if(b.dataset.today && curW) S.mDay=td; go(b.dataset.go); });
   $("#hGen").onclick=()=>{ go("team"); generateWeek(); };
   $("#hPub").onclick=()=>togglePub();

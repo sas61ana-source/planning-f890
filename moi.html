@@ -100,7 +100,19 @@ h3{margin:0 0 10px;font-family:var(--font-display);font-size:20px;text-transform
 .obk{display:grid;grid-template-columns:repeat(auto-fill,minmax(130px,1fr));gap:8px;margin-top:8px}
 .obk div{border:1px solid var(--line);border-radius:12px;padding:10px;background:var(--surface)}.obk small{display:block;color:var(--muted);font-size:12px}.obk b{font-family:var(--font-mono);font-size:17px}
 .obk div.po{grid-column:1/-1;background:linear-gradient(135deg,#0d2240,#1d4a85);color:#fff;border:0}.obk div.po small{color:#cfd8e6}.obk div.po b{font-size:28px;font-family:var(--font-display)}
-</style></head><body>
+
+.osum{margin-bottom:14px}
+.osum-g{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}
+.osum-c{border-radius:16px;padding:12px;background:var(--surface);border:1px solid var(--line);min-width:0}
+.osum-c:first-child{background:linear-gradient(135deg,#0d2240,#1d4a85);color:#fff;border:0}
+.osum-c:nth-child(2){background:linear-gradient(135deg,#e8620f,#c24400);color:#fff;border:0}
+.osum-c small{display:block;font-size:12px;opacity:.85;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.osum-c b{display:block;font-family:var(--font-display);font-size:24px;line-height:1.1;white-space:nowrap}
+.osum-c em{display:block;font-style:normal;font-size:11px;opacity:.8}
+.ochips{display:flex;flex-wrap:wrap;gap:4px;margin-top:6px}.ochips span{font-size:11px;border-radius:7px;padding:1px 6px;background:rgba(127,127,127,.18)}
+.orates{display:flex;flex-wrap:wrap;gap:6px;margin-top:8px}.orates span{font-size:12px;background:var(--surface);border:1px solid var(--line);border-radius:9px;padding:3px 8px}.orates b{color:var(--accent)}
+@media(max-width:380px){.osum-c b{font-size:20px}}
+.apvban{position:sticky;top:0;z-index:15;background:#0d2240;color:#fff;text-align:center;font-size:12px;font-weight:600;padding:6px}</style></head><body>
 <div class="wrap">
   <header><div><h1>Mon planning</h1><div class="who" id="who">Boulanger Flers F890</div></div><button class="btn ghost" id="out" hidden>Déconnexion</button></header>
 
@@ -154,7 +166,7 @@ h3{margin:0 0 10px;font-family:var(--font-display);font-size:20px;text-transform
 </div>
 <div class="ov" id="ovScan" hidden><h2 id="scT">Scannez le QR code</h2><p id="scP">Visez l'affiche « PAUSE » du magasin.</p><div class="cam"><video id="vid" playsinline muted></video><div class="scanl"></div></div><p id="scMsg"></p><button class="btn ghost" id="scCancel">Annuler</button></div>
 <div class="ov" id="ovPz" hidden></div>
-<p style="text-align:center;color:var(--muted);font-size:12px;margin:0 0 20px">Version du 11/10 15:36</p>
+<p style="text-align:center;color:var(--muted);font-size:12px;margin:0 0 20px">Version du 12/10 11:00</p>
 <div class="toast" id="toast" hidden></div>
 
 <script type="module">
@@ -189,6 +201,7 @@ $("#lf").onsubmit=async ev=>{ ev.preventDefault(); const id=$("#ident").value.tr
 $("#out").onclick=()=>signOut(auth);
 
 onAuthStateChanged(auth, async u=>{
+  if(st.preview) return;
   if(!u){ $("#loginV").hidden=false; $("#mainV").hidden=true; $("#out").hidden=true; $("#who").textContent="Boulanger Flers F890"; return; }
   try{ const a=await getDoc(doc(db,"access",u.uid)); if(!a.exists()) throw 0; st.emp=a.data().empId; }
   catch(e){ $("#lmsg").textContent="Cet accès n'est plus valable. Demandez un nouveau code à la direction."; await signOut(auth); return; }
@@ -214,7 +227,7 @@ function renderWeeks(){
   $("#wtabs").querySelectorAll("[data-w]").forEach(b=>b.onclick=()=>{ st.cur=b.dataset.w; renderWeeks(); });
   const w=st.weeks.find(x=>x.weekId===st.cur)||list[0]; if(!w) return;
   const d0=w.days[0].date, d6=w.days[6].date;
-  $("#week").innerHTML='<div class="whd"><div><h2>Semaine '+(+w.weekId.split("-W")[1])+'</h2><small>'+frD(d0)+' → '+frD(d6)+'</small></div><div class="tot">'+fmt(w.total)+'<small>sur '+String(w.base).replace(".",",")+'h</small></div></div>'+
+  $("#week").innerHTML=objSummary(w)+'<div class="whd"><div><h2>Semaine '+(+w.weekId.split("-W")[1])+'</h2><small>'+frD(d0)+' → '+frD(d6)+'</small></div><div class="tot">'+fmt(w.total)+'<small>sur '+String(w.base).replace(".",",")+'h</small></div></div>'+
   '<div class="days">'+w.days.map((x,i)=>{ const timed=x.s==="T"||x.s==="FO"; const ob=w.obj&&w.obj.days&&w.obj.days[i];
     return '<div class="day'+(x.date===today?" today":"")+'"><div class="dn">'+DAYN[i]+'<small>'+frD(x.date)+(x.hol?'<span class="hol">'+esc(x.hol)+'</span>':'')+'</small></div>'+
     '<div class="dt">'+(!x.s?'<span class="mut">—</span>':timed?((x.m1?'<span class="nw">'+x.m1+" – "+x.m2+'</span>':"")+(x.m1&&x.a1?"<br>":"")+(x.a1?'<span class="nw">'+x.a1+" – "+x.a2+'</span>':"")||"Horaires à venir")+(x.tag?'<span class="tag">'+esc(x.tag)+'</span>':'')+(x.s==="FO"?'<span class="tag">Formation</span>':''):'<span class="st '+x.s+'">'+(LAB[x.s]||x.s)+'</span>')+'</div>'+
@@ -347,9 +360,38 @@ function renderObj(){
   $("#owtabs").innerHTML=list.map(w=>'<button data-ow="'+w.weekId+'" aria-pressed="'+(w.weekId===st.ocur)+'">'+(w.weekId===cw?"Cette semaine":"S"+(+w.weekId.split("-W")[1]))+'</button>').join("");
   $("#owtabs").querySelectorAll("[data-ow]").forEach(b=>b.onclick=()=>{ st.ocur=b.dataset.ow; renderObj(); });
   const w=list.find(x=>x.weekId===st.ocur); const O=w.obj;
-  box.innerHTML='<div class="card"><h3>Semaine '+(+w.weekId.split("-W")[1])+'</h3><div class="obk"><div class="po"><small>PO de la semaine (HT)</small><b>'+eur(O.week.po)+'</b></div>'+
+  box.innerHTML=objSummary(w)+'<div class="card"><h3>Semaine '+(+w.weekId.split("-W")[1])+'</h3><div class="obk"><div class="po"><small>PO de la semaine (HT)</small><b>'+eur(O.week.po)+'</b></div>'+
     (O.svc||[]).filter(m=>O.week.v[m.id]!=null).map(m=>'<div><small>'+esc(m.name)+'</small><b>'+sval(m,O.week.v[m.id])+'</b></div>').join("")+'</div></div>'+
     '<div class="days">'+w.days.map((x,i)=>{ const o=O.days[i]; if(!o) return ''; return '<div class="day'+(x.date===today?" today":"")+'"><div class="dn">'+DAYN[i]+'<small>'+frD(x.date)+'</small></div><div class="dt"><b>'+eur(o.po)+'</b> <span class="mut">PO HT</span></div><div></div><div class="dobj">'+chipsOf(O.svc,o.v,true)+'</div></div>'; }).join("")+'</div>';
 }
+
+const MOISN=["janvier","février","mars","avril","mai","juin","juillet","août","septembre","octobre","novembre","décembre"];
+function objSummary(w){
+  const O=w&&w.obj; if(!O) return "";
+  const days=w.days||[]; let di=days.findIndex(d=>d.date===today); if(di<0||!O.days[di]) di=O.days.findIndex(Boolean);
+  const ym=(di>=0?days[di].date:days[3].date).slice(0,7); const mo=(O.months||{})[ym];
+  const box=(t,sub,po,v,extra)=>'<div class="osum-c"><small>'+t+'</small><b>'+(po!=null?eur(po):"–")+'</b><em>'+sub+'</em><div class="ochips">'+chipsOf(O.svc,v||{},true)+'</div>'+(extra||"")+'</div>';
+  const rates=(O.svc||[]).filter(m=>m.type!=="volume"&&O.week.v[m.id]!=null);
+  return '<div class="osum"><div class="osum-g">'+
+    box(MOISN[+ym.slice(5)-1].charAt(0).toUpperCase()+MOISN[+ym.slice(5)-1].slice(1), mo&&mo.est?"PO HT · estimation":"PO HT", mo?mo.po:null, mo&&mo.v)+
+    box("Semaine "+(+w.weekId.split("-W")[1]),"PO HT",O.week.po,O.week.v)+
+    box(di>=0?(days[di].date===today?"Aujourd'hui":DAYN[di].charAt(0).toUpperCase()+DAYN[di].slice(1)+" "+frD(days[di].date)):"Jour","PO HT",di>=0&&O.days[di]?O.days[di].po:null,di>=0&&O.days[di]?O.days[di].v:{})+
+    '</div>'+(rates.length?'<div class="orates">'+rates.map(m=>'<span>'+esc(m.name)+' <b>'+sval(m,O.week.v[m.id])+'</b></span>').join("")+'</div>':'')+'</div>';
+}
+
+/* ---------- mode aperçu (depuis l'espace gestionnaire) ---------- */
+(async()=>{ const q=new URLSearchParams(location.search); const id=q.get("apercu"); if(!id) return; st.preview=true; $("#loginV").hidden=true;
+  let P=null; try{ P = window.parent!==window && window.parent.F890_PREVIEW ? await window.parent.F890_PREVIEW(id, q.get("tout")==="1") : null; }catch(e){}
+  st.preview=true; $("#loginV").hidden=true; $("#mainV").hidden=false; $("#out").hidden=true;
+  if(!P){ $("#homeV").innerHTML='<p class="card empty">Aperçu disponible uniquement depuis l\'espace gestionnaire.</p>'; return; }
+  st.emp=P.emp; st.me=P.name; st.names=P.names||[]; st.weeks=(P.weeks||[]).sort((a,b)=>a.weekId.localeCompare(b.weekId)); st.pz=P.pauses||[];
+  $("#who").textContent=P.name+" · aperçu gestionnaire";
+  const cw=isoWeekId(new Date()); st.cur=(st.weeks.find(w=>w.weekId>=cw)||st.weeks[st.weeks.length-1]||{}).weekId;
+  $("#r-avec").innerHTML=st.names.filter(x=>x.id!==st.emp).map(x=>'<option>'+esc(x.name)+'</option>').join("");
+  renderWeeks(); renderHome(); renderReqs((P.demandes||[]).sort((a,b)=>(b.createdAt||"").localeCompare(a.createdAt||"")));
+  const ban=document.createElement("div"); ban.className="apvban"; ban.textContent="Aperçu de l'espace de "+P.name+" · lecture seule"; document.body.prepend(ban);
+  const ro=ev=>{ ev.preventDefault(); ev.stopImmediatePropagation(); toast("Aperçu : action désactivée"); };
+  ["#cPause","#cWc"].forEach(sel=>$(sel).addEventListener("click",ro,true)); $("#rf").addEventListener("submit",ro,true);
+})();
 </script>
 </body></html>
