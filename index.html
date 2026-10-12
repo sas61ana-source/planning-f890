@@ -321,7 +321,7 @@ tr.abs-cur td{background:rgba(227,6,19,.04)}
   body:not([data-view="home"]) .mtitle{display:block;flex:1;min-width:0;font-family:var(--font-display);font-size:21px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
   header.top .save{margin-left:auto;font-size:0;gap:0} header.top .save i{width:10px;height:10px}
   #logoutB{padding:6px 10px;font-size:13px}
-  body[data-view="home"] .bar, body[data-view="staff"] .bar, body[data-view="abs"] .bar, body[data-view="pz"] .bar, body[data-view="obj"] .bar, body[data-view="apv"] .bar, body[data-view="tpl"] .bar, body[data-view="dem"] .bar, body[data-view="cpt"] .bar{display:none}
+  body[data-view="home"] .bar, body[data-view="staff"] .bar, body[data-view="abs"] .bar, body[data-view="pz"] .bar, body[data-view="obj"] .bar, body[data-view="rea"] .bar, body[data-view="apv"] .bar, body[data-view="tpl"] .bar, body[data-view="dem"] .bar, body[data-view="cpt"] .bar{display:none}
   .bar{display:grid!important;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:10px}
   .bar .weeknav{grid-column:1/-1;display:flex;justify-content:space-between;width:100%}
   .bar .weeknav .lbl{flex:1;text-align:center}
@@ -430,6 +430,10 @@ tr.abs-cur td{background:rgba(227,6,19,.04)}
 .phone iframe{width:100%;height:100%;border:0;border-radius:32px;background:#f4f6f9}
 .phone-notch{position:absolute;top:14px;left:50%;transform:translateX(-50%);width:120px;height:24px;border-radius:0 0 16px 16px;background:#0b1626;z-index:2}
 @media(max-width:760px){.phone{width:100%;height:72vh;border-radius:28px;padding:8px}.phone iframe{border-radius:22px}.phone-notch{display:none}}
+
+.reapo{width:110px;padding:5px 8px;border:1px solid var(--line);border-radius:8px;text-align:right;background:var(--surface)}
+.reamonth{display:flex;gap:10px;flex-wrap:wrap;margin-bottom:12px}.reamonth label{display:grid;gap:4px;font-size:12px;font-weight:600;color:var(--muted)}.reamonth input{width:120px;padding:6px 8px;border:1px solid var(--line);border-radius:8px;background:var(--surface)}
+.bartab input,.bartab select{width:100%;padding:5px 8px;border:1px solid var(--line);border-radius:8px;background:var(--surface)}
 </style>
 
 </head><body>
@@ -445,6 +449,7 @@ tr.abs-cur td{background:rgba(227,6,19,.04)}
       <button role="tab" data-v="abs" aria-selected="false">Absences</button>
       <button role="tab" data-v="pz" aria-selected="false">Pauses</button>
       <button role="tab" data-v="obj" aria-selected="false">Objectifs</button>
+      <button role="tab" data-v="rea" aria-selected="false">Réalisés</button>
       <button role="tab" data-v="apv" aria-selected="false">Vue collaborateur</button>
       <button role="tab" data-v="tpl" aria-selected="false">Horaires types</button>
       <button role="tab" data-v="roul" aria-selected="false">Roulements</button>
@@ -499,6 +504,7 @@ tr.abs-cur td{background:rgba(227,6,19,.04)}
   <section id="v-abs" hidden></section>
   <section id="v-pz" hidden></section>
   <section id="v-obj" hidden></section>
+  <section id="v-rea" hidden></section>
   <section id="v-apv" hidden></section>
   <section id="v-tpl" hidden></section>
   <section id="v-send" hidden></section>
@@ -683,6 +689,7 @@ function render(){
   if(S.view==="abs") renderAbs();
   if(S.view==="pz") renderPz();
   if(S.view==="obj") renderObj();
+  if(S.view==="rea") renderRea();
   if(S.view==="apv") renderApv();
   if(S.view==="tpl") renderTpl();
   if(S.view==="send") renderSend();
@@ -1073,10 +1080,10 @@ $("#impData").onchange=ev=>{ const f=ev.target.files[0]; if(!f) return; const r=
   localStorage.setItem(LKEY,JSON.stringify(d)); startLocal("import"); toast("Données importées"); }catch(e){ toast("Fichier non reconnu : choisissez une sauvegarde du planning (.json)"); } }; r.readAsText(f); ev.target.value=""; };
 
 /* ---------- onglets ---------- */
-const VIEW_TITLES={home:"Accueil",team:"Planning équipe",indiv:"Plannings individuels",staff:"Collaborateurs",abs:"Absences",pz:"Pauses",obj:"Objectifs",apv:"Vue collaborateur",tpl:"Horaires types",send:"Transmettre",roul:"Roulements",dem:"Demandes",cpt:"Compteurs et paie"};
+const VIEW_TITLES={home:"Accueil",team:"Planning équipe",indiv:"Plannings individuels",staff:"Collaborateurs",abs:"Absences",pz:"Pauses",obj:"Objectifs",rea:"Réalisés et primes",apv:"Vue collaborateur",tpl:"Horaires types",send:"Transmettre",roul:"Roulements",dem:"Demandes",cpt:"Compteurs et paie"};
 function go(v){ S.view=v;
   document.querySelectorAll("#tabs button").forEach(x=>x.setAttribute("aria-selected",x.dataset.v===v));
-  for(const k of ["home","team","indiv","staff","abs","pz","obj","apv","tpl","send","roul","dem","cpt"]) $("#v-"+k).hidden=(k!==v);
+  for(const k of ["home","team","indiv","staff","abs","pz","obj","rea","apv","tpl","send","roul","dem","cpt"]) $("#v-"+k).hidden=(k!==v);
   document.body.dataset.view=v; $("#mTitle").textContent=VIEW_TITLES[v]||""; $("#mBack").hidden=(v==="home");
   try{localStorage.setItem("pf890-view",v)}catch(e){}
   render(); if(isPhone()) window.scrollTo({top:0}); }
@@ -1377,6 +1384,86 @@ function renderApv(){
   $("#apv-e").onchange=e=>{ S.apvEmp=e.target.value; v.dataset.built=""; renderApv(); };
   $("#apv-all").onchange=e=>{ S.apvAll=e.target.checked; v.dataset.built=""; renderApv(); };
   $("#apv-r").onclick=()=>{ v.dataset.built=""; renderApv(); };
+}
+
+/* calcul de prime (partagé gestionnaire / collaborateur) */
+const DEF_BAREME = {
+  items:[
+    {id:"club",name:"Club+",mode:"unit",val:2.5},{id:"iuno",name:"Infinity Uno",mode:"unit",val:10},{id:"iduo",name:"Infinity Duo",mode:"unit",val:15},{id:"itrio",name:"Infinity Trio",mode:"unit",val:20},
+    {id:"isolo",name:"Infinity Smartphone Solo",mode:"unit",val:10},{id:"ifam",name:"Infinity Smartphone Famille",mode:"unit",val:15},
+    {id:"ecran",name:"Installation écran",mode:"unit",val:2},{id:"psm",name:"Protection Sur Mesure",mode:"unit",val:2.5},{id:"ceg",name:"CEG (CA garantie)",mode:"pct",val:5}],
+  tiers:[{pct:100,amt:50},{pct:110,amt:100},{pct:120,amt:200}], margeMin:25,
+  nps:{min:72, google:4.5, amt:50}
+};
+function primeCalc(B, objPO, entries, month, absRatio){
+  B=B||DEF_BAREME; const R={};
+  const sum=(f)=>entries.filter(f);
+  const one=list=>{ const po=list.reduce((t,e)=>t+(+e.po||0),0); const pct=objPO?po/objPO*100:0;
+    let tier=0; (B.tiers||[]).slice().sort((a,b)=>a.pct-b.pct).forEach(t=>{ if(objPO && pct>=+t.pct) tier=+t.amt; });
+    const marge=month&&month.marge!=null&&month.marge!==""?+month.marge:null; if(tier && marge!=null && marge<+B.margeMin) tier=tier*marge/(+B.margeMin||1);
+    const lines=(B.items||[]).map(it=>{ const q=list.reduce((t,e)=>t+(+((e.items||{})[it.id])||0),0); const amt= it.mode==="pct" ? q*(+it.val||0)/100 : q*(+it.val||0); return {id:it.id,name:it.name,mode:it.mode,val:it.val,q,amt}; }).filter(l=>l.q);
+    const items=lines.reduce((t,l)=>t+l.amt,0);
+    let nps=0; if(month && month.nps!=null && month.nps!=="" && B.nps){ if(+month.nps>=+B.nps.min){ const g=month.google!=null&&month.google!==""?+month.google:null; nps= g==null||g>=+B.nps.google ? +B.nps.amt : +B.nps.amt*g/(+B.nps.google||1); nps*=Math.max(0,1-(absRatio||0)); } }
+    return {po,pct,tier,lines,items,nps,total:tier+items+nps,marge}; };
+  R.all=one(sum(e=>e.status!=="refusé")); R.valid=one(sum(e=>e.status==="validé")); R.pending=sum(e=>e.status==="attente").length;
+  return R;
+}
+
+/* ---------- réalisés et primes ---------- */
+const bareme = () => { const b=(S.team.settings||{}).bareme; return b&&b.items ? b : clone(DEF_BAREME); };
+const reaMonth = ym => ((S.team.settings||{}).reaMonths||{})[ym] || {};
+function subscribeRea(){ if(!S.db) return; S.unsubRea&&S.unsubRea();
+  S.unsubRea=S.db.collection("realises").onSnapshot(q=>{ S.rea=q.docs.map(x=>({id:x.id,...snapData(x)})); badgeRea(); if(S.view==="rea"&&!typingIn()) renderRea(); if(S.view==="home") { const b=document.querySelector('[data-go="rea"] .tbadge'); if(b){ const n=(S.rea||[]).filter(r=>r.status==="attente").length; b.textContent=n; b.hidden=!n; } } },()=>{}); }
+function badgeRea(){ const n=(S.rea||[]).filter(r=>r.status==="attente").length; const b=$('#tabs button[data-v="rea"]'); if(b) b.innerHTML='Réalisés'+(n?' <span class="badge">'+n+'</span>':''); }
+async function publishBareme(){ if(!S.db) return; try{ await S.db.doc("annuaire/primes").set({bareme:bareme(), months:(S.team.settings||{}).reaMonths||{}, updatedAt:new Date().toISOString()}); }catch(e){} }
+let barT=null; const baremeChanged=()=>{ teamChanged(true); clearTimeout(barT); barT=setTimeout(publishBareme,1200); };
+const eur2 = n => (Math.round((n||0)*100)/100).toLocaleString("fr-FR",{minimumFractionDigits:2,maximumFractionDigits:2})+" €";
+async function renderRea(){
+  const v=$("#v-rea"); if(!S.reaMonth){ const n=new Date(); S.reaMonth=n.getFullYear()+"-"+pad(n.getMonth()+1); } const ym=S.reaMonth;
+  const [Y,Mo]=ym.split("-").map(Number); const mName=["janvier","février","mars","avril","mai","juin","juillet","août","septembre","octobre","novembre","décembre"][Mo-1]+" "+Y;
+  const months=[]; for(let i=-4;i<=1;i++){ const d=new Date(Y,Mo-1+i,1); months.push(d.getFullYear()+"-"+pad(d.getMonth()+1)); }
+  const B=bareme(); const RM=reaMonth(ym); const all=(S.rea||[]).filter(r=>(r.day||"").startsWith(ym)); const pend=all.filter(r=>r.status==="attente").sort((a,b)=>a.day.localeCompare(b.day));
+  const nm=id=>(S.team.employees.find(e=>e.id===id)||{}).name||id; const dFR=x=>{ const [y,m,d]=x.split("-"); return DAYN[dayIdxOfDate(x)].slice(0,3)+". "+d+"/"+m; };
+  const itemsTxt=r=>(B.items||[]).filter(it=>(r.items||{})[it.id]).map(it=>esc(it.name)+' '+(it.mode==="pct"?eur(r.items[it.id]):r.items[it.id])).join(" · ");
+  const P=emps().filter(e=>objIn(e) || all.some(r=>r.empId===e.id));
+  let MO=null; try{ MO=await objMonthEmp(ym); }catch(e){}
+  if(S.view!=="rea") return;
+  v.innerHTML='<div class="panel"><div style="display:flex;gap:10px;flex-wrap:wrap;align-items:center;justify-content:space-between"><h2>Réalisés · '+mName+'</h2><select id="rea-m" class="btn">'+months.map(m=>'<option value="'+m+'"'+(m===ym?" selected":"")+'>'+m.split("-").reverse().join("/")+'</option>').join("")+'</select></div>'+
+    '<p class="lead">Chaque vendeur saisit sa réalisation du jour (PO HT et services) dans son espace. Elle reste « en attente » jusqu\'à votre validation. Le vendeur voit sa prime du mois en temps réel : estimée (avec l\'attente) et validée.</p>'+
+    '<h3 class="obh">À valider ('+pend.length+')</h3>'+(pend.length?'<div class="tbl"><table><thead><tr><th>Jour</th><th>Collaborateur</th><th>PO HT</th><th>Services</th><th>Note</th><th></th></tr></thead><tbody>'+
+      pend.map(r=>'<tr data-rid="'+esc(r.id)+'"><td>'+dFR(r.day)+'</td><td><b>'+esc(nm(r.empId))+'</b></td><td class="mono"><input class="reapo" data-k="po" inputmode="decimal" value="'+esc(String(r.po??"").replace(".",","))+'"></td><td>'+(itemsTxt(r)||'<span class="st-mut">–</span>')+'</td><td>'+esc(r.note||"")+'</td><td style="white-space:nowrap"><button class="btn primary" data-ra="ok">Valider</button><button class="btn ghost danger" data-ra="ko">Refuser</button></td></tr>').join("")+
+      '</tbody></table></div><button class="btn" id="rea-allok">Tout valider</button>':'<p class="st-mut">Aucune saisie en attente.</p>')+'</div>';
+  // synthèse
+  v.innerHTML+='<div class="panel"><h2>Primes du mois</h2><div class="reamonth"><label>Marge du magasin (%)<input data-rm="marge" inputmode="decimal" value="'+esc(RM.marge==null?"":String(RM.marge).replace(".",","))+'" placeholder="non saisie"></label><label>NPS du mois<input data-rm="nps" inputmode="decimal" value="'+esc(RM.nps==null?"":String(RM.nps).replace(".",","))+'" placeholder="–"></label><label>Note Google<input data-rm="google" inputmode="decimal" value="'+esc(RM.google==null?"":String(RM.google).replace(".",","))+'" placeholder="–"></label></div>'+
+    '<div class="tbl"><table><thead><tr><th>Collaborateur</th><th>Objectif PO</th><th>Réalisé validé</th><th>Atteinte</th><th>Prime PO</th><th>Prime services</th><th>Prime NPS</th><th>Total validé</th><th>Estimé (avec attente)</th></tr></thead><tbody>'+
+    P.map(e=>{ const obj=MO&&MO.res[e.id]?MO.res[e.id].po:0; const L=all.filter(r=>r.empId===e.id); const pr=primeCalc(B,obj,L,RM,0); const V=pr.valid, A=pr.all;
+      return '<tr><td><b>'+esc(e.name)+'</b></td><td class="n mono">'+(obj?eur(obj):"–")+'</td><td class="n mono">'+eur(V.po)+'</td><td class="n mono">'+(obj?Math.round(V.pct)+" %":"–")+'</td><td class="n mono">'+eur2(V.tier)+'</td><td class="n mono">'+eur2(V.items)+'</td><td class="n mono">'+eur2(V.nps)+'</td><td class="n mono"><b>'+eur2(V.total)+'</b></td><td class="n mono st-mut">'+eur2(A.total)+(pr.pending?' · '+pr.pending+' en attente':'')+'</td></tr>'; }).join("")+
+    '</tbody></table></div></div>';
+  // barème
+  v.innerHTML+='<div class="panel"><h2>Barème des primes</h2><p class="lead">Montants bruts. Les vendeurs voient ce barème et le détail de leur calcul.</p><div class="obgrid"><div><label class="oblbl">Prime sur la PO (paliers d\'atteinte de l\'objectif)</label><div class="tbl"><table class="bartab"><thead><tr><th>Atteinte ≥</th><th>Prime</th><th></th></tr></thead><tbody>'+
+    (B.tiers||[]).map((t,i)=>'<tr data-ti="'+i+'"><td><div class="obpo sm"><input data-k="pct" inputmode="decimal" value="'+esc(String(t.pct))+'"><span>%</span></div></td><td><div class="obpo sm"><input data-k="amt" inputmode="decimal" value="'+esc(String(t.amt).replace(".",","))+'"><span>€</span></div></td><td><button class="btn ghost danger" data-k="del">✕</button></td></tr>').join("")+
+    '</tbody></table></div><button class="btn" id="bar-addt">+ Palier</button><label class="oblbl" style="margin-top:12px">Marge minimum (prorata en dessous)</label><div class="obpo sm"><input id="bar-marge" inputmode="decimal" value="'+esc(String(B.margeMin).replace(".",","))+'"><span>%</span></div>'+
+    '<label class="oblbl" style="margin-top:12px">Prime NPS / Google</label><div class="reamonth"><label>NPS minimum<input data-np="min" value="'+esc(String(B.nps.min).replace(".",","))+'"></label><label>Note Google mini<input data-np="google" value="'+esc(String(B.nps.google).replace(".",","))+'"></label><label>Prime (€)<input data-np="amt" value="'+esc(String(B.nps.amt).replace(".",","))+'"></label></div></div>'+
+    '<div><label class="oblbl">Prime par service</label><div class="tbl"><table class="bartab"><thead><tr><th>Service</th><th>Calcul</th><th>Montant</th><th></th></tr></thead><tbody>'+
+    (B.items||[]).map((it,i)=>'<tr data-ii="'+i+'"><td><input data-k="name" value="'+esc(it.name)+'"></td><td><select data-k="mode"><option value="unit"'+(it.mode==="unit"?" selected":"")+'>€ par unité</option><option value="pct"'+(it.mode==="pct"?" selected":"")+'>% du montant</option></select></td><td><div class="obpo sm"><input data-k="val" inputmode="decimal" value="'+esc(String(it.val).replace(".",","))+'"><span>'+(it.mode==="pct"?"%":"€")+'</span></div></td><td><button class="btn ghost danger" data-k="del">✕</button></td></tr>').join("")+
+    '</tbody></table></div><button class="btn" id="bar-addi">+ Service</button></div></div></div>';
+  const num=x=>{ const t=String(x).trim().replace(/\s/g,"").replace(",","."); return t===""?null:(parseFloat(t)||0); };
+  $("#rea-m").onchange=e=>{ S.reaMonth=e.target.value; renderRea(); };
+  const upd=async(r,patch)=>{ try{ await S.db.doc("realises/"+r.id).update({...patch, decidedAt:new Date().toISOString()}); }catch(e){ toast("Enregistrement impossible"); } };
+  v.querySelectorAll("tr[data-rid]").forEach(tr=>{ const r=(S.rea||[]).find(x=>x.id===tr.dataset.rid); if(!r) return;
+    tr.querySelector("[data-ra=ok]").onclick=()=>{ const po=num(tr.querySelector(".reapo").value); upd(r,{status:"validé",po:po==null?0:po}); toast("Réalisé validé"); };
+    tr.querySelector("[data-ra=ko]").onclick=()=>{ upd(r,{status:"refusé"}); toast("Réalisé refusé"); }; });
+  $("#rea-allok")&&($("#rea-allok").onclick=async()=>{ for(const r of pend) await upd(r,{status:"validé"}); toast(pend.length+" réalisés validés"); });
+  v.querySelectorAll("[data-rm]").forEach(i=>i.oninput=()=>{ S.team.settings=S.team.settings||{}; const M=(S.team.settings.reaMonths ||= {}); const m=(M[ym] ||= {}); m[i.dataset.rm]=num(i.value); baremeChanged(); });
+  v.querySelectorAll("[data-rm]").forEach(i=>i.onchange=()=>renderRea());
+  const saveB=()=>{ S.team.settings=S.team.settings||{}; S.team.settings.bareme=B; baremeChanged(); };
+  v.querySelectorAll("tr[data-ti] [data-k]").forEach(el=>{ const i=+el.closest("tr").dataset.ti; if(el.dataset.k==="del") el.onclick=()=>{ B.tiers.splice(i,1); saveB(); renderRea(); }; else el.oninput=()=>{ B.tiers[i][el.dataset.k]=num(el.value)||0; saveB(); }; });
+  v.querySelectorAll("tr[data-ii] [data-k]").forEach(el=>{ const i=+el.closest("tr").dataset.ii, k=el.dataset.k; if(k==="del") el.onclick=()=>{ B.items.splice(i,1); saveB(); renderRea(); };
+    else if(k==="mode") el.onchange=()=>{ B.items[i].mode=el.value; saveB(); renderRea(); }; else el.oninput=()=>{ B.items[i][k]= k==="name"?(el.value.trim()||B.items[i][k]):(num(el.value)||0); saveB(); }; });
+  $("#bar-addt").onclick=()=>{ B.tiers.push({pct:130,amt:300}); saveB(); renderRea(); };
+  $("#bar-addi").onclick=()=>{ B.items.push({id:"p"+Date.now().toString(36),name:"Nouveau service",mode:"unit",val:0}); saveB(); renderRea(); };
+  $("#bar-marge").oninput=e=>{ B.margeMin=num(e.target.value)||0; saveB(); };
+  v.querySelectorAll("[data-np]").forEach(i=>i.oninput=()=>{ B.nps[i.dataset.np]=num(i.value)||0; saveB(); });
 }
 
 /* ---------- horaires types ---------- */
@@ -2072,7 +2159,7 @@ async function weekObjData(wid, w){ let O=null, meta=[], MO={}; try{ O=objForWee
 window.F890_PREVIEW = async (empId, all) => {
   const e=S.team.employees.find(x=>x.id===empId); if(!e) return null; const cw=isoWeekId(new Date()); const weeks=[];
   for(let k=-1;k<=4;k++){ const wid=shiftWeek(cw,k); const w = wid===S.weekId ? S.week : await loadWeek(wid); if(!w || (!all && !w.pub)) continue; const {O,meta}=await weekObjData(wid,w); weeks.push(JSON.parse(JSON.stringify(pubDoc(wid,w,e,O,meta)))); }
-  const td=todayStr(); return { emp:e.id, name:e.name, weeks, names:emps().map(x=>({id:x.id,name:x.name})), demandes:(S.demandes||[]).filter(r=>r.empId===e.id), pauses:(S.pauses||[]).filter(p=>p.empId===e.id&&p.day===td) };
+  const td=todayStr(); return { emp:e.id, name:e.name, weeks, names:emps().map(x=>({id:x.id,name:x.name})), demandes:(S.demandes||[]).filter(r=>r.empId===e.id), pauses:(S.pauses||[]).filter(p=>p.empId===e.id&&p.day===td), rea:(S.rea||[]).filter(r=>r.empId===e.id), bar:{bareme:bareme(), months:(S.team.settings||{}).reaMonths||{}} };
 };
 async function publishWeek(wid, w){
   if(!S.db) return; const b=S.db.batch();
@@ -2159,6 +2246,7 @@ function renderHome(){
       tile("dem","dem","Demandes","Congés, échanges","t-bl",pend)+
       tile("abs","abs","Absences","Maladie, retards…","t-rd")+
       tile("obj","obj","Objectifs","PO et services","t-or")+
+      tile("rea","cpt","Réalisés","Validation et primes","t-gr",(S.rea||[]).filter(r=>r.status==="attente").length)+
       tile("apv","indiv","Vue collaborateur","Ce que voit l\'équipe","t-gy")+
       tile("pz","pz","Pauses",((S.pauses||[]).filter(p=>!pzEnd(p)&&p.day===todayStr()).length||"Aucun")+" en pause","t-tl")+
       tile("staff","staff","Équipe",L.length+" collaborateurs","t-nv")+
@@ -2170,7 +2258,7 @@ function renderHome(){
     '</div>'+
     (curW&&!isClosed(td)?'<div class="today"><div class="today-hd"><b>Aujourd\'hui en magasin</b><button class="lnk" data-go="team" data-today="1">Voir la journée ›</button></div>'+
       (sorted.length?'<div class="today-list">'+sorted.map(e=>{ const x=getE(e.id,td); return '<div class="tp"><span class="av">'+esc((e.name||"?")[0])+'</span><span class="tn"><b>'+esc(e.name)+'</b><small>'+esc(x.tag||({vente:"Vente",caisse:"Caisse",livraison:"Livraison"}[fonctionOf(e)]||""))+'</small></span><span class="tt">'+(hasTimes(x)?(x.m1?x.m1+"–"+x.m2:"")+(x.m1&&x.a1?'<br>':'')+(x.a1?x.a1+"–"+x.a2:""):'<i class="st-mut">à définir</i>')+'</span></div>'; }).join("")+'</div>':'<p class="st-mut" style="margin:6px 0 0">Personne n\'est planifié aujourd\'hui.</p>')+'</div>':'')+
-    '<div class="qa"><button class="qbtn" id="hGen">'+ico("gen")+'<span>Générer la semaine</span></button><button class="qbtn'+(S.week.pub?" on":"")+'" id="hPub">'+ico("pub")+'<span>'+(S.week.pub?"Semaine publiée":"Publier aux collaborateurs")+'</span></button></div><p class="appver">Version du 12/10 11:00</p>';
+    '<div class="qa"><button class="qbtn" id="hGen">'+ico("gen")+'<span>Générer la semaine</span></button><button class="qbtn'+(S.week.pub?" on":"")+'" id="hPub">'+ico("pub")+'<span>'+(S.week.pub?"Semaine publiée":"Publier aux collaborateurs")+'</span></button></div><p class="appver">Version du 12/10 11:15</p>';
   v.querySelectorAll("[data-go]").forEach(b=>b.onclick=()=>{ if(b.dataset.today && curW) S.mDay=td; go(b.dataset.go); });
   $("#hGen").onclick=()=>{ go("team"); generateWeek(); };
   $("#hPub").onclick=()=>togglePub();
@@ -2239,7 +2327,7 @@ function startFirebase(){
     try{ const seeded=await seedIfEmpty(); if(seeded) toast("Installation terminée"); }catch(e){ setSave("off","Accès refusé : vérifiez les règles Firestore"); toast("Firestore refuse l'accès. Collez les règles de sécurité fournies, puis rechargez."); return; }
     setSave("ok","Synchronisé");
     S.db.doc("config/team").onSnapshot(snap=>{ if(S.teamDirty||teamWriting) return; const d=snapData(snap); if(d && S.teamLoaded && JSON.stringify(d)===JSON.stringify(clone(S.team))) return; if(d && S.teamLoaded && typingIn()){ S.teamPendingSnap=snap; return; } if(d){ S.team={...d, employees:d.employees||[],templates:(d.templates&&d.templates.length)?d.templates:DEFAULT_TPL.slice(),settings:d.settings||{}}; } S.teamLoaded=true; render(); },()=>setSave("off","Connexion perdue"));
-    subscribeWeek(); subscribeDemandes(); subscribePauses();
+    subscribeWeek(); subscribeDemandes(); subscribePauses(); subscribeRea(); setTimeout(publishBareme,4000);
     S.db.collection("weeks").get().then(q=>{ S.openSunWeeks=q.docs.filter(x=>{const d=snapData(x); return d&&d.open&&d.open["6"];}).map(x=>x.id); render(); }).catch(()=>{});
   });
 }

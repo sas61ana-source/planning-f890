@@ -112,7 +112,17 @@ h3{margin:0 0 10px;font-family:var(--font-display);font-size:20px;text-transform
 .ochips{display:flex;flex-wrap:wrap;gap:4px;margin-top:6px}.ochips span{font-size:11px;border-radius:7px;padding:1px 6px;background:rgba(127,127,127,.18)}
 .orates{display:flex;flex-wrap:wrap;gap:6px;margin-top:8px}.orates span{font-size:12px;background:var(--surface);border:1px solid var(--line);border-radius:9px;padding:3px 8px}.orates b{color:var(--accent)}
 @media(max-width:380px){.osum-c b{font-size:20px}}
-.apvban{position:sticky;top:0;z-index:15;background:#0d2240;color:#fff;text-align:center;font-size:12px;font-weight:600;padding:6px}</style></head><body>
+.apvban{position:sticky;top:0;z-index:15;background:#0d2240;color:#fff;text-align:center;font-size:12px;font-weight:600;padding:6px}
+.cube.c-re .ci{background:linear-gradient(135deg,#17803d,#43b86a)}
+.prime{background:linear-gradient(135deg,#0f5f30,#17803d 60%,#2aa35a);color:#fff;border-radius:20px;padding:16px;margin-bottom:14px;box-shadow:0 14px 30px -18px rgba(23,128,61,.8)}
+.prime-hd small{opacity:.85;display:block}.prime-hd b{display:block;font-family:var(--font-display);font-size:38px;line-height:1.05}.prime-hd em{font-style:normal;font-size:13px;opacity:.9}
+.prog{margin-top:12px}.prog-t{display:flex;justify-content:space-between;gap:8px;font-size:12px;opacity:.95;flex-wrap:wrap}
+.prog-b{position:relative;height:12px;border-radius:8px;background:rgba(255,255,255,.2);margin:6px 0;overflow:hidden}.prog-b i{display:block;height:100%;background:#ffd166;border-radius:8px}.prog-b s{position:absolute;top:0;bottom:0;width:2px;background:rgba(255,255,255,.7)}
+.plines{margin-top:10px;display:grid;gap:4px}.plines div{display:flex;justify-content:space-between;gap:10px;font-size:13px;border-top:1px solid rgba(255,255,255,.18);padding-top:4px}.plines b{font-family:var(--font-mono)}
+.raitems{display:grid;gap:8px;margin-bottom:12px}.raitems label{display:flex;justify-content:space-between;align-items:center;gap:10px;font-size:14px}
+.stp{display:flex;align-items:center;gap:4px}.stp input{width:72px;text-align:center;padding:8px;border:1px solid var(--line);border-radius:10px;background:var(--surface)}.stp button{width:36px;height:36px;border-radius:10px;border:1px solid var(--line);background:var(--surface-2);font-size:18px;font-weight:700;cursor:pointer}
+input.big{font-size:22px;font-weight:600}
+</style></head><body>
 <div class="wrap">
   <header><div><h1>Mon planning</h1><div class="who" id="who">Boulanger Flers F890</div></div><button class="btn ghost" id="out" hidden>Déconnexion</button></header>
 
@@ -134,6 +144,7 @@ h3{margin:0 0 10px;font-family:var(--font-display);font-size:20px;text-transform
       <button class="cube c-wc" id="cWc"><span class="ci"><b style="font-size:17px">WC</b></span><b>Toilettes</b><small>Décompté de la pause</small></button>
       <button class="cube c-pl" data-go="planV"><span class="ci"><svg viewBox="0 0 24 24" width="28" height="28" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 5h18v15H3zM3 10h18M8 5v15M14 5v15"/></svg></span><b>Mon planning</b><small>Semaines publiées</small></button>
       <button class="cube c-ob" data-go="objV"><span class="ci"><svg viewBox="0 0 24 24" width="28" height="28" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="9"/><circle cx="12" cy="12" r="5"/><circle cx="12" cy="12" r="1.5"/></svg></span><b>Mes objectifs</b><small>PO et services</small></button>
+      <button class="cube c-re" data-go="reaV"><span class="ci"><svg viewBox="0 0 24 24" width="28" height="28" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M5 20V10M12 20V4M19 20v-7"/></svg></span><b>Mon réalisé</b><small id="cReaSub">Saisie du jour et prime</small></button>
       <button class="cube c-dm" data-go="reqV"><span class="ci"><svg viewBox="0 0 24 24" width="28" height="28" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"><path d="M4 5h16v11H8l-4 4z"/></svg></span><b>Demandes</b><small>Congés, échange, erreur</small></button>
     </div>
    </div>
@@ -146,6 +157,21 @@ h3{margin:0 0 10px;font-family:var(--font-display);font-size:20px;text-transform
     <button class="back" data-go="homeV">‹ Accueil</button>
     <div class="wtabs" id="owtabs"></div>
     <div id="objBox"></div>
+   </div>
+   <div id="reaV" hidden>
+    <button class="back" data-go="homeV">‹ Accueil</button>
+    <div id="primeBox"></div>
+    <div class="card"><h3>Saisir mon réalisé</h3>
+      <form id="reaF">
+        <div class="field"><label for="ra-day">Jour</label><input id="ra-day" type="date"></div>
+        <div class="field"><label for="ra-po">PO HT réalisée (€)</label><input id="ra-po" inputmode="decimal" class="big" placeholder="0"></div>
+        <div id="ra-items" class="raitems"></div>
+        <div class="field"><label for="ra-note">Commentaire</label><input id="ra-note" placeholder="facultatif"></div>
+        <p class="mut" id="ra-state"></p>
+        <button class="btn primary" type="submit" style="width:100%">Envoyer pour validation</button>
+      </form>
+    </div>
+    <div class="card"><h3>Mon mois</h3><div id="reaList"></div></div>
    </div>
    <div id="reqV" hidden>
     <button class="back" data-go="homeV">‹ Accueil</button>
@@ -166,13 +192,13 @@ h3{margin:0 0 10px;font-family:var(--font-display);font-size:20px;text-transform
 </div>
 <div class="ov" id="ovScan" hidden><h2 id="scT">Scannez le QR code</h2><p id="scP">Visez l'affiche « PAUSE » du magasin.</p><div class="cam"><video id="vid" playsinline muted></video><div class="scanl"></div></div><p id="scMsg"></p><button class="btn ghost" id="scCancel">Annuler</button></div>
 <div class="ov" id="ovPz" hidden></div>
-<p style="text-align:center;color:var(--muted);font-size:12px;margin:0 0 20px">Version du 12/10 11:00</p>
+<p style="text-align:center;color:var(--muted);font-size:12px;margin:0 0 20px">Version du 12/10 11:15</p>
 <div class="toast" id="toast" hidden></div>
 
 <script type="module">
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
 import { getAuth, onAuthStateChanged, signInWithEmailAndPassword, signOut } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
-import { getFirestore, doc, getDoc, collection, query, where, onSnapshot, addDoc, updateDoc, serverTimestamp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
+import { getFirestore, doc, getDoc, setDoc, collection, query, where, onSnapshot, addDoc, updateDoc, serverTimestamp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
 const cfg = {"apiKey":"AIzaSyDEoDBsdANV89bseWyrIgOryGriPVZLkqo","authDomain":"planning-890.firebaseapp.com","projectId":"planning-890","storageBucket":"planning-890.firebasestorage.app","messagingSenderId":"752375265204","appId":"1:752375265204:web:76652191c3b72f610b64e1"};
 const app = initializeApp(cfg), auth = getAuth(app), db = getFirestore(app);
 const $ = s => document.querySelector(s);
@@ -186,7 +212,7 @@ const frD = s => { const [y,m,d]=s.split("-").map(Number); return d+" "+MON[m-1]
 function isoWeekId(d){ const t=new Date(Date.UTC(d.getFullYear(),d.getMonth(),d.getDate())); const day=t.getUTCDay()||7; t.setUTCDate(t.getUTCDate()+4-day); const y=t.getUTCFullYear(); return y+"-W"+pad(Math.ceil(((t-Date.UTC(y,0,1))/864e5+1)/7)); }
 const today = (()=>{ const n=new Date(); return n.getFullYear()+"-"+pad(n.getMonth()+1)+"-"+pad(n.getDate()); })();
 let toastT; const toast = m => { const t=$("#toast"); t.textContent=m; t.hidden=false; clearTimeout(toastT); toastT=setTimeout(()=>t.hidden=true,3000); };
-const st = { emp:null, weeks:[], cur:null, type:"CP", names:[], pz:[], me:"" };
+const st = { emp:null, weeks:[], cur:null, type:"CP", names:[], pz:[], me:"", rea:[], bar:null };
 
 const DOMAIN="equipe-f890.app";
 const hashId=decodeURIComponent((location.hash||"").slice(1)).toLowerCase();
@@ -214,6 +240,8 @@ onAuthStateChanged(auth, async u=>{
   try{ const n=await getDoc(doc(db,"annuaire","equipe")); st.names=(n.exists()?n.data().list:[])||[]; }catch(e){ st.names=[]; }
   $("#r-avec").innerHTML=st.names.filter(x=>x.id!==st.emp).map(x=>'<option value="'+esc(x.id)+'">'+esc(x.name)+'</option>').join("");
   const me=st.names.find(x=>x.id===st.emp); st.me=me?me.name:st.emp; $("#who").textContent=st.me+" · Boulanger Flers F890";
+  onSnapshot(query(collection(db,"realises"),where("empId","==",st.emp)), q=>{ st.rea=q.docs.map(x=>({id:x.id,...x.data()})); renderRea(); renderHome(); }, ()=>{});
+  onSnapshot(doc(db,"annuaire","primes"), d=>{ st.bar=d.exists()?d.data():null; renderRea(); renderHome(); }, ()=>{});
   onSnapshot(query(collection(db,"pauses"),where("empId","==",st.emp)), q=>{ st.pz=q.docs.map(x=>({id:x.id,...x.data()})).filter(p=>p.day===today); renderHome(); renderPzOv(); }, ()=>{});
   renderHome();
 });
@@ -254,7 +282,7 @@ $("#rf").onsubmit=async ev=>{ ev.preventDefault();
 };
 
 /* ---------- navigation ---------- */
-const go = v => { ["homeV","planV","reqV","objV"].forEach(k=>$("#"+k).hidden=(k!==v)); if(v==="objV") renderObj(); window.scrollTo({top:0}); };
+const go = v => { ["homeV","planV","reqV","objV","reaV"].forEach(k=>$("#"+k).hidden=(k!==v)); if(v==="objV") renderObj(); if(v==="reaV") renderRea(true); window.scrollTo({top:0}); };
 document.querySelectorAll("[data-go]").forEach(b=>b.onclick=()=>go(b.dataset.go));
 
 /* ---------- accueil ---------- */
@@ -384,14 +412,74 @@ function objSummary(w){
   let P=null; try{ P = window.parent!==window && window.parent.F890_PREVIEW ? await window.parent.F890_PREVIEW(id, q.get("tout")==="1") : null; }catch(e){}
   st.preview=true; $("#loginV").hidden=true; $("#mainV").hidden=false; $("#out").hidden=true;
   if(!P){ $("#homeV").innerHTML='<p class="card empty">Aperçu disponible uniquement depuis l\'espace gestionnaire.</p>'; return; }
-  st.emp=P.emp; st.me=P.name; st.names=P.names||[]; st.weeks=(P.weeks||[]).sort((a,b)=>a.weekId.localeCompare(b.weekId)); st.pz=P.pauses||[];
+  st.emp=P.emp; st.me=P.name; st.names=P.names||[]; st.weeks=(P.weeks||[]).sort((a,b)=>a.weekId.localeCompare(b.weekId)); st.pz=P.pauses||[]; st.rea=P.rea||[]; st.bar=P.bar||null;
   $("#who").textContent=P.name+" · aperçu gestionnaire";
   const cw=isoWeekId(new Date()); st.cur=(st.weeks.find(w=>w.weekId>=cw)||st.weeks[st.weeks.length-1]||{}).weekId;
   $("#r-avec").innerHTML=st.names.filter(x=>x.id!==st.emp).map(x=>'<option>'+esc(x.name)+'</option>').join("");
-  renderWeeks(); renderHome(); renderReqs((P.demandes||[]).sort((a,b)=>(b.createdAt||"").localeCompare(a.createdAt||"")));
+  renderWeeks(); renderHome(); renderRea(true); renderReqs((P.demandes||[]).sort((a,b)=>(b.createdAt||"").localeCompare(a.createdAt||"")));
   const ban=document.createElement("div"); ban.className="apvban"; ban.textContent="Aperçu de l'espace de "+P.name+" · lecture seule"; document.body.prepend(ban);
   const ro=ev=>{ ev.preventDefault(); ev.stopImmediatePropagation(); toast("Aperçu : action désactivée"); };
   ["#cPause","#cWc"].forEach(sel=>$(sel).addEventListener("click",ro,true)); $("#rf").addEventListener("submit",ro,true);
 })();
+/* calcul de prime (partagé gestionnaire / collaborateur) */
+const DEF_BAREME = {
+  items:[
+    {id:"club",name:"Club+",mode:"unit",val:2.5},{id:"iuno",name:"Infinity Uno",mode:"unit",val:10},{id:"iduo",name:"Infinity Duo",mode:"unit",val:15},{id:"itrio",name:"Infinity Trio",mode:"unit",val:20},
+    {id:"isolo",name:"Infinity Smartphone Solo",mode:"unit",val:10},{id:"ifam",name:"Infinity Smartphone Famille",mode:"unit",val:15},
+    {id:"ecran",name:"Installation écran",mode:"unit",val:2},{id:"psm",name:"Protection Sur Mesure",mode:"unit",val:2.5},{id:"ceg",name:"CEG (CA garantie)",mode:"pct",val:5}],
+  tiers:[{pct:100,amt:50},{pct:110,amt:100},{pct:120,amt:200}], margeMin:25,
+  nps:{min:72, google:4.5, amt:50}
+};
+function primeCalc(B, objPO, entries, month, absRatio){
+  B=B||DEF_BAREME; const R={};
+  const sum=(f)=>entries.filter(f);
+  const one=list=>{ const po=list.reduce((t,e)=>t+(+e.po||0),0); const pct=objPO?po/objPO*100:0;
+    let tier=0; (B.tiers||[]).slice().sort((a,b)=>a.pct-b.pct).forEach(t=>{ if(objPO && pct>=+t.pct) tier=+t.amt; });
+    const marge=month&&month.marge!=null&&month.marge!==""?+month.marge:null; if(tier && marge!=null && marge<+B.margeMin) tier=tier*marge/(+B.margeMin||1);
+    const lines=(B.items||[]).map(it=>{ const q=list.reduce((t,e)=>t+(+((e.items||{})[it.id])||0),0); const amt= it.mode==="pct" ? q*(+it.val||0)/100 : q*(+it.val||0); return {id:it.id,name:it.name,mode:it.mode,val:it.val,q,amt}; }).filter(l=>l.q);
+    const items=lines.reduce((t,l)=>t+l.amt,0);
+    let nps=0; if(month && month.nps!=null && month.nps!=="" && B.nps){ if(+month.nps>=+B.nps.min){ const g=month.google!=null&&month.google!==""?+month.google:null; nps= g==null||g>=+B.nps.google ? +B.nps.amt : +B.nps.amt*g/(+B.nps.google||1); nps*=Math.max(0,1-(absRatio||0)); } }
+    return {po,pct,tier,lines,items,nps,total:tier+items+nps,marge}; };
+  R.all=one(sum(e=>e.status!=="refusé")); R.valid=one(sum(e=>e.status==="validé")); R.pending=sum(e=>e.status==="attente").length;
+  return R;
+}
+
+/* ---------- réalisé et prime ---------- */
+const eur2 = n => (Math.round((n||0)*100)/100).toLocaleString("fr-FR",{minimumFractionDigits:2,maximumFractionDigits:2})+" €";
+const curYM = () => today.slice(0,7);
+function monthObj(ym){ let best=null; st.weeks.forEach(w=>{ const m=w.obj&&w.obj.months&&w.obj.months[ym]; if(m) best=m; }); return best; }
+function svcVolMeta(){ const map={}; st.weeks.forEach(w=>((w.obj&&w.obj.svc)||[]).forEach(m=>{ if(m.type==="volume") map[m.id]=m; })); return Object.values(map); }
+function myPrime(ym){ const B=(st.bar&&st.bar.bareme)||DEF_BAREME; const M=(st.bar&&st.bar.months||{})[ym]||{}; const mo=monthObj(ym); const L=(st.rea||[]).filter(r=>(r.day||"").startsWith(ym)); return {B, mo, pr:primeCalc(B, mo?mo.po:0, L, M, 0), L}; }
+function renderRea(fill){
+  const box=$("#primeBox"); if(!box||!st.emp) return; const ym=curYM(); const {B,mo,pr,L}=myPrime(ym); const A=pr.all, V=pr.valid;
+  const pct=mo&&mo.po?Math.min(100,A.pct/1.3):0;
+  box.innerHTML='<div class="prime"><div class="prime-hd"><small>Ma prime de '+MOISN[+ym.slice(5)-1]+' (temps réel)</small><b>'+eur2(A.total)+'</b><em>dont '+eur2(V.total)+' validés'+(pr.pending?' · '+pr.pending+' jour'+(pr.pending>1?'s':'')+' en attente':'')+'</em></div>'+
+    '<div class="prog"><div class="prog-t"><span>PO réalisée <b>'+eur(A.po)+'</b></span><span>'+(mo?'objectif '+eur(mo.po):'objectif non publié')+'</span></div><div class="prog-b"><i style="width:'+pct+'%"></i>'+(B.tiers||[]).map(t=>'<s style="left:'+Math.min(100,+t.pct/1.3)+'%"></s>').join("")+'</div><div class="prog-t"><span><b>'+(mo&&mo.po?Math.round(A.pct)+' %':'–')+'</b> d\'atteinte</span><span>'+((B.tiers||[]).map(t=>t.pct+'% → '+t.amt+' €').join(' · '))+'</span></div></div>'+
+    '<div class="plines"><div><span>Prime PO</span><b>'+eur2(A.tier)+'</b></div>'+A.lines.map(l=>'<div><span>'+esc(l.name)+' · '+(l.mode==="pct"?eur(l.q)+' × '+String(l.val).replace(".",",")+' %':l.q+' × '+eur2(l.val))+'</span><b>'+eur2(l.amt)+'</b></div>').join("")+(A.nps?'<div><span>Prime NPS / Google</span><b>'+eur2(A.nps)+'</b></div>':'')+'</div>'+
+    (A.tier && A.marge==null?'<p class="mut" style="margin:6px 0 0">Prime PO sous réserve d\'une marge ≥ '+B.margeMin+' %.</p>':'')+'</div>';
+  // formulaire
+  const dayI=$("#ra-day"); if(fill||!dayI.value){ dayI.value=dayI.value||today; dayI.max=today; }
+  const day=dayI.value; const cur=(st.rea||[]).find(r=>r.day===day);
+  const items=[...(B.items||[]), ...svcVolMeta().filter(m=>!(B.items||[]).some(it=>it.id===m.id)).map(m=>({id:m.id,name:m.name,mode:"vol"}))];
+  if(fill || $("#ra-items").dataset.day!==day){ $("#ra-items").dataset.day=day;
+    $("#ra-po").value=cur&&cur.po!=null?String(cur.po).replace(".",","):""; $("#ra-note").value=cur&&cur.note||"";
+    $("#ra-items").innerHTML=items.map(it=>'<label><span>'+esc(it.name)+(it.mode==="pct"?' (montant €)':'')+'</span><span class="stp">'+(it.mode==="pct"?'':'<button type="button" data-st="-1">−</button>')+'<input data-it="'+esc(it.id)+'" inputmode="decimal" value="'+esc(cur&&cur.items&&cur.items[it.id]!=null?String(cur.items[it.id]).replace(".",","):"")+'" placeholder="0">'+(it.mode==="pct"?'':'<button type="button" data-st="1">+</button>')+'</span></label>').join("");
+    $("#ra-items").querySelectorAll("[data-st]").forEach(b=>b.onclick=()=>{ const i=b.parentNode.querySelector("input"); i.value=Math.max(0,(parseFloat(i.value.replace(",","."))||0)+(+b.dataset.st)); }); }
+  const locked=cur&&cur.status==="validé";
+  $("#ra-state").innerHTML=cur?('Statut : <span class="pill '+(cur.status==="validé"?"acceptée":cur.status==="refusé"?"refusée":"attente")+'">'+(cur.status==="attente"?"en attente":cur.status)+'</span>'+(locked?' · validé par la direction, modification impossible':'')):'';
+  $("#reaF").querySelector("button[type=submit]").disabled=!!locked;
+  // liste du mois
+  const rows=L.slice().sort((a,b)=>b.day.localeCompare(a.day));
+  $("#reaList").innerHTML=rows.length?rows.map(r=>'<div class="req"><div><b>'+DAYN[(new Date(r.day+"T12:00:00").getDay()+6)%7]+' '+frD(r.day)+'</b> <span class="pill '+(r.status==="validé"?"acceptée":r.status==="refusé"?"refusée":"attente")+'">'+(r.status==="attente"?"en attente":r.status)+'</span></div><div class="mut">PO '+eur(r.po||0)+((B.items||[]).filter(it=>(r.items||{})[it.id]).map(it=>' · '+esc(it.name)+' '+(it.mode==="pct"?eur(r.items[it.id]):r.items[it.id])).join(""))+'</div></div>').join(""):'<p class="empty">Aucune saisie ce mois-ci.</p>';
+  const sub=$("#cReaSub"); if(sub) sub.textContent="Prime : "+eur2(A.total);
+}
+$("#ra-day").onchange=()=>renderRea(true);
+$("#reaF").onsubmit=async ev=>{ ev.preventDefault(); if(st.preview){ toast("Aperçu : action désactivée"); return; }
+  const day=$("#ra-day").value; if(!day||day>today){ toast("Choisissez un jour passé ou aujourd'hui"); return; }
+  const num=x=>{ const t=String(x||"").trim().replace(/\s/g,"").replace(",","."); return t===""?null:(parseFloat(t)||0); };
+  const items={}; $("#ra-items").querySelectorAll("[data-it]").forEach(i=>{ const v=num(i.value); if(v) items[i.dataset.it]=v; });
+  const po=num($("#ra-po").value); if(po==null && !Object.keys(items).length){ toast("Indiquez au moins votre PO du jour"); return; }
+  try{ await setDoc(doc(db,"realises",st.emp+"_"+day),{empId:st.emp, day, po:po||0, items, note:$("#ra-note").value.trim(), status:"attente", updatedAt:new Date().toISOString()}); toast("Réalisé envoyé : en attente de validation"); }
+  catch(e){ toast(String(e&&e.code||"").includes("permission")?"Ce jour est déjà validé par la direction":"Envoi impossible : réessayez"); } };
 </script>
 </body></html>

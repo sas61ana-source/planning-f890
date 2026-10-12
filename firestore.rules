@@ -42,5 +42,35 @@ service cloud.firestore {
         && request.resource.data.type in ["CP", "ECHANGE", "ERREUR"];
       allow update, delete: if isAdmin();
     }
+    match /pauses/{id} {
+      allow read: if isAdmin() || (hasAccess() && resource.data.empId == myEmp());
+      allow create: if hasAccess()
+        && request.resource.data.empId == myEmp()
+        && request.resource.data.type in ["pause", "wc"]
+        && request.resource.data.end == null
+        && request.resource.data.startAt == request.time
+        && request.resource.data.qr == get(/databases/$(database)/documents/config/pause).data.qr;
+      allow update: if isAdmin() || (hasAccess()
+        && resource.data.empId == myEmp()
+        && resource.data.end == null
+        && request.resource.data.diff(resource.data).affectedKeys().hasOnly(["end", "endAt", "endQr", "noScan"])
+        && request.resource.data.endAt == request.time
+        && (request.resource.data.get("noScan", false) == true
+            || request.resource.data.endQr == get(/databases/$(database)/documents/config/pause).data.qr));
+      allow delete: if isAdmin();
+    }
+    match /realises/{id} {
+      allow read: if isAdmin() || (hasAccess() && resource.data.empId == myEmp());
+      allow create: if isAdmin() || (hasAccess()
+        && id == myEmp() + "_" + request.resource.data.day
+        && request.resource.data.empId == myEmp()
+        && request.resource.data.status == "attente");
+      allow update: if isAdmin() || (hasAccess()
+        && resource.data.empId == myEmp()
+        && resource.data.status != "validé"
+        && request.resource.data.empId == myEmp()
+        && request.resource.data.status == "attente");
+      allow delete: if isAdmin();
+    }
   }
 }
