@@ -72,5 +72,13 @@ service cloud.firestore {
         && request.resource.data.status == "attente");
       allow delete: if isAdmin();
     }
+    match /resultats/{day} {
+      allow read: if isAdmin() || hasAccess();
+      allow write: if isAdmin();
+      match /parts/{part} {
+        allow read: if isAdmin() || hasAccess();
+        allow write: if isAdmin();
+      }
+    }
   }
 }
