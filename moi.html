@@ -124,6 +124,14 @@ body.locked .cube[data-lock]::after{content:"";position:absolute;top:14px;right:
 .kpis{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px}.kpi{background:rgba(255,255,255,.08);border-radius:12px;padding:8px 10px;min-width:0}.kpi small{display:block;font-size:11.5px;line-height:1.2}.kpi b{font-size:16px}.kpi em{font-style:normal;font-size:11.5px;color:#b9c6da;margin-left:4px}
 .fams{margin-top:12px;display:grid;gap:7px}.fam{display:grid;grid-template-columns:auto minmax(0,1fr);gap:2px 10px;font-size:13px}.fam span{text-align:right;font-size:12px}.fam .bar{grid-column:1/-1;height:6px;border-radius:4px;background:rgba(255,255,255,.12);overflow:hidden}.fam .bar i{display:block;height:100%;background:#f59a45;border-radius:4px}.fam span{color:#b9c6da}
 .ooff{margin-top:8px;padding-top:8px;border-top:1px dashed var(--line)}.ooff small{display:block;color:var(--muted);font-size:11.5px}.ooff b{font-size:14px}.obar{display:block;height:5px;border-radius:3px;background:var(--surface-2);margin-top:4px;overflow:hidden}.obar i{display:block;height:100%;background:var(--accent)}
+.sv .sv-hd{display:flex;justify-content:space-between;align-items:flex-end;gap:10px}.sv-hd small{display:block;color:var(--muted);font-size:12px}.sv-hd b{font-size:28px;letter-spacing:-.02em}
+.sv-pc{font-size:26px;font-weight:800;padding:4px 10px;border-radius:12px;background:var(--surface-2)}.sv-pc.ok{color:#17803d;background:#e3f5e9}.sv-pc.mid{color:#b25b00;background:#fff1e0}.sv-pc.low{color:#b42318;background:#fde8e6}
+.sv-b{display:block;height:6px;border-radius:4px;background:var(--surface-2);overflow:hidden;margin-top:4px}.sv-b.big{height:10px;margin:10px 0}.sv-b s{display:block;height:100%;background:var(--accent);text-decoration:none}.sv-b.ok s{background:#17a34a}.sv-b.mid s{background:#f59a45}.sv-b.low s{background:#e5484d}
+.sv-k{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px;margin:6px 0 10px}.sv-k div{background:var(--surface-2);border-radius:12px;padding:8px}.sv-k small{display:block;font-size:11px;color:var(--muted)}.sv-k b{font-size:15px}.sv-k em{display:block;font-style:normal;font-size:11px;color:var(--muted)}
+em.up{color:#17803d!important;font-style:normal}em.dn{color:#b42318!important;font-style:normal}
+.sv-ch{width:100%;height:auto;display:block;margin:4px 0 6px}.sv-line{fill:none;stroke:var(--accent);stroke-width:2.5;stroke-linejoin:round}.sv-dot{fill:var(--accent)}.sv-obj{stroke:#17a34a;stroke-dasharray:4 4;stroke-width:1.5}.sv-proj{stroke:var(--accent);stroke-dasharray:3 4;opacity:.6;stroke-width:2}.sv-ax{stroke:var(--line)}.sv-t{font-size:10px;fill:var(--muted)}
+.sv-ev{font-size:13px;margin:6px 0}.sv-ev small{color:var(--muted)}.sv-ev div{display:flex;flex-wrap:wrap;gap:6px 12px;margin-top:3px}
+.sv-s{margin-top:8px;display:grid;gap:8px}.sv-s>small{color:var(--muted)}.sv-r{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:2px 8px;font-size:14px}.sv-r .sv-b{grid-column:1/-1}.sv-v small{color:var(--muted)}
 .resh{display:flex;justify-content:space-between;align-items:center;gap:10px;margin-bottom:10px}.resh small{color:var(--muted)}
 .prime{background:linear-gradient(135deg,#0f5f30,#17803d 60%,#2aa35a);color:#fff;border-radius:20px;padding:16px;margin-bottom:14px;box-shadow:0 14px 30px -18px rgba(23,128,61,.8)}
 .prime-hd small{opacity:.85;display:block}.prime-hd b{display:block;font-family:var(--font-display);font-size:38px;line-height:1.05}.prime-hd em{font-style:normal;font-size:13px;opacity:.9}
@@ -157,7 +165,7 @@ input.big{font-size:22px;font-weight:600}
    <div id="homeV">
     <div class="hero" id="hero"></div>
     <div class="cubes">
-      <button class="cube c-rs" data-go="resV" data-lock><span class="ci"><svg viewBox="0 0 24 24" width="28" height="28" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"><path d="M7 3h7l5 5v13H7z"/><path d="M14 3v5h5M10 17v-3M13 17v-5M16 17v-2"/></svg></span><b>Résultats</b><small id="cResSub">Résultats des objectifs du magasin</small></button>
+      <button class="cube c-rs" data-go="resV" data-lock><span class="ci"><svg viewBox="0 0 24 24" width="28" height="28" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"><path d="M7 3h7l5 5v13H7z"/><path d="M14 3v5h5M10 17v-3M13 17v-5M16 17v-2"/></svg></span><b>Mes résultats</b><small id="cResSub">Mon suivi et mes chiffres</small></button>
       <button class="cube c-pz" id="cPause" data-lock><span class="ci"><svg viewBox="0 0 24 24" width="28" height="28" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M6 3h12M6 21h12M7 3c0 5 10 5 10 9s-10 4-10 9M17 3c0 5-10 5-10 9"/></svg></span><b>Pause</b><small>Scanner le QR code</small></button>
       <button class="cube c-wc" id="cWc" data-lock><span class="ci"><b style="font-size:17px">WC</b></span><b>Toilettes</b><small>Décompté de la pause</small></button>
       <button class="cube c-pl" data-go="planV"><span class="ci"><svg viewBox="0 0 24 24" width="28" height="28" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 5h18v15H3zM3 10h18M8 5v15M14 5v15"/></svg></span><b>Mon planning</b><small>Semaines publiées</small></button>
@@ -194,7 +202,7 @@ input.big{font-size:22px;font-weight:600}
    <div id="resV" hidden>
     <button class="back" data-go="homeV">‹ Accueil</button>
     <div class="card">
-      <h3>Résultats des objectifs</h3>
+      <h3>Mes résultats</h3>
       <div class="wtabs" id="rstabs"></div>
       <div id="resMe"></div>
       <div id="resBox"><p class="empty">Aucun résultat publié pour le moment.</p></div>
@@ -219,7 +227,7 @@ input.big{font-size:22px;font-weight:600}
 </div>
 <div class="ov" id="ovScan" hidden><h2 id="scT">Scannez le QR code</h2><p id="scP">Visez l'affiche « PAUSE » du magasin.</p><div class="cam"><video id="vid" playsinline muted></video><div class="scanl"></div></div><p id="scMsg"></p><button class="btn ghost" id="scCancel">Annuler</button></div>
 <div class="ov" id="ovPz" hidden></div>
-<p style="text-align:center;color:var(--muted);font-size:12px;margin:0 0 20px">Version du 13/10 15:30</p>
+<p style="text-align:center;color:var(--muted);font-size:12px;margin:0 0 20px">Version du 13/10 20:00</p>
 <div class="toast" id="toast" hidden></div>
 
 <script type="module">
@@ -405,7 +413,52 @@ const rangTxt = r => (r===1?"1er":r+"e");
 const pc2 = v => v==null?"–":(Math.round(v*100)/100).toString().replace(".",",")+" %";
 const nb2 = v => v==null?"–":(Math.round(v*10)/10).toString().replace(".",",");
 function renderResSub(){ const el=$("#cResSub"); if(!el) return; const r=(st.res||[])[0]; const me=r&&r.vend&&r.vend[st.emp];
-  el.textContent=!isOpen()?"Résultats des objectifs du magasin":me?"Mon "+(r.base==="PO"?"PO":"CA")+" : "+eur(me.ca)+" · "+rangTxt(me.rang)+" sur "+me.sur:r?"Dernier : "+jourTxt(r.day):"Aucun résultat publié"; }
+  el.textContent=!isOpen()?"Mon suivi et mes chiffres":me?"Mon "+(r.base==="PO"?"PO":"CA")+" : "+eur(me.ca)+" · "+rangTxt(me.rang)+" sur "+me.sur:r?"Dernier : "+jourTxt(r.day):"Aucun résultat publié"; }
+/* ---------- mon suivi : objectifs du mois face aux résultats extraits des palmarès ---------- */
+const nrm = s => String(s||"").toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g,"");
+function svcActual(sv, r, base){ const n=nrm(sv.name), vol=sv.type==="volume";
+  if(/accessoire/.test(n)) return vol?r.nbAcc:r.pdmAcc;
+  if(/\btrc\b/.test(n)) return vol?null:r.trc;
+  if(/club ?(\+|plus)/.test(n)) return vol?(r.clubp??r.clubpN):null;
+  if(/infinity/.test(n)&&/(smart|mobile|phone)/.test(n)) return vol?(r.mobUno||0)+(r.mobFam||0):null;
+  if(/infinity/.test(n)) return vol?(r.inf1!=null?(r.inf1||0)+(r.inf2||0)+(r.inf3||0):r.infM):null;
+  if(/assurance|nomade/.test(n)) return vol?r.vcQ:(base==="PO"?r.vcTx:null);
+  if(/\bceg\b|garantie/.test(n)) return vol?r.cegQ:r.cegTx;
+  if(/protection/.test(n)) return vol?r.prot:null;
+  return undefined; }
+function openDays(a,b){ let n=0; const d=new Date(a+"T12:00:00"), e=new Date(b+"T12:00:00"); while(d<=e){ if(d.getDay()!==0) n++; d.setDate(d.getDate()+1); } return n; }
+function suiviHTML(m){
+  const r=m&&m.vend&&m.vend[st.emp]; if(!r) return "";
+  const au=frIso(m.au), du=frIso(m.du), ym=au.slice(0,7); const mo=monthObj(ym); const B=m.base==="PO"?"PO":"CA";
+  const snaps=(st.res||[]).filter(x=>x.base===m.base&&x.vend&&x.vend[st.emp]&&frIso(x.au).startsWith(ym)&&frIso(x.du).startsWith(ym)&&frIso(x.au)<=au)
+    .reduce((acc,x)=>{ const k=frIso(x.au); const prev=acc.find(y=>y.k===k); if(!prev) acc.push({k,v:x.vend[st.emp]}); return acc; },[]).sort((a,b)=>a.k.localeCompare(b.k));
+  const prevS=snaps.length>1?snaps[snaps.length-2]:null;
+  const obj=B==="PO"&&mo&&mo.po?mo.po:0; const pct=obj?r.ca/obj*100:null;
+  const [y,mm]=ym.split("-").map(Number); const last=ym+"-"+pad(new Date(y,mm,0).getDate());
+  const done=openDays(ym+"-01",au), tot=openDays(ym+"-01",last), left=Math.max(0,tot-done);
+  const proj=done?r.ca/done*tot:null; const resteJ=obj&&left?Math.max(0,obj-r.ca)/left:null;
+  const tone=p=>p==null?"":p>=100?"ok":p>=80?"mid":"low";
+  // courbe du mois : cumul à chaque palmarès + objectif
+  const W=300,H=90,maxV=Math.max(obj||0,proj||0,...snaps.map(x=>x.v.ca||0),1);
+  const X=d=>Math.round((+d.slice(8))/(+last.slice(8))*W), Y=v=>Math.round(H-(v/maxV)*H);
+  const pts=[["01",0],...snaps.map(x=>[x.k,x.v.ca||0])].map(([k,v])=>(k==="01"?0:X(k))+","+Y(v)).join(" ");
+  const chart='<svg viewBox="-4 -6 '+(W+8)+' '+(H+20)+'" class="sv-ch" role="img" aria-label="Évolution du mois">'+
+    (obj?'<line x1="0" y1="'+Y(obj)+'" x2="'+W+'" y2="'+Y(obj)+'" class="sv-obj"/><text x="'+W+'" y="'+(Y(obj)-4)+'" text-anchor="end" class="sv-t">objectif '+eur(obj)+'</text>':'')+
+    (proj?'<line x1="'+X(au)+'" y1="'+Y(r.ca)+'" x2="'+W+'" y2="'+Y(proj)+'" class="sv-proj"/>':'')+
+    '<polyline points="'+pts+'" class="sv-line"/>'+snaps.map(x=>'<circle cx="'+X(x.k)+'" cy="'+Y(x.v.ca||0)+'" r="3" class="sv-dot"/>').join("")+
+    '<line x1="0" y1="'+H+'" x2="'+W+'" y2="'+H+'" class="sv-ax"/><text x="0" y="'+(H+14)+'" class="sv-t">1er</text><text x="'+W+'" y="'+(H+14)+'" text-anchor="end" class="sv-t">'+(+last.slice(8))+'</text></svg>';
+  const dl=(k,fmt)=>{ if(!prevS||r[k]==null||prevS.v[k]==null) return ""; const d=r[k]-prevS.v[k]; if(!d) return ""; return '<em class="'+(d>0?"up":"dn")+'">'+(d>0?"+":"")+fmt(d)+'</em>'; };
+  // services : objectif du mois face au réalisé extrait
+  const svc=((st.weeks.find(w=>w.obj&&w.obj.months&&w.obj.months[ym])||{}).obj||{}).svc||[];
+  const rowsS=svc.map(sv=>{ const o=mo&&mo.v?mo.v[sv.id]:null; const a=svcActual(sv,r,m.base); if(o==null&&a==null) return ""; const p=o&&a!=null?a/o*100:null;
+    return '<div class="sv-r"><span>'+esc(sv.name)+'</span><span class="sv-v">'+(a==null?'<small>non suivi par le palmarès</small>':'<b>'+sval(sv,a)+'</b>')+(o!=null?' <small>/ '+sval(sv,o)+'</small>':'')+'</span>'+(p!=null?'<i class="sv-b '+tone(p)+'"><s style="width:'+Math.min(100,p)+'%"></s></i>':'')+'</div>'; }).join("");
+  return '<div class="card sv"><div class="sv-hd"><div><small>Mon suivi · '+MOISN[mm-1]+' (au '+frD(au)+')</small><b>'+eur(r.ca)+'</b><small>'+B+' HT réalisé'+(obj?' sur '+eur(obj):'')+'</small></div>'+(pct!=null?'<div class="sv-pc '+tone(pct)+'">'+Math.round(pct)+' %</div>':'')+'</div>'+
+    (obj?'<i class="sv-b big '+tone(pct)+'"><s style="width:'+Math.min(100,pct)+'%"></s></i>':'')+
+    '<div class="sv-k"><div><small>Reste à faire</small><b>'+(obj?eur(Math.max(0,obj-r.ca)):'–')+'</b></div><div><small>Par jour restant</small><b>'+(resteJ!=null?eur(resteJ):'–')+'</b><em>'+left+' j d\'ouverture</em></div><div><small>Projection fin de mois</small><b>'+(proj?eur(proj):'–')+'</b>'+(obj&&proj?'<em class="'+(proj>=obj?"up":"dn")+'">'+Math.round(proj/obj*100)+' % de l\'objectif</em>':'')+'</div></div>'+
+    chart+
+    (prevS?'<div class="sv-ev"><small>Depuis le palmarès du '+frD(prevS.k)+'</small><div>'+[["PO","ca",v=>eur(v)],["Factures","fact",nb2],["Club+","clubp",nb2],["Infinity","inf1",nb2],["Protection","prot",nb2]].map(([l,k,f])=>{ const d=dl(k,f); return d?'<span>'+l+' '+d+'</span>':''; }).join("")+'</div></div>':'')+
+    (rowsS?'<div class="sv-s"><small>Mes objectifs services du mois</small>'+rowsS+'</div>':'')+'</div>';
+}
 function meResHTML(m){ const r=m&&m.vend&&m.vend[st.emp]; if(!r) return '<p class="mut">'+(m&&m.vend?"Pas de résultat à votre nom dans ce document.":"Les chiffres de ce document n\'ont pas encore été extraits.")+'</p>';
   const k=(t,v,e)=>'<div class="kpi"><small>'+t+'</small><b>'+v+'</b>'+(e?'<em>'+e+'</em>':'')+'</div>';
   const per=m.du?"du "+m.du.slice(0,5)+" au "+m.au.slice(0,5):"";
@@ -430,7 +483,7 @@ async function renderRes(){
   tabs.innerHTML=list.slice(0,7).map(r=>'<button data-d="'+r.day+'" aria-pressed="'+(r.day===st.resDay)+'">'+(r.day===today?"Aujourd'hui":jourCourt(r.day))+'</button>').join("");
   tabs.querySelectorAll("[data-d]").forEach(b=>b.onclick=()=>{ st.resDay=b.dataset.d; renderRes(); });
   const meta=list.find(r=>r.day===st.resDay); const key=meta.day+"|"+meta.at;
-  $("#resMe").innerHTML=meResHTML(meta);
+  $("#resMe").innerHTML=suiviHTML(meta)+meResHTML(meta);
   if(box.dataset.key===key+(st.resPdf===key?"|pdf":"")) return; box.dataset.key=key+(st.resPdf===key?"|pdf":"");
   if(!st.resPdf || st.resPdf!==key){ box.innerHTML='<button class="btn ghost" id="resShow" style="width:100%">Voir le document d\'origine (PDF)</button>'; $("#resShow").onclick=()=>{ st.resPdf=key; box.dataset.key=""; renderRes(); }; return; }
   box.innerHTML='<div class="resh"><div><b>Document du '+jourTxt(meta.day)+'</b><br><small>Publié par la direction</small></div><button class="btn ghost" id="resOpen" disabled>Agrandir</button></div><div class="pdfp" id="pdfp"><p class="mut">Chargement…</p></div>';
