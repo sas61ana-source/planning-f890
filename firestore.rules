@@ -80,5 +80,8 @@ service cloud.firestore {
         allow write: if isAdmin();
       }
     }
+    match /palmares/{day} {
+      allow read, write: if isAdmin();
+    }
   }
 }

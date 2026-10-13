@@ -400,6 +400,7 @@ tr.abs-cur td{background:rgba(227,6,19,.04)}
 .t-tl .ti{background:linear-gradient(135deg,#0e8a8a,#3cc2b5)}
 .resdrop{display:flex;flex-wrap:wrap;gap:10px;align-items:end;margin:6px 0 4px}.resdrop label{display:grid;gap:4px;font-size:12px;font-weight:600;color:var(--muted)}
 .resdrop input[type=date]{padding:7px 9px;border:1px solid var(--line);border-radius:8px;background:var(--surface)}
+.ptab td,.ptab th{white-space:nowrap}.ptab .ptot td{border-top:2px solid var(--line);background:var(--surface-2)}.ptabs{margin:4px 0 12px}
 .resfile{position:relative;overflow:hidden}.resfile input{position:absolute;inset:0;opacity:0;cursor:pointer}
 @media(max-width:900px){.pzgrid{grid-template-columns:1fr}}
 
@@ -1422,6 +1423,15 @@ function primeCalc(B, objPO, entries, month, absRatio){
   return R;
 }
 
+
+/* réalisé officiel : le dernier palmarès en PO du mois remplace les saisies jusqu'à sa date de fin */
+const frIso = d => { const m=/^(\d\d)\/(\d\d)\/(\d\d)$/.exec(d||""); return m?"20"+m[3]+"-"+m[2]+"-"+m[1]:""; };
+function officialFor(resList, empId, ym){
+  const c=(resList||[]).filter(r=>r.base==="PO"&&r.vend&&r.vend[empId]&&frIso(r.au).startsWith(ym)&&frIso(r.du).startsWith(ym)).sort((a,b)=>frIso(b.au).localeCompare(frIso(a.au))||String(b.at||"").localeCompare(String(a.at||"")))[0];
+  if(!c) return null; const v=c.vend[empId]; const au=frIso(c.au);
+  return {day:au, au, du:frIso(c.du), po:v.ca||0, status:"validé", official:true, items:{club:v.clubp??v.clubpN??0, iuno:v.inf1||0, iduo:v.inf2||0, itrio:v.inf3||0, isolo:v.mobUno||0, ifam:v.mobFam||0, psm:v.prot||0, ceg:v.cegCA||0}};
+}
+const withOfficial = (L, off) => off ? [off, ...L.filter(r=>r.day>off.au)] : L;
 /* ---------- réalisés et primes ---------- */
 const bareme = () => { const b=(S.team.settings||{}).bareme; return b&&b.items ? b : clone(DEF_BAREME); };
 const reaMonth = ym => ((S.team.settings||{}).reaMonths||{})[ym] || {};
@@ -1442,15 +1452,15 @@ async function renderRea(){
   let MO=null; try{ MO=await objMonthEmp(ym); }catch(e){}
   if(S.view!=="rea") return;
   v.innerHTML='<div class="panel"><div style="display:flex;gap:10px;flex-wrap:wrap;align-items:center;justify-content:space-between"><h2>Réalisés · '+mName+'</h2><select id="rea-m" class="btn">'+months.map(m=>'<option value="'+m+'"'+(m===ym?" selected":"")+'>'+m.split("-").reverse().join("/")+'</option>').join("")+'</select></div>'+
-    '<p class="lead">Chaque vendeur saisit sa réalisation du jour (PO HT et services) dans son espace. Elle reste « en attente » jusqu\'à votre validation. Le vendeur voit sa prime du mois en temps réel : estimée (avec l\'attente) et validée.</p>'+
+    '<p class="lead">Chaque vendeur saisit sa réalisation du jour (PO HT et services) dans son espace. Elle reste « en attente » jusqu\'à votre validation. Dès qu\'un palmarès en PO du mois est déposé (onglet Résultats), il devient le réalisé officiel jusqu\'à sa date de fin : PO, Club+, Infinity Uno/Duo/Trio, Smartphone Solo/Famille, Protection et CEG. Le vendeur voit sa prime du mois en temps réel : estimée (avec l\'attente) et validée.</p>'+
     '<h3 class="obh">À valider ('+pend.length+')</h3>'+(pend.length?'<div class="tbl"><table><thead><tr><th>Jour</th><th>Collaborateur</th><th>PO HT</th><th>Services</th><th>Note</th><th></th></tr></thead><tbody>'+
       pend.map(r=>'<tr data-rid="'+esc(r.id)+'"><td>'+dFR(r.day)+'</td><td><b>'+esc(nm(r.empId))+'</b></td><td class="mono"><input class="reapo" data-k="po" inputmode="decimal" value="'+esc(String(r.po??"").replace(".",","))+'"></td><td>'+(itemsTxt(r)||'<span class="st-mut">–</span>')+'</td><td>'+esc(r.note||"")+'</td><td style="white-space:nowrap"><button class="btn primary" data-ra="ok">Valider</button><button class="btn ghost danger" data-ra="ko">Refuser</button></td></tr>').join("")+
       '</tbody></table></div><button class="btn" id="rea-allok">Tout valider</button>':'<p class="st-mut">Aucune saisie en attente.</p>')+'</div>';
   // synthèse
   v.innerHTML+='<div class="panel"><h2>Primes du mois</h2><div class="reamonth"><label>Marge du magasin (%)<input data-rm="marge" inputmode="decimal" value="'+esc(RM.marge==null?"":String(RM.marge).replace(".",","))+'" placeholder="non saisie"></label><label>NPS du mois<input data-rm="nps" inputmode="decimal" value="'+esc(RM.nps==null?"":String(RM.nps).replace(".",","))+'" placeholder="–"></label><label>Note Google<input data-rm="google" inputmode="decimal" value="'+esc(RM.google==null?"":String(RM.google).replace(".",","))+'" placeholder="–"></label></div>'+
     '<div class="tbl"><table><thead><tr><th>Collaborateur</th><th>Objectif PO</th><th>Réalisé validé</th><th>Atteinte</th><th>Prime PO</th><th>Prime services</th><th>Prime NPS</th><th>Total validé</th><th>Estimé (avec attente)</th></tr></thead><tbody>'+
-    P.map(e=>{ const obj=MO&&MO.res[e.id]?MO.res[e.id].po:0; const L=all.filter(r=>r.empId===e.id); const pr=primeCalc(B,obj,L,RM,0); const V=pr.valid, A=pr.all;
-      return '<tr><td><b>'+esc(e.name)+'</b></td><td class="n mono">'+(obj?eur(obj):"–")+'</td><td class="n mono">'+eur(V.po)+'</td><td class="n mono">'+(obj?Math.round(V.pct)+" %":"–")+'</td><td class="n mono">'+eur2(V.tier)+'</td><td class="n mono">'+eur2(V.items)+'</td><td class="n mono">'+eur2(V.nps)+'</td><td class="n mono"><b>'+eur2(V.total)+'</b></td><td class="n mono st-mut">'+eur2(A.total)+(pr.pending?' · '+pr.pending+' en attente':'')+'</td></tr>'; }).join("")+
+    P.map(e=>{ const obj=MO&&MO.res[e.id]?MO.res[e.id].po:0; const off=officialFor(S.res,e.id,ym); const L=withOfficial(all.filter(r=>r.empId===e.id),off); const pr=primeCalc(B,obj,L,RM,0); const V=pr.valid, A=pr.all;
+      return '<tr><td><b>'+esc(e.name)+'</b></td><td class="n mono">'+(obj?eur(obj):"–")+'</td><td class="n mono">'+eur(V.po)+(off?'<br><small class="st-mut">palmarès au '+off.au.slice(8)+'/'+off.au.slice(5,7)+'</small>':'')+'</td><td class="n mono">'+(obj?Math.round(V.pct)+" %":"–")+'</td><td class="n mono">'+eur2(V.tier)+'</td><td class="n mono">'+eur2(V.items)+'</td><td class="n mono">'+eur2(V.nps)+'</td><td class="n mono"><b>'+eur2(V.total)+'</b></td><td class="n mono st-mut">'+eur2(A.total)+(pr.pending?' · '+pr.pending+' en attente':'')+'</td></tr>'; }).join("")+
     '</tbody></table></div></div>';
   // barème
   v.innerHTML+='<div class="panel"><h2>Barème des primes</h2><p class="lead">Montants bruts. Les vendeurs voient ce barème et le détail de leur calcul.</p><div class="obgrid"><div><label class="oblbl">Prime sur la PO (paliers d\'atteinte de l\'objectif)</label><div class="tbl"><table class="bartab"><thead><tr><th>Atteinte ≥</th><th>Prime</th><th></th></tr></thead><tbody>'+
@@ -1495,6 +1505,8 @@ function palmKeySummary(c, seen){
   const l=c.label, g=c.group, has=s=>l.includes(s);
   if(has("facture")) return "fact";
   if((/^ca net/.test(l)||has("activite nette")) && !has("hors")) return "ca";
+  if(/^(ca|po) services$/.test(l)) return "caSvc"; if(/^marge services$/.test(l)) return "margeSvc";
+  if(/^marge €$/.test(l)) return "marge"; if(/^marge € hors/.test(l)) return "margeHs"; if(/^mbu$/.test(l)) return "mbu"; if(/^pvm/.test(l)) return "pvm";
   if(/^ca net hors/.test(l)) return "caHs";
   if(has("tx marge")||has("taux marge")) return has("hors")?"txmHs":"txm";
   if(has("pdm")&&has("accessoires")) return "pdmAcc";
@@ -1536,6 +1548,11 @@ function parsePalmares(items){
       const cols=palmCols(L,H,x0,0.5,12.5,12.5,24); const seen={}; const keys=cols.map(c=>palmKeySummary(c,seen));
       for(const l of L.filter(l=>l.y<H.y-2)){ const f=l.it[0]; if(!f||!isMat(f.s)) continue; const r=R(f.s); r.nom=(l.it[1]||{}).s||""; r.prenom=(l.it[2]||{}).s||""; palmAssign(l,cols,keys,r); }
       continue; }
+    // services : CA (ou PO) de la CEG par vendeur, utilisé pour la prime CEG
+    if(/Services en/i.test(title)){ const g=P.find(i=>/^CEG$/.test(i.s.trim())); const HS=L.find(l=>l.it.some(i=>i.s==="Matricule"));
+      if(g&&HS){ const ca=P.filter(i=>/^(CA|PO)$/.test(i.s.trim())&&i.x<=g.x+1&&i.x>=g.x-25&&i.y<g.y).sort((a,b)=>b.x-a.x)[0]; const mg=P.filter(i=>/^Marge$/.test(i.s.trim())&&i.x>g.x&&i.x<=g.x+30&&i.y<g.y).sort((a,b)=>a.x-b.x)[0];
+        if(ca&&mg) for(const l of L.filter(l=>l.y<HS.y-2)){ const f=l.it[0]; if(!f||!isMat(f.s)) continue; const t=l.it.find(i=>i.x+i.w>ca.x+1&&i.x+i.w<=mg.x+1.5); const r=R(f.s); r.cegCA=t?palmNum(t.s)||0:0; } }
+      continue; }
     // programmes CLUB : détail Infinity
     const HC=L.find(l=>l.it.some(i=>/^Nb Club$/i.test(i.s)));
     if(HC){ const nb=HC.it.find(i=>/^Nb Club$/i.test(i.s)); const cols=palmCols(L,HC,nb.x-2,8.5,32,null); const keys=cols.map(palmKeyClub);
@@ -1554,7 +1571,7 @@ function parsePalmares(items){
 const DEF_MAT={angelique:"FC08237",maeva:"FC1542",alexia:"FC17343",emilie:"FC2526",pauliana:"FC2837",mateo:"FC2838",christopher:"FC2839",martin:"FC2889"};
 const matOf = e => (e.mat!=null&&e.mat!=="") ? String(e.mat).toUpperCase() : (DEF_MAT[e.id]||"");
 // indicateurs transmis aux collaborateurs : aucun montant en euros hors CA
-const PALM_KEEP=["fact","ca","txm","pdmAcc","txAttach","nbAcc","remise","ventesX","txXq","ffnn","pdmSvc","cegArt","cegQ","cegTx","vcArt","vcQ","vcTx","club","club100","bp","bp100","clubp","clubp100","ci","ci100","ci2","ci2100","infM","inf1","inf2","inf3","mobUno","mobFam","apple","bdom","prot","pice","trc"];
+const PALM_KEEP=["fact","ca","txm","pdmAcc","txAttach","nbAcc","remise","ventesX","txXq","ffnn","pdmSvc","cegArt","cegQ","cegTx","vcArt","vcQ","vcTx","club","club100","bp","bp100","clubp","clubp100","ci","ci100","ci2","ci2100","infM","inf1","inf2","inf3","mobUno","mobFam","apple","bdom","prot","pice","trc","cegCA"];
 function loadPdfJs(){ if(window.pdfjsLib) return Promise.resolve(); return new Promise((res,rej)=>{ const sc=document.createElement("script"); sc.src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"; sc.onload=()=>{ window.pdfjsLib.GlobalWorkerOptions.workerSrc="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js"; res(); }; sc.onerror=rej; document.head.appendChild(sc); }); }
 async function pdfItems(bytes){ await loadPdfJs(); const doc=await window.pdfjsLib.getDocument({data:bytes.slice()}).promise; const out=[];
   for(let p=1;p<=doc.numPages;p++){ const tc=await (await doc.getPage(p)).getTextContent(); for(const it of tc.items){ if(!it.str||!it.str.trim()) continue; out.push({p,s:it.str.trim(),x:it.transform[4],y:it.transform[5],w:it.width}); } } return out; }
@@ -1563,11 +1580,13 @@ function palmTeam(P){
   team.forEach(e=>{ const r=byMat[matOf(e)]; if(!r||r.ca==null) return; const o={mat:r.mat}; PALM_KEEP.forEach(k=>{ if(r[k]!=null) o[k]=r[k]; }); o.fam=(r.fam||[]).filter(f=>f.ca).map(f=>({lp:f.lp,ca:f.ca,pdm:f.pdm,txm:f.txm})); vend[e.id]=o; });
   const ids=Object.keys(vend).sort((a,b)=>(vend[b].ca||0)-(vend[a].ca||0)); ids.forEach((id,i)=>{ vend[id].rang=i+1; vend[id].sur=ids.length; });
   const known=new Set(team.map(matOf)); const unk=P.rows.filter(r=>/^FC/.test(r.mat)&&!known.has(r.mat)&&(r.ca||0)!==0).map(r=>({mat:r.mat,nom:r.nom||"",prenom:r.prenom||"",ca:r.ca}));
-  return {kind:"palmares", base:P.base||"CA", du:P.du, au:P.au, vend, unk};
+  const full={}; team.forEach(e=>{ const r=byMat[matOf(e)]; if(!r||r.ca==null) return; const o={...r}; delete o.nom; delete o.prenom; o.rang=vend[e.id]&&vend[e.id].rang; full[e.id]=o; });
+  return {kind:"palmares", base:P.base||"CA", du:P.du, au:P.au, vend, unk, full};
 }
 async function palmAnalyse(bytes){ try{ const P=parsePalmares(await pdfItems(bytes)); return P&&P.rows.length?palmTeam(P):null; }catch(e){ return null; } }
 async function resReanalyse(day){ const b=await resGetB64(day); if(!b) throw 0; const s=atob(b), a=new Uint8Array(s.length); for(let i=0;i<s.length;i++) a[i]=s.charCodeAt(i);
-  const A=await palmAnalyse(a); const m=(S.res||[]).find(r=>r.day===day); if(!m) return null; const nm={...m}; delete nm.id; ["kind","base","du","au","vend","unk"].forEach(k=>delete nm[k]); await S.db.doc("resultats/"+day).set(A?{...nm,...A}:nm); return A; }
+  const A=await palmAnalyse(a); const m=(S.res||[]).find(r=>r.day===day); if(!m) return null; const nm={...m}; delete nm.id; ["kind","base","du","au","vend","unk"].forEach(k=>delete nm[k]); const {full, ...pub}=A||{}; await S.db.doc("resultats/"+day).set(A?{...nm,...pub}:nm);
+  if(full) await S.db.doc("palmares/"+day).set({day, base:pub.base, du:pub.du, au:pub.au, rows:full, at:new Date().toISOString()}); S.palm&&delete S.palm[day]; return A; }
 const pct1 = v => v==null?"–":(Math.round(v*100)/100).toString().replace(".",",")+" %";
 const n1 = v => v==null?"–":(Math.round(v*100)/100).toString().replace(".",",");
 
@@ -1576,7 +1595,7 @@ function subscribeRes(){ if(!S.db) return; S.unsubRes&&S.unsubRes(); S.unsubRes=
 const bufB64 = buf => { const u=new Uint8Array(buf); let s=""; for(let i=0;i<u.length;i+=32768) s+=String.fromCharCode.apply(null,u.subarray(i,i+32768)); return btoa(s); };
 async function resGetB64(day){ const m=(S.res||[]).find(r=>r.day===day); if(!m||!S.db) return null; let out=""; for(let i=0;i<(m.parts||0);i++){ const d=await S.db.doc("resultats/"+day+"/parts/"+i).get(); out+=(d.exists()&&d.data().d)||""; } return out; }
 window.F890_RESPDF = resGetB64;
-async function resDelete(day){ const m=(S.res||[]).find(r=>r.day===day); if(!m) return; await S.db.doc("resultats/"+day).delete(); for(let i=0;i<(m.parts||0);i++) await S.db.doc("resultats/"+day+"/parts/"+i).delete(); }
+async function resDelete(day){ const m=(S.res||[]).find(r=>r.day===day); if(!m) return; await S.db.doc("resultats/"+day).delete(); S.db.doc("palmares/"+day).delete().catch(()=>{}); for(let i=0;i<(m.parts||0);i++) await S.db.doc("resultats/"+day+"/parts/"+i).delete(); }
 async function resUpload(day, file){
   if(!S.db){ toast("Le dépôt des résultats fonctionne dans la version en ligne"); return; }
   if(!file) return; if(!/pdf$/i.test(file.type)&&!/\.pdf$/i.test(file.name)){ toast("Choisissez un fichier PDF"); return; }
@@ -1586,24 +1605,62 @@ async function resUpload(day, file){
     for(let i=0;i<n;i++){ say("Envoi en cours… "+Math.round(i/n*100)+" %"); await S.db.doc("resultats/"+day+"/parts/"+i).set({d:b64.slice(i*RES_CH,(i+1)*RES_CH)}); }
     if(old) for(let i=n;i<(old.parts||0);i++) await S.db.doc("resultats/"+day+"/parts/"+i).delete();
     say("Lecture des résultats par collaborateur…"); const bytes=new Uint8Array(await file.arrayBuffer()); const A=await palmAnalyse(bytes);
-    await S.db.doc("resultats/"+day).set({day, name:file.name, size:file.size, parts:n, at:new Date().toISOString(), ...(A||{})});
+    const {full, ...pub}=A||{}; await S.db.doc("resultats/"+day).set({day, name:file.name, size:file.size, parts:n, at:new Date().toISOString(), ...pub});
+    if(full) await S.db.doc("palmares/"+day).set({day, base:pub.base, du:pub.du, au:pub.au, rows:full, at:new Date().toISOString()}); else await S.db.doc("palmares/"+day).delete().catch(()=>{}); S.palm&&delete S.palm[day];
     say(""); toast("Résultats du "+frDate(day)+" publiés"+(A?" · "+Object.keys(A.vend).length+" collaborateurs mis à jour":""));
     const lim=ymdL(new Date(Date.now()-RES_KEEP*864e5)); for(const r of (S.res||[]).filter(r=>r.day<lim)) resDelete(r.day).catch(()=>{});
   }catch(e){ say(""); toast(String(e&&e.code||"").includes("permission")?"Dépôt refusé : publiez les règles Firestore à jour":"Envoi impossible : vérifiez la connexion"); }
 }
 async function resView(day){ const w=window.open("","_blank"); try{ const b=await resGetB64(day); if(!b) throw 0; const s=atob(b), a=new Uint8Array(s.length); for(let i=0;i<s.length;i++) a[i]=s.charCodeAt(i); const url=URL.createObjectURL(new Blob([a],{type:"application/pdf"})); if(w) w.location=url; else window.open(url,"_blank"); }catch(e){ w&&w.close(); toast("Document indisponible"); } }
+const PALM_FAM=["COMMUNICATION","MICRO","IMAGE","SON","PAM","GAM"];
+function palmFull(m){ if(!m) return null; S.palm=S.palm||{}; const c=S.palm[m.day]; if(c!==undefined) return c;
+  S.palm[m.day]=null; if(S.db) S.db.doc("palmares/"+m.day).get().then(d=>{ const x=d.exists()?d.data():null; S.palm[m.day]=x&&x.rows?x:{rows:m.vend||{},partial:true}; if(S.view==="res") renderRes(); }).catch(()=>{ S.palm[m.day]={rows:m.vend||{},partial:true}; if(S.view==="res") renderRes(); });
+  return null; }
+function palmTables(m, F){
+  const nm=id=>(S.team.employees.find(e=>e.id===id)||{}).name||id; const B=m.base==="PO"?"PO":"CA";
+  const ids=Object.keys(F.rows).sort((a,b)=>(F.rows[a].rang||99)-(F.rows[b].rang||99)); const R=id=>F.rows[id];
+  const sum=k=>ids.reduce((t,id)=>t+(+R(id)[k]||0),0);
+  const syn={title:"Synthèse", cols:[["Rang","rang","n"],["Collaborateur",null,"t"],[B+" HT","ca","e"],["Factures","fact","n"],["Marge €","marge","e"],["Tx marge","txm","p"],["PVM","pvm","e"],["PDM accessoires","pdmAcc","p"],["Attache acc.","txAttach","p"],["Nb acc.","nbAcc","n"],["Remise MAG","remise","p"],["Ventes X","ventesX","p"],[B+" services","caSvc","e"],["PDM services","pdmSvc","p"],["CEG qté","cegQ","n"],["CEG tx","cegTx","p"],["CEG "+B,"cegCA","e"],[B==="PO"?"Ass. nomade qté":"Vol/Casse qté","vcQ","n"],[B==="PO"?"Ass. nomade tx":"Vol/Casse tx","vcTx","p"],["Protection","prot","n"],["Piceasoft","pice","n"],["BDOM","bdom","n"],["TRC","trc","p"]]};
+  const club={title:"Club et Infinity", cols:[["Collaborateur",null,"t"],["Club","club","n"],["Club / 100 k€","club100","n"],["B+","bp","n"],["Club+","clubp","n"],["Club+ / 100 k€","clubp100","n"],["Infinity hors mobile","infM","n"],["Infinity Uno (1 univ.)","inf1","n"],["Infinity Duo (2 univ.)","inf2","n"],["Infinity Trio (3 univ.)","inf3","n"],["Mobile Uno","mobUno","n"],["Mobile Famille","mobFam","n"]]};
+  const fams=[...new Set([...PALM_FAM, ...ids.flatMap(id=>(R(id).fam||[]).map(f=>f.lp))])].filter(lp=>ids.some(id=>(R(id).fam||[]).some(f=>f.lp===lp&&f.ca)));
+  return {B, ids, R, sum, nm, syn, club, fams};
+}
+const palmFmt = (t,v) => v==null||v===""?"–": t==="e"?eur(v): t==="p"?pct1(v): n1(v);
 function resTeamHTML(m){
   if(!m) return "";
-  if(!m.vend) return '<div class="panel"><h2>Résultats par collaborateur</h2><p class="lead">Ce PDF n\'a pas été lu comme un « Palmarès vendeurs ». Il reste visible tel quel par l\'équipe.</p><button class="btn" id="res-re">Relire le PDF</button></div>';
-  const rows=Object.entries(m.vend).sort((a,b)=>a[1].rang-b[1].rang); const nm=id=>(S.team.employees.find(e=>e.id===id)||{}).name||id;
+  if(!m.vend) return '<div class="panel"><h2>Données extraites</h2><p class="lead">Ce PDF n\'a pas été reconnu comme un « Palmarès vendeurs ». Aucune donnée n\'a été extraite.</p><button class="btn" id="res-re">Relire le PDF</button></div>';
+  const F=palmFull(m); if(!F) return '<div class="panel"><h2>Données extraites</h2><p class="st-mut">Chargement des données…</p></div>';
+  const T=palmTables(m,F); const tab=S.resTab||"syn";
+  const tbl=(def,rows,tot)=>'<div class="tbl"><table class="ptab"><thead><tr>'+def.cols.map(c=>'<th>'+esc(c[0])+'</th>').join("")+'</tr></thead><tbody>'+rows.map(id=>'<tr>'+def.cols.map(c=>c[1]?'<td class="n mono">'+palmFmt(c[2],T.R(id)[c[1]])+'</td>':'<td><b>'+esc(T.nm(id))+'</b></td>').join("")+'</tr>').join("")+
+    (tot?'<tr class="ptot">'+def.cols.map(c=>!c[1]?'<td><b>Équipe</b></td>':((c[2]==="e"&&c[1]!=="pvm")||(c[2]==="n"&&c[1]!=="rang"&&!/100/.test(c[1])))?'<td class="n mono"><b>'+palmFmt(c[2],T.sum(c[1]))+'</b></td>':'<td></td>').join("")+'</tr>':'')+'</tbody></table></div>';
+  let body="";
+  if(tab==="syn") body=tbl(T.syn,T.ids,true);
+  if(tab==="club") body=tbl(T.club,T.ids,true);
+  if(tab==="fam") body='<div class="tbl"><table class="ptab"><thead><tr><th>Collaborateur</th>'+T.fams.map(f=>'<th>'+esc(f.charAt(0)+f.slice(1).toLowerCase())+'</th>').join("")+'<th>Total</th></tr></thead><tbody>'+
+    T.ids.map(id=>{ const fm=T.R(id).fam||[]; return '<tr><td><b>'+esc(T.nm(id))+'</b></td>'+T.fams.map(lp=>{ const f=fm.find(x=>x.lp===lp); return '<td class="n mono">'+(f&&f.ca?eur(f.ca)+'<br><small class="st-mut">'+pct1(f.pdm)+' · marge '+pct1(f.txm)+'</small>':'–')+'</td>'; }).join("")+'<td class="n mono"><b>'+eur(T.R(id).ca)+'</b></td></tr>'; }).join("")+
+    '<tr class="ptot"><td><b>Équipe</b></td>'+T.fams.map(lp=>'<td class="n mono"><b>'+eur(T.ids.reduce((t,id)=>t+(((T.R(id).fam||[]).find(x=>x.lp===lp)||{}).ca||0),0))+'</b></td>').join("")+'<td class="n mono"><b>'+eur(T.sum("ca"))+'</b></td></tr></tbody></table></div>';
+  if(tab==="prime") body=S.resPrimeHTML||'<p class="st-mut">Calcul en cours…</p>';
   const noMat=emps().filter(e=>!m.vend[e.id]);
-  return '<div class="panel"><h2>Résultats par collaborateur</h2><p class="lead">Période du '+esc(m.du)+' au '+esc(m.au)+'. Chaque collaborateur voit uniquement sa ligne dans son application (sans montant en euros hors CA), ainsi que le PDF complet.</p>'+
-    '<div class="tbl"><table><thead><tr><th>Rang</th><th>Collaborateur</th><th>'+(m.base==="PO"?"PO HT":"CA net")+'</th><th>Factures</th><th>Tx marge</th><th>PDM acc.</th><th>PDM services</th><th>CEG</th><th>'+(m.base==="PO"?"Ass. nomade":"Vol/Casse")+'</th><th>Club</th><th>Club+</th><th>Infinity 1/2/3 univ.</th><th>Mobile Uno/Fam.</th><th>Protection</th><th>TRC</th></tr></thead><tbody>'+
-    rows.map(([id,r])=>'<tr><td class="mono">'+r.rang+'</td><td><b>'+esc(nm(id))+'</b> <small class="st-mut">'+esc(r.mat)+'</small></td><td class="mono">'+eur(r.ca)+'</td><td class="mono">'+n1(r.fact)+'</td><td class="mono">'+pct1(r.txm)+'</td><td class="mono">'+pct1(r.pdmAcc)+'</td><td class="mono">'+pct1(r.pdmSvc)+'</td><td class="mono">'+n1(r.cegQ)+' · '+pct1(r.cegTx)+'</td><td class="mono">'+n1(r.vcQ)+' · '+pct1(r.vcTx)+'</td><td class="mono">'+n1(r.club)+'</td><td class="mono">'+n1(r.clubp)+'</td><td class="mono">'+n1(r.inf1)+' / '+n1(r.inf2)+' / '+n1(r.inf3)+'</td><td class="mono">'+n1(r.mobUno)+' / '+n1(r.mobFam)+'</td><td class="mono">'+n1(r.prot)+'</td><td class="mono">'+pct1(r.trc)+'</td></tr>').join("")+'</tbody></table></div>'+
+  return '<div class="panel"><div style="display:flex;gap:10px;flex-wrap:wrap;align-items:center;justify-content:space-between"><h2>Données extraites · '+(T.B==="PO"?"palmarès en PO":"palmarès en CA")+'</h2><span><button class="btn" id="res-xls">Exporter en Excel</button> <button class="btn ghost" id="res-re">Relire le PDF</button></span></div>'+
+    '<p class="lead">Période du '+esc(m.du)+' au '+esc(m.au)+'. Ces données sont enregistrées dans l\'application'+(T.B==="PO"?' et servent de réalisé officiel pour les primes et le suivi des objectifs du mois (les saisies des vendeurs ne comptent qu\'après le '+esc(m.au)+')':'')+'. Chaque collaborateur voit uniquement sa ligne, sans montant en euros hors '+T.B+'.</p>'+
+    '<div class="seg ptabs" id="res-tabs">'+[["syn","Synthèse"],["fam","Par famille"],["club","Club et Infinity"]].concat(T.B==="PO"?[["prime","Primes"]]:[]).map(([k,l])=>'<button data-rt="'+k+'" aria-pressed="'+(tab===k)+'">'+l+'</button>').join("")+'</div>'+body+
     ((m.unk||[]).length?'<p class="st-mut" style="margin-top:10px">Vendeurs du PDF non rattachés (ignorés) : '+m.unk.map(u=>'<span style="display:inline-flex;gap:6px;align-items:center;margin-right:10px">'+esc(u.mat)+' '+esc(u.nom)+' '+esc(u.prenom)+' <select data-unk="'+esc(u.mat)+'"><option value="">Rattacher à…</option>'+noMat.map(e=>'<option value="'+esc(e.id)+'">'+esc(e.name)+'</option>').join("")+'</select></span>').join("")+'</p>':'')+
-    (noMat.length?'<p class="st-mut">Sans résultat dans ce PDF : '+noMat.map(e=>esc(e.name)).join(", ")+'.</p>':'')+
-    '<button class="btn ghost" id="res-re" style="margin-top:6px">Relire le PDF</button></div>';
+    (noMat.length?'<p class="st-mut">Sans données dans ce PDF : '+noMat.map(e=>esc(e.name)).join(", ")+'.</p>':'')+(F.partial?'<p class="st-mut">Données détaillées indisponibles pour ce dépôt : cliquez sur « Relire le PDF ».</p>':'')+'</div>';
 }
+async function resPrimeCompute(m){
+  const ym=frIso(m.au).slice(0,7); const B=bareme(); const RM=reaMonth(ym); let MO=null; try{ MO=await objMonthEmp(ym); }catch(e){}
+  const ids=Object.keys(m.vend).sort((a,b)=>m.vend[a].rang-m.vend[b].rang); const nm=id=>(S.team.employees.find(e=>e.id===id)||{}).name||id;
+  const its=(B.items||[]);
+  const rows=ids.map(id=>{ const off=officialFor([m],id,ym); const obj=MO&&MO.res[id]?MO.res[id].po:0; const pr=primeCalc(B,obj,off?[off]:[],RM,0).valid; return {id,off,obj,pr}; });
+  S.resPrimeHTML='<p class="st-mut">Calcul au '+esc(m.au)+' avec le barème actuel, sur la seule base du palmarès (sans les saisies postérieures). Marge du magasin : '+(RM.marge==null?'non saisie (onglet Réalisés)':pct1(RM.marge))+'.</p><div class="tbl"><table class="ptab"><thead><tr><th>Collaborateur</th><th>Objectif PO</th><th>PO réalisé</th><th>Atteinte</th><th>Prime PO</th>'+its.map(it=>'<th>'+esc(it.name)+'</th>').join("")+'<th>Prime services</th><th>Total</th></tr></thead><tbody>'+
+    rows.map(r=>'<tr><td><b>'+esc(nm(r.id))+'</b></td><td class="n mono">'+(r.obj?eur(r.obj):'–')+'</td><td class="n mono">'+eur(r.pr.po)+'</td><td class="n mono">'+(r.obj?Math.round(r.pr.pct)+' %':'–')+'</td><td class="n mono">'+eur2(r.pr.tier)+'</td>'+its.map(it=>{ const l=r.pr.lines.find(x=>x.id===it.id); return '<td class="n mono">'+(l?(it.mode==="pct"?eur(l.q):l.q)+'<br><small class="st-mut">'+eur2(l.amt)+'</small>':'–')+'</td>'; }).join("")+'<td class="n mono">'+eur2(r.pr.items)+'</td><td class="n mono"><b>'+eur2(r.pr.tier+r.pr.items)+'</b></td></tr>').join("")+'</tbody></table></div>';
+  if(S.view==="res"&&S.resTab==="prime") renderRes();
+}
+function resExport(m){ const F=palmFull(m); if(!F||!window.XLSX){ toast("Export indisponible pour le moment"); return; } const T=palmTables(m,F); const wb=XLSX.utils.book_new();
+  const sheet=(def)=>{ const aoa=[def.cols.map(c=>c[0])].concat(T.ids.map(id=>def.cols.map(c=>c[1]?(T.R(id)[c[1]]??""):T.nm(id)))); const ws=XLSX.utils.aoa_to_sheet(aoa); ws["!cols"]=def.cols.map((c,i)=>({wch:i<2?18:13})); return ws; };
+  XLSX.utils.book_append_sheet(wb,sheet(T.syn),"Synthèse"); XLSX.utils.book_append_sheet(wb,sheet(T.club),"Club et Infinity");
+  const fa=[["Collaborateur","Famille",T.B+" HT","PdM famille %","Taux de marge %"]]; T.ids.forEach(id=>(T.R(id).fam||[]).forEach(f=>fa.push([T.nm(id),f.lp,f.ca??"",f.pdm??"",f.txm??""]))); const wf=XLSX.utils.aoa_to_sheet(fa); wf["!cols"]=[{wch:18},{wch:18},{wch:12},{wch:14},{wch:14}]; XLSX.utils.book_append_sheet(wb,wf,"Par famille");
+  const out=XLSX.write(wb,{bookType:"xlsx",type:"array"}); save("Palmares_"+T.B+"_"+frIso(m.au)+".xlsx", new Blob([out],{type:"application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"})); }
 function renderRes(){
   const v=$("#v-res"); const td=todayStr(); if(!S.resDay) S.resDay=td; const L=S.res||[];
   v.innerHTML='<div class="panel"><h2>Résultats du jour</h2><p class="lead">Déposez chaque jour le PDF des résultats complets des objectifs. Il apparaît aussitôt dans l\'application de tous les collaborateurs, consultable uniquement pendant leurs heures de travail.</p>'+
@@ -1615,6 +1672,8 @@ function renderRes(){
       '</tbody></table></div><p class="st-mut" style="margin-top:8px">Les documents de plus de '+RES_KEEP+' jours sont supprimés automatiquement.</p>':'<p class="empty">Aucun document pour le moment.</p>')+'</div>';
   $("#res-d").onchange=e=>{ S.resDay=e.target.value||td; renderRes(); };
   v.querySelectorAll("[data-unk]").forEach(sel=>sel.onchange=async()=>{ const e=S.team.employees.find(x=>x.id===sel.value); if(!e) return; e.mat=sel.dataset.unk; teamChanged(); toast("Matricule "+e.mat+" rattaché à "+e.name+" · relecture…"); try{ await resReanalyse(S.resDay); toast("Résultats mis à jour"); }catch(err){ toast("Relecture impossible"); } });
+  v.querySelectorAll("[data-rt]").forEach(b=>b.onclick=()=>{ S.resTab=b.dataset.rt; if(S.resTab==="prime"){ S.resPrimeHTML=null; const m=L.find(r=>r.day===S.resDay); m&&resPrimeCompute(m); } renderRes(); });
+  $("#res-xls")&&($("#res-xls").onclick=()=>resExport(L.find(r=>r.day===S.resDay)));
   $("#res-re")&&($("#res-re").onclick=async()=>{ toast("Relecture du PDF…"); try{ const A=await resReanalyse(S.resDay); toast(A?"Résultats répartis par collaborateur":"Ce PDF n'est pas un palmarès vendeurs : il reste visible tel quel"); }catch(e){ toast("Relecture impossible"); } });
   $("#res-f").onchange=async e=>{ const f=e.target.files&&e.target.files[0]; e.target.value=""; await resUpload(S.resDay,f); };
   v.querySelectorAll("tr[data-d] [data-k]").forEach(b=>{ const d=b.closest("tr").dataset.d; b.onclick=async()=>{ if(b.dataset.k==="see") return resView(d);
@@ -2454,7 +2513,7 @@ function renderHome(){
     '</div>'+
     (curW&&!isClosed(td)?'<div class="today"><div class="today-hd"><b>Aujourd\'hui en magasin</b><button class="lnk" data-go="team" data-today="1">Voir la journée ›</button></div>'+
       (sorted.length?'<div class="today-list">'+sorted.map(e=>{ const x=getE(e.id,td); return '<div class="tp"><span class="av">'+esc((e.name||"?")[0])+'</span><span class="tn"><b>'+esc(e.name)+'</b><small>'+esc(x.tag||({vente:"Vente",caisse:"Caisse",livraison:"Livraison"}[fonctionOf(e)]||""))+'</small></span><span class="tt">'+(hasTimes(x)?(x.m1?x.m1+"–"+x.m2:"")+(x.m1&&x.a1?'<br>':'')+(x.a1?x.a1+"–"+x.a2:""):'<i class="st-mut">à définir</i>')+'</span></div>'; }).join("")+'</div>':'<p class="st-mut" style="margin:6px 0 0">Personne n\'est planifié aujourd\'hui.</p>')+'</div>':'')+
-    '<div class="qa"><button class="qbtn" id="hGen">'+ico("gen")+'<span>Générer la semaine</span></button><button class="qbtn'+(S.week.pub?" on":"")+'" id="hPub">'+ico("pub")+'<span>'+(S.week.pub?"Semaine publiée":"Publier aux collaborateurs")+'</span></button></div><p class="appver">Version du 13/10 11:15</p>';
+    '<div class="qa"><button class="qbtn" id="hGen">'+ico("gen")+'<span>Générer la semaine</span></button><button class="qbtn'+(S.week.pub?" on":"")+'" id="hPub">'+ico("pub")+'<span>'+(S.week.pub?"Semaine publiée":"Publier aux collaborateurs")+'</span></button></div><p class="appver">Version du 13/10 15:30</p>';
   v.querySelectorAll("[data-go]").forEach(b=>b.onclick=()=>{ if(b.dataset.today && curW) S.mDay=td; go(b.dataset.go); });
   $("#hGen").onclick=()=>{ go("team"); generateWeek(); };
   $("#hPub").onclick=()=>togglePub();
