@@ -1480,38 +1480,81 @@ async function renderRea(){
 }
 
 /* ---------- résultats du jour (PDF visible par toute l'équipe) ---------- */
-/* lecture du « Palmarès Vendeur en CA » (export SAP BO Boulanger) */
-const PALM_COLS=[["fact",124],["ca",139],["caHs",159],["marge",179],["txm",199],["margeHs",218],["txmHs",238],["mbu",258],["pvm",278],["pdmAcc",298],["remise",318],["ventesX",338],["ffnn",357],["numer",380],["caSvc",403],["margeSvc",419],["pdmSvc",436],["cegArt",452],["cegQ",469],["cegTx",486],["vcArt",502],["vcQ",519],["vcTx",536],["club",559],["club100",572],["bp",588],["bp100",600],["clubp",616],["clubp100",629],["ci",645],["ci100",657],["apple",672],["bdom",687],["prot",704],["pice",720],["trc",737]];
-function palmNum(s){ s=String(s).replace(/\s| | /g,"").replace("€","").replace(",","."); if(!s||/[#]/.test(s)||/DIV/.test(s)) return null; const pc=s.endsWith("%"); const n=parseFloat(pc?s.slice(0,-1):s); return isNaN(n)?null:n; }
+/* lecture des « Palmarès Vendeur » Boulanger (en CA ou en PO, export SAP BO) : colonnes repérées par leurs en-têtes */
+function palmNum(s){ s=String(s).replace(/\s| | /g,"").replace("€","").replace(",","."); if(!s||/#|DIV/.test(s)) return null; const n=parseFloat(s.replace(/%$/,"")); return isNaN(n)?null:n; }
+const palmNorm = s => String(s).toLowerCase().normalize("NFD").replace(/[̀-ͯ]/g,"").replace(/\s+/g," ").trim();
+function palmLines(P){ const L=[]; P.slice().sort((a,b)=>b.y-a.y||a.x-b.x).forEach(i=>{ let l=L.find(l=>Math.abs(l.y-i.y)<1.6); if(!l){ l={y:i.y,it:[]}; L.push(l); } l.it.push(i); }); L.forEach(l=>l.it.sort((a,b)=>a.x-b.x)); return L.sort((a,b)=>b.y-a.y); }
+function palmCols(L, H, x0, below, above, groupFrom, groupTo){
+  const band=L.filter(l=>l.y>=H.y-below-0.1 && l.y<=H.y+above+0.1).flatMap(l=>l.it).filter(i=>i.x>=x0);
+  const xs=[...new Set(band.map(i=>Math.round(i.x)))].sort((a,b)=>a-b); const cl=[]; xs.forEach(x=>{ if(!cl.length||x-cl[cl.length-1]>3.2) cl.push(x); });
+  const grp=groupFrom==null?[]:L.filter(l=>l.y>H.y+groupFrom && l.y<=H.y+groupTo).flatMap(l=>l.it).filter(i=>i.x>=x0).sort((a,b)=>a.x-b.x);
+  return cl.map(x=>{ const its=band.filter(i=>Math.abs(i.x-x)<=3.2).sort((a,b)=>b.y-a.y); let g=""; grp.forEach(gi=>{ if(gi.x<=x+8.5) g=gi.s; });
+    return {x, label:palmNorm(its.map(i=>i.s).join(" ")), group:palmNorm(g)}; });
+}
+function palmKeySummary(c, seen){
+  const l=c.label, g=c.group, has=s=>l.includes(s);
+  if(has("facture")) return "fact";
+  if((/^ca net/.test(l)||has("activite nette")) && !has("hors")) return "ca";
+  if(/^ca net hors/.test(l)) return "caHs";
+  if(has("tx marge")||has("taux marge")) return has("hors")?"txmHs":"txm";
+  if(has("pdm")&&has("accessoires")) return "pdmAcc";
+  if(has("tx attach")) return "txAttach";
+  if(has("d'accessoires")) return "nbAcc";
+  if(has("remise")) return "remise";
+  if(has("quantite")||has("(nb pdts x)")) return "txXq";
+  if(has("ventes x")||has("x a la po")||/tx de vente\b/.test(l)) return "ventesX";
+  if(has("ff/")) return "ffnn";
+  if(has("numerisation")) return "numer";
+  if(g.startsWith("global services")&&has("pdm")) return "pdmSvc";
+  if(has("ceg (qte)")) return "cegQ"; if(has("ceg (tx)")) return "cegTx";
+  if(/vol|casse|nomade/.test(g)){ if(has("(qte)")) return "vcQ"; if(has("vente (tx)")) return "vcTx"; if(has("eligible")) return "vcArt"; }
+  if(has("articles")&&has("ceg")) return "cegArt";
+  if(has("apple")) return "apple"; if(has("bdom")) return "bdom"; if(has("protection")) return "prot"; if(has("piceasoft")) return "pice"; if(/\btrc\b/.test(l)) return "trc";
+  const per=has("100"); 
+  if(g==="club") return per?"club100":"club";
+  if(g==="b+") return per?"bp100":"bp";
+  if(g==="club +"||g==="club+") return per?"clubp100":"clubp";
+  if(g.startsWith("club infinity")){ const k=seen.ci?"ci2":"ci"; if(per){ seen.ci=true; return k+"100"; } return k; }
+  return null;
+}
+function palmKeyClub(c){ const l=c.label;
+  if(/nb club\+/.test(l)) return "clubpN"; if(/nb club\b/.test(l)) return "clubN";
+  if(l.includes("hors")) return "infM"; if(l.includes("1 univers")) return "inf1"; if(l.includes("2 univers")) return "inf2"; if(l.includes("3 univers")) return "inf3";
+  if(l.includes("uno")) return "mobUno"; if(l.includes("famille")) return "mobFam"; return null; }
+function palmAssign(l, cols, keys, r, xMax){ for(const it of l.it){ const xr=it.x+it.w; if(xr<=cols[0].x+0.5||(xMax&&xr>xMax)) continue; let c=-1; cols.forEach((cc,i)=>{ if(cc.x<xr-1.5) c=i; }); const k=c>=0?keys[c]:null; if(k && r[k]==null){ const v=palmNum(it.s); if(v!=null) r[k]=v; } } }
 function parsePalmares(items){
   const byPage={}; items.forEach(i=>{ (byPage[i.p]=byPage[i.p]||[]).push(i); });
-  const lines=P=>{ const L=[]; P.slice().sort((a,b)=>b.y-a.y||a.x-b.x).forEach(i=>{ let l=L.find(l=>Math.abs(l.y-i.y)<2.2); if(!l){ l={y:i.y,it:[]}; L.push(l); } l.it.push(i); }); L.forEach(l=>l.it.sort((a,b)=>a.x-b.x)); return L.sort((a,b)=>b.y-a.y); };
-  const all=items.map(i=>i.s).join(" ");
-  const pm=/P[ée]riode du (\d\d\/\d\d\/\d\d) au (\d\d\/\d\d\/\d\d)/.exec(all); const store=(/(F\d{3})\s*-\s*([A-Z][^P]*?)Palmar/.exec(all)||[])[1]||"";
-  if(!/Palmar/i.test(all)||!/Matricule/.test(all)) return null;
-  const rows={};
-  // page de synthèse : ligne d'en-tête « Matricule » puis une ligne par vendeur
-  for(const p of Object.keys(byPage)){ const L=lines(byPage[p]); const hi=L.findIndex(l=>l.it.some(i=>i.s==="Matricule")&&l.it.some(i=>/^Trc$/.test(i.s))); if(hi<0) continue;
-    const hl=L[hi]; const xM=hl.it.find(i=>i.s==="Matricule").x, xT=hl.it.find(i=>i.s==="Trc").x; const k=(xT-xM)/(737-63); const X=x0=>xM+(x0-63)*k;
-    const cols=PALM_COLS.map(([n,x])=>[n,X(x)]);
-    for(const l of L.slice(hi+1)){ const f=l.it[0]; if(!f||!/^(FC|MS)\d+$/.test(f.s)) continue; const r={mat:f.s, nom:(l.it[1]||{}).s||"", prenom:(l.it[2]||{}).s||""};
-      for(const it of l.it.slice(3)){ const xr=it.x+it.w; let c=null; for(const [n,x] of cols) if(x<xr-1.5) c=n; if(c && r[c]==null) r[c]=palmNum(it.s); }
-      rows[r.mat]=r; }
+  const all=items.map(i=>i.s).join(" "); if(!/Palmar/i.test(all)||!/Matricule/.test(all)) return null;
+  const pm=/P[ée]riode du (\d\d\/\d\d\/\d\d) au (\d\d\/\d\d\/\d\d)/.exec(all);
+  const base=/Palmar[eè]s Vendeur en PO/i.test(all)?"PO":"CA"; const rows={}; const R=m=>rows[m]||(rows[m]={mat:m});
+  const isMat=s=>/^(FC|MS)\d+$/.test(s);
+  for(const p of Object.keys(byPage)){ const P=byPage[p]; const L=palmLines(P); const title=(P.find(i=>/Palmar/.test(i.s))||{}).s||"";
+    // synthèse par vendeur
+    const H=L.find(l=>l.it.some(i=>i.s==="Matricule")&&l.it.some(i=>/^trc$/i.test(i.s)));
+    if(H && !/D[ée]tail|Programmes|Services en/i.test(title)){
+      const pre=H.it.find(i=>/^Pr[ée]nom$/.test(i.s)); const x0=pre?pre.x+pre.w+2:H.it[3].x-2;
+      const cols=palmCols(L,H,x0,0.5,12.5,12.5,24); const seen={}; const keys=cols.map(c=>palmKeySummary(c,seen));
+      for(const l of L.filter(l=>l.y<H.y-2)){ const f=l.it[0]; if(!f||!isMat(f.s)) continue; const r=R(f.s); r.nom=(l.it[1]||{}).s||""; r.prenom=(l.it[2]||{}).s||""; palmAssign(l,cols,keys,r); }
+      continue; }
+    // programmes CLUB : détail Infinity
+    const HC=L.find(l=>l.it.some(i=>/^Nb Club$/i.test(i.s)));
+    if(HC){ const nb=HC.it.find(i=>/^Nb Club$/i.test(i.s)); const cols=palmCols(L,HC,nb.x-2,8.5,32,null); const keys=cols.map(palmKeyClub);
+      const kx=cols.filter((c,i)=>keys[i]).map(c=>c.x); const lastX=Math.max(...kx); const gap=kx.length>1?(lastX-Math.min(...kx))/(kx.length-1):40; 
+      for(const l of L.filter(l=>l.y<HC.y-9)){ const m=l.it.find(i=>isMat(i.s)&&i.x<nb.x); if(!m) continue; palmAssign({it:l.it.filter(i=>i.x>m.x)},cols,keys,R(m.s),lastX+gap); }
+      continue; }
+    // détail par ligne de produits
+    if(L.some(l=>l.it.some(i=>/^Ligne (de )?Produit$/i.test(i.s)))){ let cur=null;
+      for(const l of L){ const m=l.it.find(i=>isMat(i.s)); const lp=l.it.find(i=>/^\d\d\s*-\s*\S/.test(i.s));
+        if(m && lp) cur=m.s; if(!lp||!cur) continue;
+        const after=l.it.filter(i=>i.x>lp.x+lp.w-1).map(i=>i.s); const eu=after.filter(s=>/€/.test(s)), pc=after.filter(s=>/%|DIV/.test(s));
+        (R(cur).fam=R(cur).fam||[]).push({lp:lp.s.replace(/^\d\d\s*-\s*/,"").trim(), ca:palmNum(eu[0]), pdm:palmNum(pc[0]), txm:palmNum(pc[1])}); } }
   }
-  // pages « Détail à la LP » : une ligne par famille de produits
-  for(const p of Object.keys(byPage)){ const L=lines(byPage[p]); if(!L.some(l=>l.it.some(i=>i.s==="Ligne Produit"))) continue; let cur=null;
-    for(const l of L){ const m=l.it.find(i=>/^(FC|MS)\d+$/.test(i.s)); const lp=l.it.find(i=>/^\d\d\s*-\s*\S/.test(i.s));
-      if(m && lp) cur=m.s; if(!lp||!cur) continue;
-      const after=l.it.filter(i=>i.x>lp.x+lp.w-1).map(i=>i.s); const eu=after.filter(s=>/€/.test(s)), pc=after.filter(s=>/%|DIV/.test(s));
-      const r=rows[cur]||(rows[cur]={mat:cur}); (r.fam=r.fam||[]).push({lp:lp.s.replace(/^\d\d\s*-\s*/,"").trim(), ca:palmNum(eu[0]), pdm:palmNum(pc[0]), txm:palmNum(pc[1])}); }
-  }
-  return {store, du:pm?pm[1]:"", au:pm?pm[2]:"", rows:Object.values(rows)};
+  return {base, du:pm?pm[1]:"", au:pm?pm[2]:"", rows:Object.values(rows)};
 }
-
 const DEF_MAT={angelique:"FC08237",maeva:"FC1542",alexia:"FC17343",emilie:"FC2526",pauliana:"FC2837",mateo:"FC2838",christopher:"FC2839",martin:"FC2889"};
 const matOf = e => (e.mat!=null&&e.mat!=="") ? String(e.mat).toUpperCase() : (DEF_MAT[e.id]||"");
 // indicateurs transmis aux collaborateurs : aucun montant en euros hors CA
-const PALM_KEEP=["fact","ca","txm","pdmAcc","remise","ventesX","ffnn","pdmSvc","cegArt","cegQ","cegTx","vcArt","vcQ","vcTx","club","club100","bp","bp100","clubp","clubp100","ci","ci100","apple","bdom","prot","pice","trc"];
+const PALM_KEEP=["fact","ca","txm","pdmAcc","txAttach","nbAcc","remise","ventesX","txXq","ffnn","pdmSvc","cegArt","cegQ","cegTx","vcArt","vcQ","vcTx","club","club100","bp","bp100","clubp","clubp100","ci","ci100","ci2","ci2100","infM","inf1","inf2","inf3","mobUno","mobFam","apple","bdom","prot","pice","trc"];
 function loadPdfJs(){ if(window.pdfjsLib) return Promise.resolve(); return new Promise((res,rej)=>{ const sc=document.createElement("script"); sc.src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"; sc.onload=()=>{ window.pdfjsLib.GlobalWorkerOptions.workerSrc="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js"; res(); }; sc.onerror=rej; document.head.appendChild(sc); }); }
 async function pdfItems(bytes){ await loadPdfJs(); const doc=await window.pdfjsLib.getDocument({data:bytes.slice()}).promise; const out=[];
   for(let p=1;p<=doc.numPages;p++){ const tc=await (await doc.getPage(p)).getTextContent(); for(const it of tc.items){ if(!it.str||!it.str.trim()) continue; out.push({p,s:it.str.trim(),x:it.transform[4],y:it.transform[5],w:it.width}); } } return out; }
@@ -1520,11 +1563,11 @@ function palmTeam(P){
   team.forEach(e=>{ const r=byMat[matOf(e)]; if(!r||r.ca==null) return; const o={mat:r.mat}; PALM_KEEP.forEach(k=>{ if(r[k]!=null) o[k]=r[k]; }); o.fam=(r.fam||[]).filter(f=>f.ca).map(f=>({lp:f.lp,ca:f.ca,pdm:f.pdm,txm:f.txm})); vend[e.id]=o; });
   const ids=Object.keys(vend).sort((a,b)=>(vend[b].ca||0)-(vend[a].ca||0)); ids.forEach((id,i)=>{ vend[id].rang=i+1; vend[id].sur=ids.length; });
   const known=new Set(team.map(matOf)); const unk=P.rows.filter(r=>/^FC/.test(r.mat)&&!known.has(r.mat)&&(r.ca||0)!==0).map(r=>({mat:r.mat,nom:r.nom||"",prenom:r.prenom||"",ca:r.ca}));
-  return {kind:"palmares", du:P.du, au:P.au, vend, unk};
+  return {kind:"palmares", base:P.base||"CA", du:P.du, au:P.au, vend, unk};
 }
 async function palmAnalyse(bytes){ try{ const P=parsePalmares(await pdfItems(bytes)); return P&&P.rows.length?palmTeam(P):null; }catch(e){ return null; } }
 async function resReanalyse(day){ const b=await resGetB64(day); if(!b) throw 0; const s=atob(b), a=new Uint8Array(s.length); for(let i=0;i<s.length;i++) a[i]=s.charCodeAt(i);
-  const A=await palmAnalyse(a); const m=(S.res||[]).find(r=>r.day===day); if(!m) return null; const nm={...m}; delete nm.id; ["kind","du","au","vend","unk"].forEach(k=>delete nm[k]); await S.db.doc("resultats/"+day).set(A?{...nm,...A}:nm); return A; }
+  const A=await palmAnalyse(a); const m=(S.res||[]).find(r=>r.day===day); if(!m) return null; const nm={...m}; delete nm.id; ["kind","base","du","au","vend","unk"].forEach(k=>delete nm[k]); await S.db.doc("resultats/"+day).set(A?{...nm,...A}:nm); return A; }
 const pct1 = v => v==null?"–":(Math.round(v*100)/100).toString().replace(".",",")+" %";
 const n1 = v => v==null?"–":(Math.round(v*100)/100).toString().replace(".",",");
 
@@ -1555,8 +1598,8 @@ function resTeamHTML(m){
   const rows=Object.entries(m.vend).sort((a,b)=>a[1].rang-b[1].rang); const nm=id=>(S.team.employees.find(e=>e.id===id)||{}).name||id;
   const noMat=emps().filter(e=>!m.vend[e.id]);
   return '<div class="panel"><h2>Résultats par collaborateur</h2><p class="lead">Période du '+esc(m.du)+' au '+esc(m.au)+'. Chaque collaborateur voit uniquement sa ligne dans son application (sans montant en euros hors CA), ainsi que le PDF complet.</p>'+
-    '<div class="tbl"><table><thead><tr><th>Rang</th><th>Collaborateur</th><th>CA net</th><th>Factures</th><th>Tx marge</th><th>PDM acc.</th><th>PDM services</th><th>CEG</th><th>Vol/Casse</th><th>Club</th><th>Club+</th><th>Club Infinity</th><th>Protection</th><th>TRC</th></tr></thead><tbody>'+
-    rows.map(([id,r])=>'<tr><td class="mono">'+r.rang+'</td><td><b>'+esc(nm(id))+'</b> <small class="st-mut">'+esc(r.mat)+'</small></td><td class="mono">'+eur(r.ca)+'</td><td class="mono">'+n1(r.fact)+'</td><td class="mono">'+pct1(r.txm)+'</td><td class="mono">'+pct1(r.pdmAcc)+'</td><td class="mono">'+pct1(r.pdmSvc)+'</td><td class="mono">'+n1(r.cegQ)+' · '+pct1(r.cegTx)+'</td><td class="mono">'+n1(r.vcQ)+' · '+pct1(r.vcTx)+'</td><td class="mono">'+n1(r.club)+'</td><td class="mono">'+n1(r.clubp)+'</td><td class="mono">'+n1(r.ci)+'</td><td class="mono">'+n1(r.prot)+'</td><td class="mono">'+pct1(r.trc)+'</td></tr>').join("")+'</tbody></table></div>'+
+    '<div class="tbl"><table><thead><tr><th>Rang</th><th>Collaborateur</th><th>'+(m.base==="PO"?"PO HT":"CA net")+'</th><th>Factures</th><th>Tx marge</th><th>PDM acc.</th><th>PDM services</th><th>CEG</th><th>'+(m.base==="PO"?"Ass. nomade":"Vol/Casse")+'</th><th>Club</th><th>Club+</th><th>Infinity 1/2/3 univ.</th><th>Mobile Uno/Fam.</th><th>Protection</th><th>TRC</th></tr></thead><tbody>'+
+    rows.map(([id,r])=>'<tr><td class="mono">'+r.rang+'</td><td><b>'+esc(nm(id))+'</b> <small class="st-mut">'+esc(r.mat)+'</small></td><td class="mono">'+eur(r.ca)+'</td><td class="mono">'+n1(r.fact)+'</td><td class="mono">'+pct1(r.txm)+'</td><td class="mono">'+pct1(r.pdmAcc)+'</td><td class="mono">'+pct1(r.pdmSvc)+'</td><td class="mono">'+n1(r.cegQ)+' · '+pct1(r.cegTx)+'</td><td class="mono">'+n1(r.vcQ)+' · '+pct1(r.vcTx)+'</td><td class="mono">'+n1(r.club)+'</td><td class="mono">'+n1(r.clubp)+'</td><td class="mono">'+n1(r.inf1)+' / '+n1(r.inf2)+' / '+n1(r.inf3)+'</td><td class="mono">'+n1(r.mobUno)+' / '+n1(r.mobFam)+'</td><td class="mono">'+n1(r.prot)+'</td><td class="mono">'+pct1(r.trc)+'</td></tr>').join("")+'</tbody></table></div>'+
     ((m.unk||[]).length?'<p class="st-mut" style="margin-top:10px">Vendeurs du PDF non rattachés (ignorés) : '+m.unk.map(u=>'<span style="display:inline-flex;gap:6px;align-items:center;margin-right:10px">'+esc(u.mat)+' '+esc(u.nom)+' '+esc(u.prenom)+' <select data-unk="'+esc(u.mat)+'"><option value="">Rattacher à…</option>'+noMat.map(e=>'<option value="'+esc(e.id)+'">'+esc(e.name)+'</option>').join("")+'</select></span>').join("")+'</p>':'')+
     (noMat.length?'<p class="st-mut">Sans résultat dans ce PDF : '+noMat.map(e=>esc(e.name)).join(", ")+'.</p>':'')+
     '<button class="btn ghost" id="res-re" style="margin-top:6px">Relire le PDF</button></div>';
@@ -2310,7 +2353,7 @@ async function weekObjData(wid, w){ let O=null, meta=[], MO={}; try{ O=objForWee
 window.F890_PREVIEW = async (empId, all) => {
   const e=S.team.employees.find(x=>x.id===empId); if(!e) return null; const cw=isoWeekId(new Date()); const weeks=[];
   for(let k=-1;k<=4;k++){ const wid=shiftWeek(cw,k); const w = wid===S.weekId ? S.week : await loadWeek(wid); if(!w || (!all && !w.pub)) continue; const {O,meta}=await weekObjData(wid,w); weeks.push(JSON.parse(JSON.stringify(pubDoc(wid,w,e,O,meta)))); }
-  const td=todayStr(); return { emp:e.id, name:e.name, weeks, names:emps().map(x=>({id:x.id,name:x.name})), demandes:(S.demandes||[]).filter(r=>r.empId===e.id), pauses:(S.pauses||[]).filter(p=>p.empId===e.id&&p.day===td), rea:(S.rea||[]).filter(r=>r.empId===e.id), res:(S.res||[]).map(r=>({day:r.day,at:r.at,parts:r.parts,name:r.name,du:r.du,au:r.au,vend:r.vend})), bar:{bareme:bareme(), months:(S.team.settings||{}).reaMonths||{}} };
+  const td=todayStr(); return { emp:e.id, name:e.name, weeks, names:emps().map(x=>({id:x.id,name:x.name})), demandes:(S.demandes||[]).filter(r=>r.empId===e.id), pauses:(S.pauses||[]).filter(p=>p.empId===e.id&&p.day===td), rea:(S.rea||[]).filter(r=>r.empId===e.id), res:(S.res||[]).map(r=>({day:r.day,at:r.at,parts:r.parts,name:r.name,base:r.base,du:r.du,au:r.au,vend:r.vend})), bar:{bareme:bareme(), months:(S.team.settings||{}).reaMonths||{}} };
 };
 async function publishWeek(wid, w){
   if(!S.db) return; const b=S.db.batch();
@@ -2411,7 +2454,7 @@ function renderHome(){
     '</div>'+
     (curW&&!isClosed(td)?'<div class="today"><div class="today-hd"><b>Aujourd\'hui en magasin</b><button class="lnk" data-go="team" data-today="1">Voir la journée ›</button></div>'+
       (sorted.length?'<div class="today-list">'+sorted.map(e=>{ const x=getE(e.id,td); return '<div class="tp"><span class="av">'+esc((e.name||"?")[0])+'</span><span class="tn"><b>'+esc(e.name)+'</b><small>'+esc(x.tag||({vente:"Vente",caisse:"Caisse",livraison:"Livraison"}[fonctionOf(e)]||""))+'</small></span><span class="tt">'+(hasTimes(x)?(x.m1?x.m1+"–"+x.m2:"")+(x.m1&&x.a1?'<br>':'')+(x.a1?x.a1+"–"+x.a2:""):'<i class="st-mut">à définir</i>')+'</span></div>'; }).join("")+'</div>':'<p class="st-mut" style="margin:6px 0 0">Personne n\'est planifié aujourd\'hui.</p>')+'</div>':'')+
-    '<div class="qa"><button class="qbtn" id="hGen">'+ico("gen")+'<span>Générer la semaine</span></button><button class="qbtn'+(S.week.pub?" on":"")+'" id="hPub">'+ico("pub")+'<span>'+(S.week.pub?"Semaine publiée":"Publier aux collaborateurs")+'</span></button></div><p class="appver">Version du 13/10 10:30</p>';
+    '<div class="qa"><button class="qbtn" id="hGen">'+ico("gen")+'<span>Générer la semaine</span></button><button class="qbtn'+(S.week.pub?" on":"")+'" id="hPub">'+ico("pub")+'<span>'+(S.week.pub?"Semaine publiée":"Publier aux collaborateurs")+'</span></button></div><p class="appver">Version du 13/10 11:15</p>';
   v.querySelectorAll("[data-go]").forEach(b=>b.onclick=()=>{ if(b.dataset.today && curW) S.mDay=td; go(b.dataset.go); });
   $("#hGen").onclick=()=>{ go("team"); generateWeek(); };
   $("#hPub").onclick=()=>togglePub();
