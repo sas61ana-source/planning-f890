@@ -402,6 +402,10 @@ tr.abs-cur td{background:rgba(227,6,19,.04)}
 .resdrop input[type=date]{padding:7px 9px;border:1px solid var(--line);border-radius:8px;background:var(--surface)}
 .ptab td,.ptab th{white-space:nowrap}.pdet td,.pdet th{white-space:nowrap}.pdet .ptot td{border-top:2px solid var(--line);background:var(--surface-2)}.ptab td.cpos{background:var(--ok-soft);color:var(--ok);font-weight:700}.ptab td.cneg{background:var(--bad-soft);color:var(--bad);font-weight:700}.ptab .ptot td{border-top:2px solid var(--line);background:var(--surface-2)}.ptabs{margin:4px 0 12px}
 .roul-all{background:var(--surface-2);border-radius:12px;padding:10px 12px;margin-bottom:12px}
+.seuil{display:flex;flex-wrap:wrap;gap:4px 6px;align-items:center;font-size:12.5px}
+.npsb{margin:4px 0 12px}.npsb-h{display:flex;flex-wrap:wrap;gap:10px;align-items:center}.npsb-k{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px;margin-top:10px}.npsb-k>div{border:1px solid var(--line);border-radius:12px;padding:10px 12px}.npsb-k small{display:block;color:var(--muted);font-size:12px}.npsb-k b{font-size:22px}.npsb-k em{display:block;font-style:normal;font-size:12px;color:var(--muted)}.npsb-k .ok{background:var(--ok-soft)}.npsb-k .ok b{color:var(--ok)}.npsb-k .bad{background:var(--bad-soft)}.npsb-k .bad b{color:var(--bad)}
+@media(max-width:700px){.npsb-k{grid-template-columns:1fr}}
+.npsd{border:1px solid var(--accent);border-radius:12px;padding:10px 12px;margin:0 0 12px;background:var(--surface)}
 .resfile{position:relative;overflow:hidden}.resfile input{position:absolute;inset:0;opacity:0;cursor:pointer}
 @media(max-width:900px){.pzgrid{grid-template-columns:1fr}}
 
@@ -444,6 +448,20 @@ tr.abs-cur td{background:rgba(227,6,19,.04)}
 .crel{font-size:10px;font-weight:700;color:#fff;background:var(--tag-caisse);border-radius:4px;padding:0 4px}
 .cms{display:flex;flex-wrap:wrap;gap:2px;margin-top:2px}.ms{display:inline-block;font-size:10px;font-weight:700;border-radius:4px;padding:1px 4px;line-height:1.3;white-space:nowrap}
 .ms-caisse{background:#6f42c1;color:#fff}.ms-rec{background:#1d5fd1;color:#fff}.ms-rea{background:#e8620f;color:#fff}.ms-liv{background:#2e9e44;color:#fff}
+.pubinfo{display:inline-flex;gap:6px;align-items:center}.pmotif{width:220px;padding:7px 10px;border:1px solid var(--line);border-radius:8px;background:var(--surface);color:var(--fg);font:inherit;font-size:13px}
+.rhseg{flex-wrap:wrap;margin-top:6px}.rhtab td,.rhtab th{vertical-align:middle}.rhtab tr.late td{background:var(--bad-soft)}.rhtab tr.soon td{background:var(--warn-soft)}.rhtab tr.sel td{background:var(--sel-soft)}
+.rhfiche{display:grid;grid-template-columns:230px 1fr;gap:18px}.rhgrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(210px,1fr));gap:10px 14px;margin:8px 0 10px}
+.rhf{display:grid;gap:4px;font-size:13px}.rhf>span{color:var(--muted);font-weight:600}.rhf input,.rhf select,.rhf textarea{padding:8px 10px;border:1px solid var(--line);border-radius:8px;background:var(--surface);color:var(--fg);font:inherit}.rhf.wide{margin-top:8px}.rhf textarea{resize:vertical}
+.rhchks{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-top:8px}.rhchk{border:1px solid var(--line);border-radius:12px;padding:10px 12px;display:grid;gap:6px}.rhchk h3{margin:0 0 4px;font-size:14px}
+.rhrep{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:8px;margin:6px 0 12px}.rhrep>div,.rhk{border:1px solid var(--line);border-radius:12px;padding:8px 10px;background:var(--surface-2)}.rhrep small,.rhk small{display:block;color:var(--muted);font-size:12px}.rhrep b{font-size:15px}
+.rhprep{background:var(--surface-2);border-radius:10px;padding:8px 12px;font-size:13.5px}.rhprep p{margin:4px 0}
+.rhkpis{display:grid;grid-template-columns:repeat(auto-fill,minmax(170px,1fr));gap:10px;margin-top:10px}.rhk b{font-size:20px;display:block}.rhk em{font-style:normal;font-size:12px;color:var(--muted)}.rhk.ok{background:var(--ok-soft)}.rhk.warn{background:var(--warn-soft)}.rhk.bad{background:var(--bad-soft)}
+.rhreg{display:flex;flex-wrap:wrap;gap:6px 16px}.regtxt{white-space:pre-wrap;background:var(--surface-2);border-radius:10px;padding:12px 14px;font-size:13.5px;line-height:1.5;max-height:420px;overflow:auto}
+.anlist{display:grid;gap:10px;margin-top:14px}.ann{border:1px solid var(--line);border-radius:12px;padding:10px 12px}.ann-h{display:flex;justify-content:space-between;gap:8px}.ann p{margin:6px 0}
+.reel input{width:62px;padding:4px 6px;border:1px solid var(--line);border-radius:6px;font:inherit;font-variant-numeric:tabular-nums;background:var(--surface);color:var(--fg)}.reel small{display:block;font-size:11px;color:var(--muted)}.reel td.chg{background:var(--warn-soft)}
+.notice.cl{background:var(--sel-soft);display:flex;flex-wrap:wrap;gap:8px;align-items:center;justify-content:space-between}.clr{display:inline-flex;gap:6px}.clr input{padding:6px 8px;border:1px solid var(--line);border-radius:8px;font:inherit;background:var(--surface);color:var(--fg)}
+.just{margin:6px 0}.just summary{cursor:pointer;font-weight:600;font-size:13px}.just img{max-width:100%;max-height:420px;border-radius:8px;margin-top:6px;border:1px solid var(--line)}
+@media(max-width:800px){.rhfiche{grid-template-columns:1fr}.rhchks{grid-template-columns:1fr}.rhrep{grid-template-columns:1fr 1fr}.pmotif{width:100%}}
 .msrow{display:flex;flex-wrap:wrap;gap:6px 14px;align-items:center;margin-top:6px}.msrow .tf label{min-width:auto}.msrow .tf{gap:4px}.msk{display:inline-block;width:8px;height:8px;border-radius:2px;margin-right:4px}</style>
 
 </head><body>
@@ -456,6 +474,7 @@ tr.abs-cur td{background:rgba(227,6,19,.04)}
       <button role="tab" data-v="team" aria-selected="true">Équipe</button>
       <button role="tab" data-v="indiv" aria-selected="false">Individuel</button>
       <button role="tab" data-v="staff" aria-selected="false">Collaborateurs</button>
+      <button role="tab" data-v="rh" aria-selected="false">Suivi RH</button>
       <button role="tab" data-v="abs" aria-selected="false">Absences</button>
       <button role="tab" data-v="pz" aria-selected="false">Pauses</button>
       <button role="tab" data-v="res" aria-selected="false">Résultats</button>
@@ -479,7 +498,7 @@ tr.abs-cur td{background:rgba(227,6,19,.04)}
     <button class="btn ghost" id="todayW">Cette semaine</button>
     <span id="copyZone"></span>
     <button class="btn" id="genW" title="Ne reprend pas la semaine précédente : applique roulements, repos fixes RH, CP acceptés, fériés et complète les heures du contrat">Générer la semaine</button>
-    <button class="btn pub" id="pubW" title="Rend la semaine visible dans l'espace de chaque collaborateur">Publier aux collaborateurs</button>
+    <button class="btn pub" id="pubW" title="Rend la semaine visible dans l'espace de chaque collaborateur">Publier aux collaborateurs</button><span id="pubInfo" class="pubinfo"></span>
     <span class="spacer"></span>
     <span id="localTools" hidden><button class="btn" id="gBtn" hidden>Se connecter à Google</button><button class="btn ghost" id="expData" title="Sauvegarder toutes les données dans un fichier">Sauvegarder (.json)</button><label class="btn ghost" for="impData" style="cursor:pointer">Importer</label><input type="file" id="impData" accept=".json,application/json" hidden></span>
     <button class="btn ghost" id="undoB" title="Annuler (Ctrl+Z)" disabled>↶ Annuler</button>
@@ -523,6 +542,7 @@ tr.abs-cur td{background:rgba(227,6,19,.04)}
   <section id="v-roul" hidden></section>
   <section id="v-dem" hidden></section>
   <section id="v-cpt" hidden></section>
+  <section id="v-rh" hidden></section>
 </div>
 <div class="toast" id="toast" hidden></div>
 <style>#loadOv{position:fixed;inset:0;z-index:90;background:rgba(244,246,250,.82);backdrop-filter:blur(2px);display:grid;place-items:center}#loadOv[hidden]{display:none}#loadOv div{background:var(--surface);border:1px solid var(--line);border-radius:16px;padding:18px 22px;display:grid;gap:4px;text-align:center;box-shadow:0 10px 30px -12px rgba(16,24,40,.3)}#loadOv small{color:var(--muted)}</style>
@@ -716,9 +736,10 @@ function render(){
   if(S.view==="roul") renderRoul();
   if(S.view==="dem") renderDem();
   if(S.view==="cpt") renderCpt();
+  if(S.view==="rh") renderRH();
   if(S.view==="team") renderDayView();
   const pb=$("#pubW"); if(pb){ pb.textContent=S.week.pub?"● Publiée":"Publier aux collaborateurs"; pb.classList.toggle("on",!!S.week.pub); }
-  badgeDemandes();
+  badgeDemandes(); renderPubInfo();
   const a=anchorEmp(); $("#xselName").textContent = a ? a.name : "Sélectionnez une ligne";
   labelTables();
 }
@@ -949,12 +970,12 @@ $("#grid").addEventListener("dblclick",ev=>{ if(ev.target.closest("td.cell")){ c
 const SEED = null;
 const LKEY="pf890-data-v1";
 function localLoad(){ try{ const t=localStorage.getItem(LKEY); if(t) return JSON.parse(t); }catch(e){} return SEED?JSON.parse(JSON.stringify(SEED)):{team:{employees:[],templates:DEFAULT_TPL.slice(),settings:{}},weeks:{}}; }
-function localSave(){ if(S.db) return true; try{ S.cache[S.weekId]={entries:clone(S.week.entries),bases:clone(S.week.bases||{}),open:clone(S.week.open||{}),sent:clone(S.week.sent||{}),sentStore:S.week.sentStore||null,updatedAt:new Date().toISOString()};
+function localSave(){ if(S.db) return true; try{ S.cache[S.weekId]={entries:clone(S.week.entries),bases:clone(S.week.bases||{}),open:clone(S.week.open||{}),sent:clone(S.week.sent||{}),sentStore:S.week.sentStore||null,motif:S.week.motif||"",reel:clone(S.week.reel||{}),reelOk:S.week.reelOk||null,updatedAt:new Date().toISOString()};
   S.savedAt=new Date().toISOString(); driveSchedule();
   localStorage.setItem(LKEY,JSON.stringify({team:S.team,weeks:S.cache,savedAt:S.savedAt})); return true; }catch(e){ return false; } }
 function startLocal(why){
   S.local=true; const d=localLoad(); S.savedAt=d.savedAt||""; S.team={...d.team, employees:d.team.employees||[],templates:(d.team.templates&&d.team.templates.length)?d.team.templates:DEFAULT_TPL.slice(),settings:d.team.settings||{}};
-  S.cache=d.weeks||{}; const w=S.cache[S.weekId]||{}; S.week={entries:clone(w.entries||{}),open:clone(w.open||{}),sent:clone(w.sent||{}),sentStore:w.sentStore||null,bases:clone(w.bases||{})};
+  S.cache=d.weeks||{}; const w=S.cache[S.weekId]||{}; S.week={entries:clone(w.entries||{}),open:clone(w.open||{}),sent:clone(w.sent||{}),sentStore:w.sentStore||null,bases:clone(w.bases||{}),motif:w.motif||"",reel:clone(w.reel||{}),reelOk:w.reelOk||null};
   S.openSunWeeks=Object.keys(S.cache).filter(id=>S.cache[id]&&S.cache[id].open&&S.cache[id].open["6"]);
   let ok=true; try{ localStorage.setItem("pf890-probe","1"); }catch(e){ ok=false; }
   setSave(ok?"ok":"off", ok?"Enregistré sur cet ordinateur":"Le navigateur bloque l'enregistrement : exportez vos données");
@@ -1041,12 +1062,12 @@ const snapData = snap => { if(!snap||!snap.exists) return null; const d = typeof
 
 let saveTimer=null, retryTimer=null;
 const nowHM = () => { const d=new Date(); return pad(d.getHours())+":"+pad(d.getMinutes())+":"+pad(d.getSeconds()); };
-function changed(){ S.dirty=true; setSave("pending","Enregistrement…"); render(); clearTimeout(saveTimer); saveTimer=setTimeout(flush,250); }
+function changed(){ scheduleRH(); S.dirty=true; setSave("pending","Enregistrement…"); render(); clearTimeout(saveTimer); saveTimer=setTimeout(flush,250); }
 async function flush(){
   clearTimeout(saveTimer);
   if(!S.db){ const ok=localSave(); S.dirty=false; setSave(ok?"ok":"off",ok?"Enregistré sur cet ordinateur · "+nowHM():"Non enregistré : exportez vos données"); return; }
   if(S.writing){ saveTimer=setTimeout(flush,300); return; }
-  S.writing=true; const id=S.weekId; const body={entries:clone(S.week.entries),pub:!!S.week.pub,bases:clone(S.week.bases||{}),open:clone(S.week.open||{}),sent:clone(S.week.sent||{}),sentStore:S.week.sentStore||null,updatedAt:new Date().toISOString()};
+  S.writing=true; const id=S.weekId; const body={entries:clone(S.week.entries),pub:!!S.week.pub,bases:clone(S.week.bases||{}),open:clone(S.week.open||{}),sent:clone(S.week.sent||{}),sentStore:S.week.sentStore||null,motif:S.week.motif||"",reel:clone(S.week.reel||{}),reelOk:S.week.reelOk||null,updatedAt:new Date().toISOString()};
   S.dirty=false;
   try{ await S.db.doc("weeks/"+id).set(body); if(!S.dirty && !S.teamDirty) setSave("ok","Enregistré · "+nowHM()); if(id===S.weekId) schedulePublish(); }
   catch(e){ S.dirty=true; setSave("off","Échec d'enregistrement, nouvel essai… "+(e&&e.code||"")); clearTimeout(retryTimer); retryTimer=setTimeout(flush,3000); }
@@ -1069,7 +1090,7 @@ async function flushTeam(){
 let renderPending=false;
 const typingIn = () => { const a=document.activeElement; if(!a||!a.closest||!a.closest("#app")) return false; if(a.tagName==="TEXTAREA") return true; return a.tagName==="INPUT" && !["checkbox","radio","button","submit","file","date","color","range"].includes(a.type); };
 document.addEventListener("focusout",()=>setTimeout(()=>{ if(S.renderOnBlur && !typingIn()){ S.renderOnBlur=false; render(); } if(S.teamPendingSnap && !typingIn() && !S.teamDirty){ const d=snapData(S.teamPendingSnap); S.teamPendingSnap=null; if(d && JSON.stringify(d)!==JSON.stringify(clone(S.team))){ S.team={...d, employees:d.employees||[],templates:(d.templates&&d.templates.length)?d.templates:DEFAULT_TPL.slice(),settings:d.settings||{}}; render(); } } },50));
-function teamChanged(quiet){ S.teamDirty=true; setSave("pending","Enregistrement…"); if(quiet!==true && !renderPending){ renderPending=true; setTimeout(()=>{ renderPending=false; if(typingIn()) S.renderOnBlur=true; else render(); },0); } clearTimeout(teamTimer); teamTimer=setTimeout(flushTeam,300); }
+function teamChanged(quiet){ scheduleRH(); S.teamDirty=true; setSave("pending","Enregistrement…"); if(quiet!==true && !renderPending){ renderPending=true; setTimeout(()=>{ renderPending=false; if(typingIn()) S.renderOnBlur=true; else render(); },0); } clearTimeout(teamTimer); teamTimer=setTimeout(flushTeam,300); }
 const flushAll = () => { if(S.dirty) flush(); if(S.teamDirty) flushTeam(); };
 document.addEventListener("visibilitychange",()=>{ if(document.visibilityState==="hidden") flushAll(); });
 window.addEventListener("pagehide",flushAll);
@@ -1085,14 +1106,14 @@ function subscribeWeek(){
   const id=S.weekId;
   S.unsubWeek=S.db.doc("weeks/"+id).onSnapshot(snap=>{
     if(id!==S.weekId || S.dirty || S.writing) return;
-    const dd=snapData(snap)||{}; S.week={entries:dd.entries||{},open:dd.open||{},sent:dd.sent||{},sentStore:dd.sentStore||null,bases:dd.bases||{},pub:!!dd.pub}; render();
+    const dd=snapData(snap)||{}; S.week={entries:dd.entries||{},open:dd.open||{},sent:dd.sent||{},sentStore:dd.sentStore||null,bases:dd.bases||{},pub:!!dd.pub,motif:dd.motif||"",reel:dd.reel||{},reelOk:dd.reelOk||null}; render();
   },()=>setSave("off","Connexion perdue"));
 }
 async function gotoWeek(id){
   for(let k=0; k<100 && S.writing; k++) await new Promise(r=>setTimeout(r,50));
   if(S.dirty){ await flush(); }
   S.weekId=id; S.week={entries:{},open:{},sent:{},sentStore:null,bases:{}}; S.sendSel=null; S.sendStatus={}; S.confirmSend=null; S.undo=[]; $("#undoB").disabled=true; S.sel.clear(); S.anchor=null; S.confirmCopy=false;
-  if(!S.db){ const w=S.cache?.[id]||{}; S.week={entries:clone(w.entries||{}),open:clone(w.open||{}),sent:clone(w.sent||{}),sentStore:w.sentStore||null,bases:clone(w.bases||{})}; }
+  if(!S.db){ const w=S.cache?.[id]||{}; S.week={entries:clone(w.entries||{}),open:clone(w.open||{}),sent:clone(w.sent||{}),sentStore:w.sentStore||null,bases:clone(w.bases||{}),motif:w.motif||"",reel:clone(w.reel||{}),reelOk:w.reelOk||null}; }
   render(); subscribeWeek();
 }
 $("#prevW").onclick=()=>gotoWeek(shiftWeek(S.weekId,-1));
@@ -1109,10 +1130,10 @@ $("#impData").onchange=ev=>{ const f=ev.target.files[0]; if(!f) return; const r=
   localStorage.setItem(LKEY,JSON.stringify(d)); startLocal("import"); toast("Données importées"); }catch(e){ toast("Fichier non reconnu : choisissez une sauvegarde du planning (.json)"); } }; r.readAsText(f); ev.target.value=""; };
 
 /* ---------- onglets ---------- */
-const VIEW_TITLES={home:"Accueil",team:"Planning équipe",indiv:"Plannings individuels",staff:"Collaborateurs",abs:"Absences",pz:"Pauses",res:"Résultats du jour",obj:"Objectifs",rea:"Réalisés et primes",apv:"Vue collaborateur",tpl:"Horaires types",send:"Transmettre",roul:"Roulements",dem:"Demandes",cpt:"Compteurs et paie"};
+const VIEW_TITLES={home:"Accueil",team:"Planning équipe",indiv:"Plannings individuels",staff:"Collaborateurs",abs:"Absences",pz:"Pauses",res:"Résultats du jour",obj:"Objectifs",rea:"Réalisés et primes",apv:"Vue collaborateur",tpl:"Horaires types",send:"Transmettre",roul:"Roulements",dem:"Demandes",cpt:"Compteurs et paie",rh:"Suivi RH"};
 function go(v){ S.view=v;
   document.querySelectorAll("#tabs button").forEach(x=>x.setAttribute("aria-selected",x.dataset.v===v));
-  for(const k of ["home","team","indiv","staff","abs","pz","res","obj","rea","apv","tpl","send","roul","dem","cpt"]) $("#v-"+k).hidden=(k!==v);
+  for(const k of ["home","team","indiv","staff","abs","pz","res","obj","rea","apv","tpl","send","roul","dem","cpt","rh"]) $("#v-"+k).hidden=(k!==v);
   document.body.dataset.view=v; $("#mTitle").textContent=VIEW_TITLES[v]||""; $("#mBack").hidden=(v==="home");
   try{localStorage.setItem("pf890-view",v)}catch(e){}
   render(); if(isPhone()) window.scrollTo({top:0}); }
@@ -1169,7 +1190,7 @@ function absEntry(a, e, d){
   if(T.s==="FO"){ const t=favTemplate(e); return {s:"FO",m1:t.m1,m2:t.m2,a1:t.a1,a2:t.a2,p:!!t.p,tag:"",abs:a.id,lib:"Formation"}; }
   return {s:T.s, abs:a.id, lib:T.l};
 }
-async function applyAbs(a, remove){
+async function applyAbs(a, remove){ S.pubReason={t:((ABS_TYPES[a.type]||{}).l||"Absence")+(remove?" annulée":""), at:Date.now()};
   const e=S.team.employees.find(x=>x.id===a.empId); if(!e) return;
   const byW={}; datesBetween(a.from, a.to||a.from).forEach(day=>{ const d=dayIdxOfDate(day); (byW[weekOfDate(day)] ||= []).push(d); });
   for(const [wid,ds] of Object.entries(byW)) await editWeekDoc(wid, w=>{ const row=(w.entries[a.empId] ||= [null,null,null,null,null,null,null]);
@@ -1220,13 +1241,13 @@ function renderAbs(){
     const rec={id: ed?ed.id:("a"+Date.now().toString(36)), empId, type, from, to, min:type==="RET"?(parseInt($("#a-min").value,10)||0):null, note:$("#a-note").value.trim(), justif:$("#a-just").checked, createdAt: ed?ed.createdAt:new Date().toISOString()};
     const old=ed?clone(ed):null; if(ed){ const i=absList().findIndex(x=>x.id===ed.id); absList()[i]=rec; } else absList().push(rec);
     teamChanged(true); S.absEdit=null;
-    if(old) await applyAbs(old,true); await applyAbs(rec,false); S.allWeeks=null; teamChanged(); toast((ABS_TYPES[type]||{}).l+" : saisie enregistrée"+(type==="RET"?"":" et reportée dans le planning")); };
+    if(old) await applyAbs(old,true); await applyAbs(rec,false); S.allWeeks=null; teamChanged(); jlog("absence", empName(empId)+" : "+(ABS_TYPES[type]||{}).l+" du "+fdShort(from)+(to!==from?" au "+fdShort(to):"")+(old?" (modifiée)":" saisie")+(rec.justif?" · justifiée":""), empId); toast((ABS_TYPES[type]||{}).l+" : saisie enregistrée"+(type==="RET"?"":" et reportée dans le planning")); };
   $("#af-emp").onchange=e=>{ F.emp=e.target.value; renderAbs(); }; $("#af-type").onchange=e=>{ F.type=e.target.value; renderAbs(); }; $("#af-year").onchange=e=>{ F.year=e.target.value; renderAbs(); };
   v.querySelectorAll("tr[data-aid] [data-ab]").forEach(b=>b.onclick=async()=>{ const id=b.closest("tr").dataset.aid; const a=absList().find(x=>x.id===id); if(!a) return; const k=b.dataset.ab;
     if(k==="just"){ a.justif=!a.justif; teamChanged(); }
     if(k==="edit"){ S.absEdit=id; renderAbs(); $("#absForm").scrollIntoView({behavior:"smooth"}); }
     if(k==="del"){ if(b.dataset.sure!=="1"){ b.dataset.sure="1"; b.textContent="Confirmer ?"; setTimeout(()=>{ if(b.isConnected){ b.dataset.sure=""; b.textContent="Supprimer"; } },3000); return; }
-      S.team.absences=absList().filter(x=>x.id!==id); teamChanged(true); await applyAbs(a,true); S.allWeeks=null; teamChanged(); toast("Saisie supprimée, jours libérés dans le planning"); } });
+      S.team.absences=absList().filter(x=>x.id!==id); jlog("absence", empName(a.empId)+" : "+(ABS_TYPES[a.type]||{}).l+" du "+fdShort(a.from)+" supprimée", a.empId); teamChanged(true); await applyAbs(a,true); S.allWeeks=null; teamChanged(); toast("Saisie supprimée, jours libérés dans le planning"); } });
 }
 
 /* ---------- pauses (QR code) ---------- */
@@ -1421,17 +1442,21 @@ const DEF_BAREME = {
   items:[
     {id:"club",name:"Club+",mode:"unit",val:2.5},{id:"iuno",name:"Infinity Uno",mode:"unit",val:10},{id:"iduo",name:"Infinity Duo",mode:"unit",val:15},{id:"itrio",name:"Infinity Trio",mode:"unit",val:20},
     {id:"isolo",name:"Infinity Smartphone Solo",mode:"unit",val:10},{id:"ifam",name:"Infinity Smartphone Famille",mode:"unit",val:15},
-    {id:"ecran",name:"Installation écran",mode:"unit",val:2},{id:"psm",name:"Protection Sur Mesure",mode:"unit",val:2.5},{id:"ceg",name:"CEG (CA garantie)",mode:"pct",val:5}],
+    {id:"ecran",name:"Installation écran",mode:"unit",val:2},{id:"psm",name:"Protection Sur Mesure",mode:"unit",val:2.5},{id:"ceg",name:"CEG (CA garantie)",mode:"pct",val:5},{id:"credit",name:"Crédit",mode:"seuil",seuil:11,val:100,margeMin:25}],
   tiers:[{pct:100,amt:50},{pct:110,amt:100},{pct:120,amt:200}], margeMin:25,
   nps:{min:72, google:4.5, amt:50}
 };
-function primeCalc(B, objPO, entries, month, absRatio){
+function primeCalc(B, objPO, entries, month, absRatio, ind){
   B=B||DEF_BAREME; const R={};
   const sum=(f)=>entries.filter(f);
   const one=list=>{ const po=list.reduce((t,e)=>t+(+e.po||0),0); const pct=objPO?po/objPO*100:0;
     let tier=0; (B.tiers||[]).slice().sort((a,b)=>a.pct-b.pct).forEach(t=>{ if(objPO && pct>=+t.pct) tier=+t.amt; });
     const marge=month&&month.marge!=null&&month.marge!==""?+month.marge:null; if(tier && marge!=null && marge<+B.margeMin) tier=tier*marge/(+B.margeMin||1);
-    const lines=(B.items||[]).map(it=>{ const q=list.reduce((t,e)=>t+(+((e.items||{})[it.id])||0),0); const amt= it.mode==="pct" ? q*(+it.val||0)/100 : q*(+it.val||0); return {id:it.id,name:it.name,mode:it.mode,val:it.val,q,amt}; }).filter(l=>l.q);
+    const lines=(B.items||[]).map(it=>{
+      if(it.mode==="seuil"){ const I=ind||{}; const q=I[it.id]!=null&&I[it.id]!==""?+I[it.id]:0; if(!q) return {id:it.id,name:it.name,mode:it.mode,val:it.val,q:0,amt:0};
+        const mi=I.marge!=null&&I.marge!==""?+I.marge:null, mm=+it.margeMin||0; let amt=q>=(+it.seuil||0)?(+it.val||0):0; if(amt&&mm&&mi!=null&&mi<mm) amt=amt*Math.max(0,mi)/mm;
+        return {id:it.id,name:it.name,mode:it.mode,val:it.val,seuil:it.seuil,margeMin:it.margeMin,marge:mi,q,amt}; }
+      const q=list.reduce((t,e)=>t+(+((e.items||{})[it.id])||0),0); const amt= it.mode==="pct" ? q*(+it.val||0)/100 : q*(+it.val||0); return {id:it.id,name:it.name,mode:it.mode,val:it.val,q,amt}; }).filter(l=>l.q);
     const items=lines.reduce((t,l)=>t+l.amt,0);
     let nps=0; if(month && month.nps!=null && month.nps!=="" && B.nps){ if(+month.nps>=+B.nps.min){ const g=month.google!=null&&month.google!==""?+month.google:null; nps= g==null||g>=+B.nps.google ? +B.nps.amt : +B.nps.amt*g/(+B.nps.google||1); nps*=Math.max(0,1-(absRatio||0)); } }
     return {po,pct,tier,lines,items,nps,total:tier+items+nps,marge}; };
@@ -1448,14 +1473,40 @@ function officialFor(resList, empId, ym){
   return {day:au, au, du:frIso(c.du), po:v.ca||0, status:"validé", official:true, items:{club:v.clubp??v.clubpN??0, iuno:v.inf1||0, iduo:v.inf2||0, itrio:v.inf3||0, isolo:v.mobUno||0, ifam:v.mobFam||0, psm:v.prot||0, ceg:v.cegCA||0}};
 }
 const withOfficial = (L, off) => off ? [off, ...L.filter(r=>r.day>off.au)] : L;
+/* lecture de la capture hebdomadaire 100% Happy (NPS et note Google) */
+function npsBlockHTML(ym){ const RM=reaMonth(ym); const B=bareme(); const n=RM.nps, g=RM.google;
+  const ok=n!=null&&+n>=+B.nps.min, gok=g!=null&&+g>=+B.nps.google; const amt=n==null?null:(!ok?0:(g==null||gok?+B.nps.amt:+B.nps.amt*g/(+B.nps.google||1)));
+  return '<div class="npsb"><div class="npsb-h"><b>Satisfaction client · NPS et note Google</b><span class="btn primary resfile">📊 Charger le PDF NPS / Google<input type="file" id="nps-f" accept="application/pdf,image/*"></span><span class="st-mut" id="nps-st"></span></div>'+
+    (n!=null||g!=null?'<div class="npsb-k"><div class="'+(ok?"ok":"bad")+'"><small>NPS'+(RM.npsAu?' au '+esc(RM.npsAu.slice(0,5)):'')+'</small><b>'+(n>0?"+":"")+String(n??"–").replace(".",",")+'</b><em>objectif ≥ '+B.nps.min+'</em></div><div class="'+(gok?"ok":"bad")+'"><small>Note Google</small><b>'+String(g??"–").replace(".",",")+' ★</b><em>objectif ≥ '+String(B.nps.google).replace(".",",")+'</em></div><div><small>Prime NPS / Google (par collaborateur)</small><b>'+(amt==null?'–':eur2(amt))+'</b><em>'+(amt==null?'':!ok?'NPS sous '+B.nps.min+' : pas de prime':gok?'prime complète':'au prorata de la note Google')+' · provisoire</em></div></div>'+(RM.npsDu?'<p class="st-mut" style="margin:6px 0 0">Relevé du '+esc(RM.npsDu)+' au '+esc(RM.npsAu)+(RM.npsN?' · '+RM.npsN+' répondants':'')+'. Visible par chaque collaborateur dans « Mes résultats » et dans sa prime.</p>':''):'<p class="st-mut" style="margin:6px 0 0">Chargez chaque semaine la capture 100% Happy : le NPS et la note Google sont lus, affichés aux collaborateurs et la prime est calculée.</p>')+
+    (S.npsDraft&&S.npsDraft.ym===ym?'<div class="npsd"><b>Valeurs lues sur la capture</b> <span class="st-mut">(du '+esc(S.npsDraft.du||"?")+' au '+esc(S.npsDraft.au||"?")+')</span> · vérifiez puis enregistrez<div class="reamonth" style="margin:8px 0 0"><label>NPS<input id="npsd-n" inputmode="decimal" value="'+esc(S.npsDraft.nps==null?"":String(S.npsDraft.nps).replace(".",","))+'"></label><label>Note Google<input id="npsd-g" inputmode="decimal" value="'+esc(S.npsDraft.google==null?"":String(S.npsDraft.google).replace(".",","))+'"></label><button class="btn primary" id="npsd-ok" style="align-self:end">Enregistrer</button><button class="btn ghost" id="npsd-ko" style="align-self:end">Annuler</button></div></div>':'')+'</div>'; }
+function bindNps(v, rerender){ const num=x=>{ const t=String(x).trim().replace(/\s/g,"").replace(",","."); return t===""?null:(parseFloat(t)||0); };
+  const f=v.querySelector("#nps-f"); if(f) f.onchange=async ev=>{ const fl=ev.target.files&&ev.target.files[0]; ev.target.value=""; if(!fl) return; const st=v.querySelector("#nps-st"); st.textContent="Lecture du PDF… (quelques secondes)";
+    try{ const D=await npsRead(fl); st.textContent=""; const dym=D.au?D.au.split("/").reverse().join("-").slice(0,7):(S.reaMonth||todayStr().slice(0,7)); S.reaMonth=dym; S.npsDraft={...D, ym:dym}; rerender(); if(D.nps==null||D.google==null) toast("Lecture partielle : complétez les valeurs manquantes"); }
+    catch(e){ st.textContent=""; S.npsDraft={ym:S.reaMonth||todayStr().slice(0,7)}; rerender(); toast("Lecture impossible : saisissez le NPS et la note Google"); } };
+  const ko=v.querySelector("#npsd-ko"); if(ko) ko.onclick=()=>{ S.npsDraft=null; rerender(); };
+  const okb=v.querySelector("#npsd-ok"); if(okb) okb.onclick=()=>{ const D=S.npsDraft; const n=num(v.querySelector("#npsd-n").value), g=num(v.querySelector("#npsd-g").value); S.team.settings=S.team.settings||{}; const M=(S.team.settings.reaMonths ||= {}); const m=(M[D.ym] ||= {});
+    m.nps=n; m.google=g; m.npsDu=D.du||""; m.npsAu=D.au||""; if(D.npsN) m.npsN=D.npsN; if(D.googleN) m.googleN=D.googleN; (m.npsHist ||= []).push({du:D.du||"",au:D.au||"",nps:n,google:g,at:new Date().toISOString()}); S.npsDraft=null; baremeChanged(); rerender(); jlog("prime","NPS "+String(n).replace(".",",")+" et note Google "+String(g).replace(".",",")+" enregistrés (relevé du "+(D.du||"?")+" au "+(D.au||"?")+")"); toast("NPS "+String(n).replace(".",",")+" et Google "+String(g).replace(".",",")+" enregistrés · primes recalculées"); }; }
+function loadTess(){ if(window.Tesseract) return Promise.resolve(); return new Promise((res,rej)=>{ const sc=document.createElement("script"); sc.src="https://cdn.jsdelivr.net/npm/tesseract.js@5.1.1/dist/tesseract.min.js"; sc.onload=res; sc.onerror=rej; document.head.appendChild(sc); }); }
+async function npsImage(file){ if(/pdf$/i.test(file.type)||/\.pdf$/i.test(file.name)){ await loadPdfJs(); const pdf=await window.pdfjsLib.getDocument({data:new Uint8Array(await file.arrayBuffer())}).promise; const pg=await pdf.getPage(1); const vp=pg.getViewport({scale:2.5}); const cv=document.createElement("canvas"); cv.width=vp.width; cv.height=vp.height; await pg.render({canvasContext:cv.getContext("2d"),viewport:vp}).promise; return cv; } return file; }
+function npsParse(t){ t=String(t||"").replace(/\r/g,""); const D={};
+  const per=/(\d\d\/\d\d\/\d{4})\s*[-–]\s*(\d\d\/\d\d\/\d{4})/.exec(t); if(per){ D.du=per[1]; D.au=per[2]; }
+  const iN=t.search(/r[ée]pondants/i); const sN=iN>=0?t.slice(iN):t; const mN=/([+\-−]\s?\d{1,3}[.,]\d)\b/.exec(sN); if(mN) D.nps=parseFloat(mN[1].replace(/\s/g,"").replace("−","-").replace(",","."));
+  const nR=/(\d+)\s*r[ée]pondants/i.exec(t); if(nR) D.npsN=+nR[1];
+  const mG=/(?:^|\s)([0-5][.,]\d\d)(?=\s|$)/m.exec(t.slice(Math.max(0,t.search(/r[ée]partition des r[ée]pondants|\bG\b/)))); if(mG) D.google=parseFloat(mG[1].replace(",","."));
+  const nA=/(\d+)\s*avis/i.exec(t); if(nA) D.googleN=+nA[1];
+  return D; }
+async function npsRead(file){ const img=await npsImage(file); await loadTess(); const r=await window.Tesseract.recognize(img,"eng"); return npsParse(r&&r.data&&r.data.text); }
 /* ---------- réalisés et primes ---------- */
-const bareme = () => { const b=(S.team.settings||{}).bareme; return b&&b.items ? b : clone(DEF_BAREME); };
+const bareme = () => { const b=(S.team.settings||{}).bareme; if(b&&b.items){ if(!b.creditAdded){ b.creditAdded=true; if(!b.items.some(i=>i.id==="credit")) b.items.push({id:"credit",name:"Crédit",mode:"seuil",seuil:11,val:100,margeMin:25}); } return b; } return clone(DEF_BAREME); };
+/* indicateurs individuels du mois pour les primes à seuil : taux de crédit saisi, marge individuelle (saisie ou palmarès) */
+function indOf(ym, id){ const RM=reaMonth(ym); const I={...((RM.ind||{})[id]||{})}; if(I.marge==null||I.marge===""){ const c=(S.res||[]).filter(r=>r.vend&&r.vend[id]&&frIso(r.au).startsWith(ym)).sort((a,b)=>frIso(b.au).localeCompare(frIso(a.au)))[0]; if(c&&c.vend[id].txm!=null){ I.marge=c.vend[id].txm; I.margeSrc="palmarès"; } } return I; }
 const reaMonth = ym => ((S.team.settings||{}).reaMonths||{})[ym] || {};
 function subscribeRea(){ if(!S.db) return; S.unsubRea&&S.unsubRea();
   S.unsubRea=S.db.collection("realises").onSnapshot(q=>{ S.rea=q.docs.map(x=>({id:x.id,...snapData(x)})); badgeRea(); if(S.view==="rea"&&!typingIn()) renderRea(); if(S.view==="home") { const b=document.querySelector('[data-go="rea"] .tbadge'); if(b){ const n=(S.rea||[]).filter(r=>r.status==="attente").length; b.textContent=n; b.hidden=!n; } } },()=>{}); }
 function badgeRea(){ const n=(S.rea||[]).filter(r=>r.status==="attente").length; const b=$('#tabs button[data-v="rea"]'); if(b) b.innerHTML='Réalisés'+(n?' <span class="badge">'+n+'</span>':''); }
 const expertOf = e => (e&&e.primeExpert>0)?+e.primeExpert:0;
-async function publishBareme(){ if(!S.db) return; try{ const experts={}; emps().forEach(e=>{ if(expertOf(e)) experts[e.id]=expertOf(e); }); await S.db.doc("annuaire/primes").set({bareme:bareme(), months:(S.team.settings||{}).reaMonths||{}, experts, updatedAt:new Date().toISOString()}); }catch(e){} }
+async function publishBareme(){ if(!S.db) return; try{ const experts={}; emps().forEach(e=>{ if(expertOf(e)) experts[e.id]=expertOf(e); }); const R=reg(); const bj=JSON.stringify(bareme()); if(S.lastBarJ&&S.lastBarJ!==bj) jlog("prime","Barème des primes modifié"); S.lastBarJ=bj;
+  await S.db.doc("annuaire/primes").set({bareme:bareme(), months:(S.team.settings||{}).reaMonths||{}, experts, reglement:R.pub?{v:R.pub.v, at:R.pub.at, text:R.pub.text}:null, absRule:{on:!!R.abs.on, nps:!!R.abs.nps, expert:!!R.abs.expert}, anon:!!RHT().anonRank, updatedAt:new Date().toISOString()}); }catch(e){} }
 let barT=null; const baremeChanged=()=>{ teamChanged(true); clearTimeout(barT); barT=setTimeout(publishBareme,1200); };
 const eur2 = n => (Math.round((n||0)*100)/100).toLocaleString("fr-FR",{minimumFractionDigits:2,maximumFractionDigits:2})+" €";
 async function renderRea(){
@@ -1474,10 +1525,11 @@ async function renderRea(){
       pend.map(r=>'<tr data-rid="'+esc(r.id)+'"><td>'+dFR(r.day)+'</td><td><b>'+esc(nm(r.empId))+'</b></td><td class="mono"><input class="reapo" data-k="po" inputmode="decimal" value="'+esc(String(r.po??"").replace(".",","))+'"></td><td>'+(itemsTxt(r)||'<span class="st-mut">–</span>')+'</td><td>'+esc(r.note||"")+'</td><td style="white-space:nowrap"><button class="btn primary" data-ra="ok">Valider</button><button class="btn ghost danger" data-ra="ko">Refuser</button></td></tr>').join("")+
       '</tbody></table></div><button class="btn" id="rea-allok">Tout valider</button>':'<p class="st-mut">Aucune saisie en attente.</p>')+'</div>';
   // synthèse
-  v.innerHTML+='<div class="panel"><h2>Primes du mois</h2><div class="reamonth"><label>Marge du magasin (%)<input data-rm="marge" inputmode="decimal" value="'+esc(RM.marge==null?"":String(RM.marge).replace(".",","))+'" placeholder="non saisie"></label><label>NPS du mois<input data-rm="nps" inputmode="decimal" value="'+esc(RM.nps==null?"":String(RM.nps).replace(".",","))+'" placeholder="–"></label><label>Note Google<input data-rm="google" inputmode="decimal" value="'+esc(RM.google==null?"":String(RM.google).replace(".",","))+'" placeholder="–"></label></div>'+
-    '<div class="tbl"><table><thead><tr><th>Collaborateur</th><th>Objectif PO</th><th>Réalisé validé</th><th>Atteinte</th><th>Prime PO</th><th>Prime services</th><th>Prime NPS</th><th>Total validé</th><th>Estimé (avec attente)</th></tr></thead><tbody>'+
-    P.map(e=>{ const obj=MO&&MO.res[e.id]?MO.res[e.id].po:0; const off=officialFor(S.res,e.id,ym); const L=withOfficial(all.filter(r=>r.empId===e.id),off); const pr=primeCalc(B,obj,L,RM,0); const V=pr.valid, A=pr.all;
-      return '<tr><td><b>'+esc(e.name)+'</b></td><td class="n mono">'+(obj?eur(obj):"–")+'</td><td class="n mono">'+eur(V.po)+(off?'<br><small class="st-mut">palmarès au '+off.au.slice(8)+'/'+off.au.slice(5,7)+'</small>':'')+'</td><td class="n mono">'+(obj?Math.round(V.pct)+" %":"–")+'</td><td class="n mono">'+eur2(V.tier)+'</td><td class="n mono">'+eur2(V.items)+'</td><td class="n mono">'+eur2(V.nps)+(expertOf(e)?'<br><small class="st-mut">+ expert '+eur2(expertOf(e))+'</small>':'')+'</td><td class="n mono"><b>'+eur2(V.total+expertOf(e))+'</b></td><td class="n mono st-mut">'+eur2(A.total+expertOf(e))+(pr.pending?' · '+pr.pending+' en attente':'')+'</td></tr>'; }).join("")+
+  v.innerHTML+='<div class="panel"><h2>Primes du mois</h2><div class="reamonth"><label>Marge du magasin (%)<input data-rm="marge" inputmode="decimal" value="'+esc(RM.marge==null?"":String(RM.marge).replace(".",","))+'" placeholder="non saisie"></label><label>NPS du mois<input data-rm="nps" inputmode="decimal" value="'+esc(RM.nps==null?"":String(RM.nps).replace(".",","))+'" placeholder="–"></label><label>Note Google<input data-rm="google" inputmode="decimal" value="'+esc(RM.google==null?"":String(RM.google).replace(".",","))+'" placeholder="–"></label>'+
+    '</div>'+npsBlockHTML(ym)+
+    '<div class="tbl"><table><thead><tr><th>Collaborateur</th><th>Objectif PO</th><th>Réalisé validé</th><th>Atteinte</th><th>Prime PO</th><th>Prime services</th><th>Taux crédit</th><th>Marge indiv.</th><th>Prime NPS</th><th>Total validé</th><th>Estimé (avec attente)</th></tr></thead><tbody>'+
+    P.map(e=>{ const obj=MO&&MO.res[e.id]?MO.res[e.id].po:0; const off=officialFor(S.res,e.id,ym); const L=withOfficial(all.filter(r=>r.empId===e.id),off); const IN=indOf(ym,e.id); const pr=primeCalc(B,obj,L,RM,absNps(e.id,ym),IN); const V=pr.valid, A=pr.all;
+      return '<tr><td><b>'+esc(e.name)+'</b></td><td class="n mono">'+(obj?eur(obj):"–")+'</td><td class="n mono">'+eur(V.po)+(off?'<br><small class="st-mut">palmarès au '+off.au.slice(8)+'/'+off.au.slice(5,7)+'</small>':'')+'</td><td class="n mono">'+(obj?Math.round(V.pct)+" %":"–")+'</td><td class="n mono">'+eur2(V.tier)+'</td><td class="n mono">'+eur2(V.items)+'</td><td class="n"><div class="obpo sm"><input data-ind="credit" data-ie="'+esc(e.id)+'" inputmode="decimal" value="'+esc(((RM.ind||{})[e.id]||{}).credit==null?"":String(RM.ind[e.id].credit).replace(".",","))+'" placeholder="–"><span>%</span></div></td><td class="n"><div class="obpo sm"><input data-ind="marge" data-ie="'+esc(e.id)+'" inputmode="decimal" value="'+esc(((RM.ind||{})[e.id]||{}).marge==null?"":String(RM.ind[e.id].marge).replace(".",","))+'" placeholder="'+(IN.margeSrc?String(Math.round(IN.marge*100)/100).replace(".",","):"–")+'"><span>%</span></div></td><td class="n mono">'+eur2(V.nps)+(expertOf(e)?'<br><small class="st-mut">+ expert '+eur2(expertOf(e))+'</small>':'')+'</td><td class="n mono"><b>'+eur2(V.total+expertOf(e))+'</b></td><td class="n mono st-mut">'+eur2(A.total+expertOf(e))+(pr.pending?' · '+pr.pending+' en attente':'')+'</td></tr>'; }).join("")+
     '</tbody></table></div></div>';
   // barème
   v.innerHTML+='<div class="panel"><h2>Barème des primes</h2><p class="lead">Montants bruts. Les vendeurs voient ce barème et le détail de leur calcul.</p><div class="obgrid"><div><label class="oblbl">Prime sur la PO (paliers d\'atteinte de l\'objectif)</label><div class="tbl"><table class="bartab"><thead><tr><th>Atteinte ≥</th><th>Prime</th><th></th></tr></thead><tbody>'+
@@ -1485,7 +1537,7 @@ async function renderRea(){
     '</tbody></table></div><button class="btn" id="bar-addt">+ Palier</button><label class="oblbl" style="margin-top:12px">Marge minimum (prorata en dessous)</label><div class="obpo sm"><input id="bar-marge" inputmode="decimal" value="'+esc(String(B.margeMin).replace(".",","))+'"><span>%</span></div>'+
     '<label class="oblbl" style="margin-top:12px">Prime NPS / Google</label><div class="reamonth"><label>NPS minimum<input data-np="min" value="'+esc(String(B.nps.min).replace(".",","))+'"></label><label>Note Google mini<input data-np="google" value="'+esc(String(B.nps.google).replace(".",","))+'"></label><label>Prime (€)<input data-np="amt" value="'+esc(String(B.nps.amt).replace(".",","))+'"></label></div></div>'+
     '<div><label class="oblbl">Prime par service</label><div class="tbl"><table class="bartab"><thead><tr><th>Service</th><th>Calcul</th><th>Montant</th><th></th></tr></thead><tbody>'+
-    (B.items||[]).map((it,i)=>'<tr data-ii="'+i+'"><td><input data-k="name" value="'+esc(it.name)+'"></td><td><select data-k="mode"><option value="unit"'+(it.mode==="unit"?" selected":"")+'>€ par unité</option><option value="pct"'+(it.mode==="pct"?" selected":"")+'>% du montant</option></select></td><td><div class="obpo sm"><input data-k="val" inputmode="decimal" value="'+esc(String(it.val).replace(".",","))+'"><span>'+(it.mode==="pct"?"%":"€")+'</span></div></td><td><button class="btn ghost danger" data-k="del">✕</button></td></tr>').join("")+
+    (B.items||[]).map((it,i)=>'<tr data-ii="'+i+'"><td><input data-k="name" value="'+esc(it.name)+'"></td><td><select data-k="mode"><option value="unit"'+(it.mode==="unit"?" selected":"")+'>€ par unité</option><option value="pct"'+(it.mode==="pct"?" selected":"")+'>% du montant</option><option value="seuil"'+(it.mode==="seuil"?" selected":"")+'>Prime si taux ≥ seuil</option></select></td><td>'+(it.mode==="seuil"?'<div class="seuil">si taux ≥ <div class="obpo sm"><input data-k="seuil" inputmode="decimal" value="'+esc(String(it.seuil??"").replace(".",","))+'"><span>%</span></div> prime <div class="obpo sm"><input data-k="val" inputmode="decimal" value="'+esc(String(it.val).replace(".",","))+'"><span>€</span></div> marge mini <div class="obpo sm"><input data-k="margeMin" inputmode="decimal" value="'+esc(String(it.margeMin??"").replace(".",","))+'"><span>%</span></div></div>':'<div class="obpo sm"><input data-k="val" inputmode="decimal" value="'+esc(String(it.val).replace(".",","))+'"><span>'+(it.mode==="pct"?"%":"€")+'</span></div>')+'</td><td><button class="btn ghost danger" data-k="del">✕</button></td></tr>').join("")+
     '</tbody></table></div><button class="btn" id="bar-addi">+ Service</button></div></div></div>';
   const num=x=>{ const t=String(x).trim().replace(/\s/g,"").replace(",","."); return t===""?null:(parseFloat(t)||0); };
   $("#rea-m").onchange=e=>{ S.reaMonth=e.target.value; renderRea(); };
@@ -1496,6 +1548,8 @@ async function renderRea(){
   $("#rea-allok")&&($("#rea-allok").onclick=async()=>{ for(const r of pend) await upd(r,{status:"validé"}); toast(pend.length+" réalisés validés"); });
   v.querySelectorAll("[data-rm]").forEach(i=>i.oninput=()=>{ S.team.settings=S.team.settings||{}; const M=(S.team.settings.reaMonths ||= {}); const m=(M[ym] ||= {}); m[i.dataset.rm]=num(i.value); baremeChanged(); });
   v.querySelectorAll("[data-rm]").forEach(i=>i.onchange=()=>renderRea());
+  v.querySelectorAll("[data-ind]").forEach(i=>{ i.oninput=()=>{ S.team.settings=S.team.settings||{}; const M=(S.team.settings.reaMonths ||= {}); const m=(M[ym] ||= {}); const I=((m.ind ||= {})[i.dataset.ie] ||= {}); I[i.dataset.ind]=num(i.value); baremeChanged(); }; i.onchange=()=>renderRea(); });
+  bindNps(v, renderRea);
   const saveB=()=>{ S.team.settings=S.team.settings||{}; S.team.settings.bareme=B; baremeChanged(); };
   v.querySelectorAll("tr[data-ti] [data-k]").forEach(el=>{ const i=+el.closest("tr").dataset.ti; if(el.dataset.k==="del") el.onclick=()=>{ B.tiers.splice(i,1); saveB(); renderRea(); }; else el.oninput=()=>{ B.tiers[i][el.dataset.k]=num(el.value)||0; saveB(); }; });
   v.querySelectorAll("tr[data-ii] [data-k]").forEach(el=>{ const i=+el.closest("tr").dataset.ii, k=el.dataset.k; if(k==="del") el.onclick=()=>{ B.items.splice(i,1); saveB(); renderRea(); };
@@ -1672,7 +1726,7 @@ async function resPrimeCompute(m){
   const ym=frIso(m.au).slice(0,7); const B=bareme(); const RM=reaMonth(ym); let MO=null; try{ MO=await objMonthEmp(ym); }catch(e){}
   const ids=Object.keys(m.vend).sort((a,b)=>m.vend[a].rang-m.vend[b].rang); const nm=id=>(S.team.employees.find(e=>e.id===id)||{}).name||id;
   const its=(B.items||[]);
-  const rows=ids.map(id=>{ const off=officialFor([m],id,ym); const obj=MO&&MO.res[id]?MO.res[id].po:0; const pr=primeCalc(B,obj,off?[off]:[],RM,0).valid; return {id,off,obj,pr}; });
+  const rows=ids.map(id=>{ const off=officialFor([m],id,ym); const obj=MO&&MO.res[id]?MO.res[id].po:0; const pr=primeCalc(B,obj,off?[off]:[],RM,absNps(id,ym),indOf(ym,id)).valid; return {id,off,obj,pr}; });
   S.resPrimeHTML='<p class="st-mut">Calcul au '+esc(m.au)+' avec le barème actuel, sur la seule base du palmarès (sans les saisies postérieures). Marge du magasin : '+(RM.marge==null?'non saisie (onglet Réalisés)':pct1(RM.marge))+'.</p><div class="tbl"><table class="ptab"><thead><tr><th>Collaborateur</th><th>Objectif PO</th><th>PO réalisé</th><th>Atteinte</th><th>Prime PO</th>'+its.map(it=>'<th>'+esc(it.name)+'</th>').join("")+'<th>Prime services</th><th>Total</th></tr></thead><tbody>'+
     rows.map(r=>'<tr><td><b>'+esc(nm(r.id))+'</b></td><td class="n mono">'+(r.obj?eur(r.obj):'–')+'</td><td class="n mono">'+eur(r.pr.po)+'</td><td class="n mono">'+(r.obj?Math.round(r.pr.pct)+' %':'–')+'</td><td class="n mono">'+eur2(r.pr.tier)+'</td>'+its.map(it=>{ const l=r.pr.lines.find(x=>x.id===it.id); return '<td class="n mono">'+(l?(it.mode==="pct"?eur(l.q):l.q)+'<br><small class="st-mut">'+eur2(l.amt)+'</small>':'–')+'</td>'; }).join("")+'<td class="n mono">'+eur2(r.pr.items)+'</td><td class="n mono"><b>'+eur2(r.pr.tier+r.pr.items)+'</b></td></tr>').join("")+'</tbody></table></div>';
   // suivi des objectifs du mois
@@ -1696,11 +1750,13 @@ function renderRes(){
   v.innerHTML='<div class="panel"><h2>Résultats du jour</h2><p class="lead">Déposez chaque jour le PDF des résultats complets des objectifs. Il apparaît aussitôt dans l\'application de tous les collaborateurs, consultable uniquement pendant leurs heures de travail.</p>'+
     '<div class="resdrop"><label>Journée concernée<input type="date" id="res-d" value="'+esc(S.resDay)+'"></label><span class="btn primary resfile">'+(L.some(r=>r.day===S.resDay)?"Remplacer le PDF":"Déposer le PDF")+'<input type="file" id="res-f" accept="application/pdf,.pdf"></span><span class="st-mut" id="res-st"></span></div>'+
     (L.some(r=>r.day===td)?'<p class="pill ok" style="display:inline-block;padding:6px 10px;margin-top:8px">Les résultats d\'aujourd\'hui sont publiés</p>':'<p class="pill warn" style="display:inline-block;padding:6px 10px;margin-top:8px">Pas encore de résultats pour aujourd\'hui</p>')+'</div>'+
+    '<div class="panel">'+npsBlockHTML(S.npsDraft&&S.npsDraft.ym?S.npsDraft.ym:S.resDay.slice(0,7))+'</div>'+
     resTeamHTML(L.find(r=>r.day===S.resDay))+
     '<div class="panel"><h2>Déjà publiés</h2>'+(L.length?'<div class="tbl"><table><thead><tr><th>Journée</th><th>Fichier</th><th>Taille</th><th>Publié le</th><th></th></tr></thead><tbody>'+
       L.map(r=>'<tr data-d="'+esc(r.day)+'"><td><b>'+esc(frDate(r.day))+'</b></td><td>'+esc(r.name||"")+'</td><td class="mono">'+(Math.round((r.size||0)/102.4)/10).toString().replace(".",",")+' Ko</td><td>'+(r.at?(()=>{ const d=new Date(r.at); return esc(frDate(ymdL(d)))+" à "+pad(d.getHours())+"h"+pad(d.getMinutes()); })():"")+'</td><td style="white-space:nowrap"><button class="btn ghost" data-k="see">Voir</button> <button class="btn ghost danger" data-k="del">Supprimer</button></td></tr>').join("")+
       '</tbody></table></div><p class="st-mut" style="margin-top:8px">Les documents de plus de '+RES_KEEP+' jours sont supprimés automatiquement.</p>':'<p class="empty">Aucun document pour le moment.</p>')+'</div>';
   $("#res-d").onchange=e=>{ S.resDay=e.target.value||td; renderRes(); };
+  bindNps(v, renderRes);
   v.querySelectorAll("[data-unk]").forEach(sel=>sel.onchange=async()=>{ const e=S.team.employees.find(x=>x.id===sel.value); if(!e) return; e.mat=sel.dataset.unk; teamChanged(); toast("Matricule "+e.mat+" rattaché à "+e.name+" · relecture…"); try{ await resReanalyse(S.resDay); toast("Résultats mis à jour"); }catch(err){ toast("Relecture impossible"); } });
   v.querySelectorAll("[data-rt]").forEach(b=>b.onclick=()=>{ S.resTab=b.dataset.rt; if(S.resTab==="prime"||S.resTab==="suivi"){ S.resPrimeHTML=null; S.resSuiviHTML=null; const m=L.find(r=>r.day===S.resDay); m&&resPrimeCompute(m); } renderRes(); });
   $("#res-xls")&&($("#res-xls").onclick=()=>resExport(L.find(r=>r.day===S.resDay)));
@@ -2304,22 +2360,23 @@ async function loadAllWeeks(){
   else S.allWeeks=clone(S.cache||{});
   S.allWeeks[S.weekId]=clone(S.week);
 }
+const reelM = (w,id,d,x) => { const R=w&&w.reel&&w.reel[id]; return R&&R[d]!=null&&x&&TIMED(x.s) ? +R[d] : mins(x); };
 function monthCounters(ym){
   const [Y,M]=ym.split("-").map(Number); const first=new Date(Date.UTC(Y,M-1,1)), last=new Date(Date.UTC(Y,M,0));
   const W=S.allWeeks||{}; const res=[];
   for(const e of emps()){
     const rets=absList().filter(a=>a.empId===e.id&&a.type==="RET"&&a.from.startsWith(ym));
-    const c={retN:rets.length, retM:rets.reduce((t,a)=>t+(+a.min||0),0), emp:e, work:0, cp:0, m:0, ab:0, fo:0, fe:0, sunN:0, sunM:0, holN:0, holM:0, hs25:0, hs50:0, hc10:0, hc25:0, weeks:0, cpSince:0};
+    const c={workD:0, reelW:0, retN:rets.length, retM:rets.reduce((t,a)=>t+(+a.min||0),0), emp:e, work:0, cp:0, m:0, ab:0, fo:0, fe:0, sunN:0, sunM:0, holN:0, holM:0, hs25:0, hs50:0, hc10:0, hc25:0, weeks:0, cpSince:0};
     for(let t=first.getTime(); t<=last.getTime(); t+=864e5){
       const dt=new Date(t), wid=isoWeekId(new Date(dt.getUTCFullYear(),dt.getUTCMonth(),dt.getUTCDate())), d=(dt.getUTCDay()+6)%7;
-      const x=((W[wid]||{}).entries||{})[e.id]?.[d]; if(!x) continue; const m=mins(x);
-      if(x.s==="T"){ c.work+=m; if(d===6&&m){ c.sunN++; c.sunM+=m; } if(holName(dt)&&m){ c.holN++; c.holM+=m; } }
+      const x=((W[wid]||{}).entries||{})[e.id]?.[d]; if(!x) continue; const m=reelM(W[wid],e.id,d,x);
+      if(x.s==="T"){ c.work+=m; if(m) c.workD++; if(d===6&&m){ c.sunN++; c.sunM+=m; } if(holName(dt)&&m){ c.holN++; c.holM+=m; } }
       if(x.s==="FO"){ c.fo+=m; c.work+=m; }
       if(x.s==="CP"&&d<6) c.cp++; if(x.s==="M") c.m++; if(x.s==="AB") c.ab++; if(x.s==="FE") c.fe++;
     }
     // heures sup : semaines se terminant dans le mois
     for(const wid of Object.keys(W)){ const sun=weekDays(wid)[6]; if(sun<first||sun>last) continue;
-      const r=(W[wid].entries||{})[e.id]||[]; const t=r.reduce((a,x)=>a+mins(x),0); if(!r.some(Boolean)) continue; c.weeks++;
+      const r=(W[wid].entries||{})[e.id]||[]; const t=r.reduce((a,x,dd)=>a+reelM(W[wid],e.id,dd,x),0); if(!r.some(Boolean)) continue; c.weeks++; if(W[wid].reelOk) c.reelW++;
       const b=W[wid].bases&&W[wid].bases[e.id]!=null?+W[wid].bases[e.id]:(+e.base||0);
       if(b>=35){ c.hs25+=Math.min(Math.max(0,t-2100),480); c.hs50+=Math.max(0,t-2580); }
       else { const hc=Math.max(0,t-Math.round(b*60)); const lim=Math.round(b*6); c.hc10+=Math.min(hc,lim); c.hc25+=Math.max(0,hc-lim); }
@@ -2337,46 +2394,53 @@ async function renderCpt(){
   const v=$("#v-cpt"); if(!S.cptMonth){ const n=new Date(); S.cptMonth=n.getFullYear()+"-"+pad(n.getMonth()+1); }
   if(!S.allWeeks){ v.innerHTML='<div class="panel">Chargement des semaines…</div>'; await loadAllWeeks(); }
   else S.allWeeks[S.weekId]=clone(S.week);
-  const rows=monthCounters(S.cptMonth); const [Y,M]=S.cptMonth.split("-").map(Number);
-  await primesForMonth(S.cptMonth, rows); if(S.view!=="cpt") return;
+  const CL=(RHT().closed||{})[S.cptMonth]; let rows; const [Y,M]=S.cptMonth.split("-").map(Number);
+  if(CL) rows=CL.rows.map(r=>({...r, emp:S.team.employees.find(e=>e.id===r.empId)||{id:r.empId,name:r.name,base:r.base}}));
+  else { rows=monthCounters(S.cptMonth); await primesForMonth(S.cptMonth, rows); } if(S.view!=="cpt") return;
   const months=[]; for(let i=-6;i<=2;i++){ const d=new Date(Y,M-1+i,1); months.push(d.getFullYear()+"-"+pad(d.getMonth()+1)); }
   const mName = ym => { const [y,m]=ym.split("-").map(Number); return ["janvier","février","mars","avril","mai","juin","juillet","août","septembre","octobre","novembre","décembre"][m-1]+" "+y; };
   v.innerHTML='<div class="panel"><div style="display:flex;gap:10px;flex-wrap:wrap;align-items:center;justify-content:space-between"><h2>Compteurs · '+mName(S.cptMonth)+'</h2>'+
   '<div style="display:flex;gap:8px;flex-wrap:wrap"><select id="cpt-m" class="btn">'+[...new Set([...months,S.cptMonth])].sort().map(m=>'<option value="'+m+'"'+(m===S.cptMonth?" selected":"")+'>'+mName(m)+'</option>').join("")+'</select>'+
-  '<button class="btn" id="cpt-reload">Actualiser</button><button class="btn primary" id="cpt-xlsx">Export paie Excel</button><button class="btn primary" id="cpt-pdf">Récapitulatif PDF</button></div></div>'+
+  '<button class="btn" id="cpt-reload">Actualiser</button><button class="btn primary" id="cpt-xlsx">Export paie Excel</button><button class="btn primary" id="cpt-pdf">Récapitulatif PDF</button>'+(CL?'':'<button class="btn" id="cpt-close" title="Fige heures, absences et primes du mois avant transmission au comptable">Clôturer la paie</button>')+'</div></div>'+
+  (CL?'<div class="notice cl"><b>Paie de '+mName(S.cptMonth)+' clôturée le '+when(CL.at)+'.</b> Les chiffres ci-dessous sont figés ; une correction se fait en régularisation le mois suivant. <span class="clr"><input id="cpt-motif" placeholder="Motif de réouverture"><button class="btn ghost" id="cpt-reopen">Rouvrir</button></span></div>':'')+
   '<p class="lead">Heures supplémentaires et complémentaires calculées sur les semaines qui se terminent dans le mois (+25 % de 35h à 43h, +50 % au-delà ; temps partiels : +10 % jusqu\'à 1/10e du contrat, +25 % au-delà). CP en jours ouvrables. Les dépassements de pause (au-delà de 10 min par jour) sont déduits des heures travaillées.</p>'+
   '<div class="tbl"><table class="cpt"><thead><tr><th>Collaborateur</th><th>Contrat</th><th>Heures travaillées</th><th>HS 25 %</th><th>HS 50 %</th><th>HC 10 %</th><th>HC 25 %</th><th>Dimanches</th><th>Fériés travaillés</th><th>Fériés chômés</th><th>CP pris</th><th>CP restants</th><th>Maladie (j)</th><th>Absences (j)</th><th>Formation</th><th>Retards</th><th>Dépassement pauses</th><th>Primes</th></tr></thead><tbody>'+
   rows.map(c=>'<tr><td><b>'+esc(c.emp.name)+'</b></td><td>'+fmtH(+c.emp.base||0)+'h</td><td class="n">'+hh(c.work)+'</td><td class="n">'+hh(c.hs25)+'</td><td class="n">'+hh(c.hs50)+'</td><td class="n">'+hh(c.hc10)+'</td><td class="n">'+hh(c.hc25)+'</td><td class="n">'+(c.sunN?c.sunN+" · "+fmt(c.sunM):"–")+'</td><td class="n">'+(c.holN?c.holN+" · "+fmt(c.holM):"–")+'</td><td class="n">'+(c.fe||"–")+'</td><td class="n">'+(c.cp||"–")+'</td><td class="n">'+(c.cpLeft==null?'<span class="st-mut">à saisir</span>':fmtH(c.cpLeft))+'</td><td class="n">'+(c.m||"–")+'</td><td class="n">'+(c.ab||"–")+'</td><td class="n">'+hh(c.fo)+'</td><td class="n">'+(c.retN?c.retN+" · "+c.retM+" min":"–")+'</td><td class="n">'+(c.pzOver?'<b class="bad">'+fmt(c.pzOver)+'</b>':'–')+'</td><td class="n"><b>'+(c.prime?eur2(c.prime.total):'–')+'</b>'+(c.prime&&c.prime.pending?'<br><small class="st-mut">'+c.prime.pending+' j en attente</small>':'')+'</td></tr>').join("")+
-  '</tbody></table></div><p class="st-mut" style="margin-top:8px">Les soldes CP se saisissent dans l\'onglet Collaborateurs (solde et date de référence).</p></div>'+primesPanel(rows);
+  '</tbody></table></div><p class="st-mut" style="margin-top:8px">Les soldes CP se saisissent dans l\'onglet Collaborateurs (solde et date de référence). '+(rows.some(c=>c.reelW)?'Heures réelles validées prises en compte.':'Heures du planning (aucune semaine validée en heures réelles).')+'</p></div>'+primesPanel(rows)+reelPanelHTML();
   $("#cpt-m").onchange=ev=>{ S.cptMonth=ev.target.value; renderCpt(); };
   $("#cpt-reload").onclick=async()=>{ S.allWeeks=null; renderCpt(); };
   $("#cpt-xlsx").onclick=()=>exportPaieXlsx(rows, mName(S.cptMonth));
-  $("#cpt-pdf").onclick=()=>exportPaiePdf(rows, mName(S.cptMonth)); bindPrimes(v);
+  $("#cpt-pdf").onclick=()=>exportPaiePdf(rows, mName(S.cptMonth)); if(!CL) bindPrimes(v); bindReel(v);
+  const cc=$("#cpt-close"); if(cc) cc.onclick=()=>{ if(cc.dataset.sure!=="1"){ cc.dataset.sure="1"; cc.textContent="Confirmer la clôture ?"; return; }
+    const snap=rows.map(c=>{ const {emp,...rest}=c; return {...JSON.parse(JSON.stringify(rest)), empId:emp.id, name:emp.name, base:+emp.base||0}; }); (RHT().closed ||= {})[S.cptMonth]={at:new Date().toISOString(), rows:snap};
+    jlog("paie","Clôture de la paie de "+mName(S.cptMonth)+" · "+snap.length+" collaborateurs · primes "+eur2(snap.reduce((t,c)=>t+(c.prime?c.prime.total:0),0))); teamChanged(); scheduleRH(); toast("Paie de "+mName(S.cptMonth)+" clôturée"); };
+  const ro=$("#cpt-reopen"); if(ro) ro.onclick=()=>{ const m=$("#cpt-motif").value.trim(); if(!m){ toast("Indiquez le motif de réouverture"); return; } delete RHT().closed[S.cptMonth]; jlog("paie","Réouverture de la paie de "+mName(S.cptMonth)+" · motif : "+m); teamChanged(); scheduleRH(); renderCpt(); };
 }
 const dec = m => Math.round(m/60*100)/100;
 /* primes du mois à transmettre au comptable (réalisés validés + palmarès officiel) */
 async function primesForMonth(ym, rows){
   const B=bareme(), RM=reaMonth(ym); let MO=null; try{ MO=await objMonthEmp(ym); }catch(e){}
   rows.forEach(c=>{ const id=c.emp.id; const obj=MO&&MO.res[id]?MO.res[id].po:0; const off=officialFor(S.res,id,ym); const L=withOfficial((S.rea||[]).filter(r=>r.empId===id&&(r.day||"").startsWith(ym)),off);
-    const ex=expertOf(c.emp); if(!L.length&&!obj&&!ex){ c.prime=null; return; } const pr=primeCalc(B,obj,L,RM,0); const V=pr.valid;
-    c.prime={obj, po:V.po, pct:V.pct, tier:V.tier, items:V.items, nps:V.nps, expert:ex, total:V.total+ex, lines:V.lines, pending:pr.pending, off:!!off, au:off&&off.au}; });
+    const ex=expertNet(c.emp,ym); if(!L.length&&!obj&&!ex){ c.prime=null; return; } const ar=absRatioFor(id,ym); const pr=primeCalc(B,obj,L,RM,absNps(id,ym),indOf(ym,id)); const V=pr.valid;
+    c.prime={obj, po:V.po, pct:V.pct, tier:V.tier, items:V.items, nps:V.nps, expert:ex, total:V.total+ex, lines:V.lines, pending:pr.pending, off:!!off, au:off&&off.au, absR:ar, absD:absDaysIn(id,ym)}; });
 }
 function primesPanel(rows){ const B=bareme(); const its=B.items||[]; const R=rows.filter(c=>c.prime); const all=rows;
   const ln=(p,id)=>(p.lines||[]).find(l=>l.id===id);
-  const cell=(p,it)=>{ const l=ln(p,it.id); return l?'<td class="n">'+eur2(l.amt)+'<br><small class="st-mut">'+(it.mode==="pct"?eur(l.q)+' × '+String(it.val).replace(".",",")+' %':l.q+' × '+eur2(it.val))+'</small></td>':'<td class="n st-mut">–</td>'; };
+  const cell=(p,it)=>{ const l=ln(p,it.id); return l?'<td class="n">'+eur2(l.amt)+'<br><small class="st-mut">'+(it.mode==="seuil"?String(l.q).replace(".",",")+' % (seuil '+String(it.seuil).replace(".",",")+' %)'+(l.marge!=null&&it.margeMin&&l.marge<it.margeMin&&l.amt?' · marge '+String(Math.round(l.marge*100)/100).replace(".",",")+' %':''):it.mode==="pct"?eur(l.q)+' × '+String(it.val).replace(".",",")+' %':l.q+' × '+eur2(it.val))+'</small></td>':'<td class="n st-mut">–</td>'; };
   const sum=f=>R.reduce((t,c)=>t+(f(c.prime)||0),0);
   return '<div class="panel"><h2>Primes à transmettre au comptable</h2><p class="lead">Montants bruts validés du mois, détaillés par prime : réalisés validés dans l\'onglet Réalisés et, s\'il existe, le dernier palmarès en PO du mois (réalisé officiel). Les saisies encore en attente ne sont pas comptées. La prime expert s\'ajoute chaque mois au collaborateur coché.</p>'+
     '<div class="tbl"><table class="cpt pdet"><thead><tr><th>Collaborateur</th><th>Objectif PO</th><th>PO réalisé</th><th>Atteinte</th><th>Prime objectif</th>'+its.map(it=>'<th>'+esc(it.name)+'</th>').join("")+'<th>Prime NPS / Google</th><th>Prime expert</th><th>Total brut</th></tr></thead><tbody>'+
       all.map(c=>{ const p=c.prime||{obj:0,po:0,pct:0,tier:0,lines:[],nps:0,expert:0,total:0,pending:0}; const ex=expertOf(c.emp);
-        return '<tr><td><b>'+esc(c.emp.name)+'</b>'+(p.pending?'<br><small class="pill warn">'+p.pending+' en attente</small>':'')+'</td><td class="n">'+(p.obj?eur(p.obj):'–')+'</td><td class="n">'+(c.prime?eur(p.po):'–')+(p.off?'<br><small class="st-mut">palmarès au '+p.au.slice(8)+'/'+p.au.slice(5,7)+'</small>':'')+'</td><td class="n">'+(p.obj?Math.round(p.pct)+' %':'–')+'</td><td class="n">'+eur2(p.tier)+'</td>'+
+        const cl=!!(RHT().closed||{})[S.cptMonth];
+        return '<tr><td><b>'+esc(c.emp.name)+'</b>'+(p.pending?'<br><small class="pill warn">'+p.pending+' en attente</small>':'')+(p.absR?'<br><small class="st-mut">'+p.absD+' j d\'absence · prorata '+Math.round((1-p.absR)*100)+' %</small>':'')+'</td><td class="n">'+(p.obj?eur(p.obj):'–')+'</td><td class="n">'+(c.prime?eur(p.po):'–')+(p.off?'<br><small class="st-mut">palmarès au '+p.au.slice(8)+'/'+p.au.slice(5,7)+'</small>':'')+'</td><td class="n">'+(p.obj?Math.round(p.pct)+' %':'–')+'</td><td class="n">'+eur2(p.tier)+'</td>'+
           its.map(it=>cell(p,it)).join("")+'<td class="n">'+eur2(p.nps)+'</td>'+
-          '<td class="n" style="white-space:nowrap"><label class="chk"><input type="checkbox" data-pexp="'+esc(c.emp.id)+'"'+(ex?" checked":"")+'> expert</label>'+(ex?' <input class="mono pexa" data-pexa="'+esc(c.emp.id)+'" inputmode="decimal" value="'+String(ex).replace(".",",")+'" style="width:64px"> €':'')+'</td>'+
+          '<td class="n" style="white-space:nowrap"><label class="chk"><input type="checkbox" data-pexp="'+esc(c.emp.id)+'"'+(ex?" checked":"")+(cl?" disabled":"")+'> expert</label>'+(ex?' <input class="mono pexa" data-pexa="'+esc(c.emp.id)+'" inputmode="decimal" value="'+String(ex).replace(".",",")+'" style="width:64px"'+(cl?" disabled":"")+'> €'+(p.expert!==ex?'<br><small class="st-mut">après prorata '+eur2(p.expert)+'</small>':''):'')+'</td>'+
           '<td class="n"><b>'+eur2(p.total)+'</b></td></tr>'; }).join("")+
       '<tr class="ptot"><td><b>Total équipe</b></td><td></td><td></td><td></td><td class="n"><b>'+eur2(sum(p=>p.tier))+'</b></td>'+its.map(it=>'<td class="n"><b>'+eur2(sum(p=>(ln(p,it.id)||{}).amt))+'</b></td>').join("")+'<td class="n"><b>'+eur2(sum(p=>p.nps))+'</b></td><td class="n"><b>'+eur2(sum(p=>p.expert))+'</b></td><td class="n"><b>'+eur2(sum(p=>p.total))+'</b></td></tr></tbody></table></div>'+
     '<p class="st-mut" style="margin-top:8px">Détail repris dans l\'export paie Excel (une colonne par prime + onglet « Primes ») et dans le récapitulatif PDF.</p></div>'; }
 function bindPrimes(v){
-  v.querySelectorAll("[data-pexp]").forEach(cb=>cb.onchange=()=>{ const e=S.team.employees.find(x=>x.id===cb.dataset.pexp); if(!e) return; e.primeExpert=cb.checked?(e.primeExpertLast||150):0; if(!cb.checked&&e.primeExpertLast==null) e.primeExpertLast=150; baremeChanged(); renderCpt(); });
-  v.querySelectorAll("[data-pexa]").forEach(inp=>inp.onchange=()=>{ const e=S.team.employees.find(x=>x.id===inp.dataset.pexa); if(!e) return; const n=parseFloat(inp.value.replace(",","."))||0; e.primeExpert=n; e.primeExpertLast=n||150; baremeChanged(); renderCpt(); });
+  v.querySelectorAll("[data-pexp]").forEach(cb=>cb.onchange=()=>{ const e=S.team.employees.find(x=>x.id===cb.dataset.pexp); if(!e) return; e.primeExpert=cb.checked?(e.primeExpertLast||150):0; if(!cb.checked&&e.primeExpertLast==null) e.primeExpertLast=150; jlog("prime","Prime expert de "+e.name+" : "+(cb.checked?eur2(e.primeExpert)+" par mois":"retirée"), e.id); baremeChanged(); renderCpt(); });
+  v.querySelectorAll("[data-pexa]").forEach(inp=>inp.onchange=()=>{ const e=S.team.employees.find(x=>x.id===inp.dataset.pexa); if(!e) return; const n=parseFloat(inp.value.replace(",","."))||0; e.primeExpert=n; e.primeExpertLast=n||150; jlog("prime","Prime expert de "+e.name+" : "+eur2(n)+" par mois", e.id); baremeChanged(); renderCpt(); });
 }
 const r2 = n => Math.round((+n||0)*100)/100;
 function exportPaieXlsx(rows, label){
@@ -2387,7 +2451,7 @@ function exportPaieXlsx(rows, label){
   const wb=XLSX.utils.book_new(); XLSX.utils.book_append_sheet(wb,ws,"Paie");
   { const P=[["Primes · "+label+" (montants bruts validés)"],[],["Salarié","Objectif PO (€)","PO réalisé (€)","Atteinte (%)","Prime objectif (€)","Service","Quantité / montant","Prime service (€)","Prime NPS (€)","Prime expert (€)","Total (€)","Saisies en attente"]];
     rows.filter(c=>c.prime).forEach(c=>{ const p=c.prime; const L=p.lines.length?p.lines:[null];
-      L.forEach((l,k)=>P.push([k?"":c.emp.name, k?"":r2(p.obj), k?"":r2(p.po), k?"":(p.obj?Math.round(p.pct):""), k?"":r2(p.tier), l?l.name:"", l?(l.mode==="pct"?r2(l.q):l.q):"", l?r2(l.amt):"", k?"":r2(p.nps), k?"":r2(p.expert), k?"":r2(p.total), k?"":(p.pending||"")])); });
+      L.forEach((l,k)=>P.push([k?"":c.emp.name, k?"":r2(p.obj), k?"":r2(p.po), k?"":(p.obj?Math.round(p.pct):""), k?"":r2(p.tier), l?l.name:"", l?(l.mode==="pct"?r2(l.q):l.mode==="seuil"?l.q+" %":l.q):"", l?r2(l.amt):"", k?"":r2(p.nps), k?"":r2(p.expert), k?"":r2(p.total), k?"":(p.pending||"")])); });
     const w3=XLSX.utils.aoa_to_sheet(P); w3["!cols"]=[{wch:16},{wch:14},{wch:14},{wch:11},{wch:14},{wch:26},{wch:16},{wch:14},{wch:12},{wch:12},{wch:14}]; XLSX.utils.book_append_sheet(wb,w3,"Primes"); }
   { const ym=S.cptMonth, [Y,M]=ym.split("-").map(Number), f=ym+"-01", l=ym+"-"+pad(new Date(Y,M,0).getDate());
     const L=absList().filter(a=>a.from<=l && (a.to||a.from)>=f).sort((a,b)=>a.from.localeCompare(b.from));
@@ -2429,7 +2493,8 @@ function exportPaiePdf(rows, label){
 }
 
 /* ---------- demandes des collaborateurs ---------- */
-const DTYPE = {CP:"Congés payés", ECHANGE:"Échange de journée", ERREUR:"Erreur signalée"};
+const DTYPE = {CP:"Congés payés", ECHANGE:"Échange de journée", ERREUR:"Erreur signalée", ABSENCE:"Absence déclarée"};
+const ABS_MOTIF = {maladie:["Arrêt maladie","MAL"], enfant:["Enfant malade","AA"], at:["Accident du travail","AT"], famille:["Événement familial","EVF"], autre:["Autre absence","AA"]};
 function subscribeDemandes(){
   if(!S.db) return; S.unsubDem&&S.unsubDem();
   S.unsubDem=S.db.collection("demandes").onSnapshot(q=>{ S.demandes=q.docs.map(x=>({id:x.id,...snapData(x)})).sort((a,b)=>(b.createdAt||"").localeCompare(a.createdAt||"")); badgeDemandes(); if(S.view==="dem") renderDem(); },()=>{});
@@ -2439,6 +2504,7 @@ const empName = id => (S.team.employees.find(e=>e.id===id)||{}).name || id;
 function demText(r){
   if(r.type==="CP") return "du "+frDate(r.from)+(r.to&&r.to!==r.from?" au "+frDate(r.to):"");
   if(r.type==="ECHANGE") return frDate(r.date)+" avec "+empName(r.avec);
+  if(r.type==="ABSENCE") return "du "+frDate(r.from)+(r.to&&r.to!==r.from?" au "+frDate(r.to):"")+" · "+((ABS_MOTIF[r.motif]||[])[0]||"motif non précisé");
   return r.weekId?"Semaine "+wnum(r.weekId):"";
 }
 function renderDem(){
@@ -2446,10 +2512,10 @@ function renderDem(){
   const list=all.filter(r=>f==="attente"?r.status==="attente":r.status!=="attente");
   v.innerHTML='<div class="panel"><div style="display:flex;justify-content:space-between;flex-wrap:wrap;gap:10px;align-items:center"><h2>Demandes</h2><div class="seg"><button data-df="attente" aria-pressed="'+(f==="attente")+'">En attente ('+all.filter(r=>r.status==="attente").length+')</button><button data-df="faites" aria-pressed="'+(f!=="attente")+'">Traitées</button></div></div>'+
   (S.db?'':'<div class="notice">Les demandes des collaborateurs arrivent ici dans la version en ligne.</div>')+
-  (list.length?'<div class="dem-list">'+list.map(r=>'<div class="dem"><div class="dem-hd"><b>'+esc(empName(r.empId))+'</b><span class="pill '+(r.status==="attente"?"warn":r.status==="acceptée"?"ok":"bad")+'">'+esc(r.status==="attente"?"En attente":r.status)+'</span></div>'+
-    '<div><b>'+esc(DTYPE[r.type]||r.type)+'</b> · '+esc(demText(r))+'</div>'+(r.note?'<div class="st-mut">« '+esc(r.note)+' »</div>':'')+
+  (list.length?'<div class="dem-list">'+list.map(r=>'<div class="dem"><div class="dem-hd"><b>'+esc(empName(r.empId))+'</b><span class="pill '+(r.status==="attente"?"warn":(r.status==="acceptée"||r.status==="enregistrée"||r.status==="traitée")?"ok":"bad")+'">'+esc(r.status==="attente"?"En attente":r.status)+'</span></div>'+
+    '<div><b>'+esc(DTYPE[r.type]||r.type)+'</b> · '+esc(demText(r))+'</div>'+(r.note?'<div class="st-mut">« '+esc(r.note)+' »</div>':'')+(r.img?'<details class="just"><summary>📎 Voir le justificatif</summary>'+(/^data:image\//.test(r.img)?'<img src="'+esc(r.img)+'" alt="Justificatif">':'<a href="'+esc(r.img)+'" download="justificatif-'+esc(r.empId)+'.pdf">Télécharger le PDF</a>')+'</details>':(r.type==="ABSENCE"?'<div class="st-mut" style="font-size:12px">Justificatif non joint</div>':''))+(r.type==="ECHANGE"&&r.status==="attente"?echCheck(r):'')+
     '<div class="st-mut" style="font-size:12px">Envoyée le '+(r.createdAt?when(r.createdAt):"")+(r.decidedAt?' · traitée le '+when(r.decidedAt):'')+(r.reponse?' · réponse : '+esc(r.reponse):'')+'</div>'+
-    (r.status==="attente"?'<div class="dem-act"><input id="rep-'+esc(r.id)+'" placeholder="Réponse (facultatif)"><button class="btn primary" data-dok="'+esc(r.id)+'">'+(r.type==="ERREUR"?"Marquer traité":"Accepter")+'</button>'+(r.type!=="ERREUR"?'<button class="btn danger" data-dko="'+esc(r.id)+'">Refuser</button>':'')+'</div>':'')+'</div>').join("")+'</div>'
+    (r.status==="attente"?'<div class="dem-act"><input id="rep-'+esc(r.id)+'" placeholder="Réponse (facultatif)"><button class="btn primary" data-dok="'+esc(r.id)+'">'+(r.type==="ERREUR"?"Marquer traité":r.type==="ABSENCE"?"Enregistrer l'absence":"Accepter")+'</button>'+(r.type!=="ERREUR"&&r.type!=="ABSENCE"?'<button class="btn danger" data-dko="'+esc(r.id)+'">Refuser</button>':'')+'</div>':'')+'</div>').join("")+'</div>'
    :'<div class="emptystate">'+(f==="attente"?"Aucune demande en attente.":"Aucune demande traitée.")+'</div>')+'</div>';
   v.querySelectorAll("[data-df]").forEach(b=>b.onclick=()=>{ S.demFilter=b.dataset.df; renderDem(); });
   v.querySelectorAll("[data-dok]").forEach(b=>b.onclick=()=>decide(b.dataset.dok,true));
@@ -2463,11 +2529,15 @@ async function editWeekDoc(wid, fn){
 async function decide(id, ok){
   const r=(S.demandes||[]).find(x=>x.id===id); if(!r) return; const rep=($("#rep-"+id)||{}).value||"";
   try{
+    if(ok) S.pubReason={t:(DTYPE[r.type]||r.type)+" acceptée", at:Date.now()};
     if(ok && r.type==="CP"){ const byW={}; datesBetween(r.from, r.to||r.from).forEach(day=>{ const d=dayIdxOfDate(day); if(d===6) return; (byW[weekOfDate(day)] ||= []).push(d); });
       for(const [wid,ds] of Object.entries(byW)) await editWeekDoc(wid, w=>{ const row=(w.entries[r.empId] ||= [null,null,null,null,null,null,null]); ds.forEach(d=>row[d]={s:"CP"}); }); }
     if(ok && r.type==="ECHANGE"){ const wid=weekOfDate(r.date), d=dayIdxOfDate(r.date);
       await editWeekDoc(wid, w=>{ const a=(w.entries[r.empId] ||= [null,null,null,null,null,null,null]), b=(w.entries[r.avec] ||= [null,null,null,null,null,null,null]); const t=a[d]; a[d]=b[d]; b[d]=t; }); }
-    await S.db.doc("demandes/"+id).update({status: ok?(r.type==="ERREUR"?"traitée":"acceptée"):"refusée", reponse:rep, decidedAt:new Date().toISOString()});
+    if(ok && r.type==="ABSENCE"){ const M=ABS_MOTIF[r.motif]||["Absence","AA"]; const rec={id:"a"+Date.now().toString(36), empId:r.empId, type:M[1], from:r.from, to:r.to||r.from, min:null, note:"Déclarée par le collaborateur · "+M[0]+(r.note?" : "+r.note:""), justif:!!r.img, createdAt:new Date().toISOString(), dem:r.id};
+      absList().push(rec); teamChanged(true); await applyAbs(rec,false); S.allWeeks=null; teamChanged(); jlog("absence", empName(r.empId)+" : "+M[0]+" "+demText(r)+" enregistrée"+(r.img?" (justificatif joint)":" (sans justificatif)"), r.empId); }
+    await S.db.doc("demandes/"+id).update({status: ok?(r.type==="ERREUR"?"traitée":r.type==="ABSENCE"?"enregistrée":"acceptée"):"refusée", reponse:rep, decidedAt:new Date().toISOString()});
+    jlog("demande", (DTYPE[r.type]||r.type)+" de "+empName(r.empId)+" ("+demText(r)+") "+(ok?(r.type==="ERREUR"?"traitée":r.type==="ABSENCE"?"enregistrée":"acceptée"):"refusée")+(rep?" · réponse : "+rep:""), r.empId);
     toast(ok?"Demande acceptée"+(r.type==="CP"?" · CP posés dans le planning":r.type==="ECHANGE"?" · journées échangées":""):"Demande refusée");
     const emp=S.team.employees.find(e=>e.id===r.empId);
     if(emp&&okMail(emp.email)&&G.token&&Date.now()<G.exp){ const st=ok?(r.type==="ERREUR"?"a été prise en compte":"a été acceptée"):"a été refusée";
@@ -2499,15 +2569,22 @@ async function weekObjData(wid, w){ let O=null, meta=[], MO={}; try{ O=objForWee
 window.F890_PREVIEW = async (empId, all) => {
   const e=S.team.employees.find(x=>x.id===empId); if(!e) return null; const cw=isoWeekId(new Date()); const weeks=[];
   for(let k=-1;k<=4;k++){ const wid=shiftWeek(cw,k); const w = wid===S.weekId ? S.week : await loadWeek(wid); if(!w || (!all && !w.pub)) continue; const {O,meta}=await weekObjData(wid,w); weeks.push(JSON.parse(JSON.stringify(pubDoc(wid,w,e,O,meta)))); }
-  const td=todayStr(); return { emp:e.id, name:e.name, weeks, names:emps().map(x=>({id:x.id,name:x.name})), demandes:(S.demandes||[]).filter(r=>r.empId===e.id), pauses:(S.pauses||[]).filter(p=>p.empId===e.id&&p.day===td), rea:(S.rea||[]).filter(r=>r.empId===e.id), res:(S.res||[]).map(r=>({day:r.day,at:r.at,parts:r.parts,name:r.name,base:r.base,du:r.du,au:r.au,vend:r.vend})), bar:{bareme:bareme(), months:(S.team.settings||{}).reaMonths||{}} };
+  const td=todayStr(); let rhd=null; try{ if(!S.allWeeks) await loadAllWeeks(); rhd=JSON.parse(JSON.stringify(rhDocFor(e))); }catch(x){} return { rh:rhd, annonces:S.annonces||[], suivi:Object.fromEntries(Object.entries(S.suivi||{}).filter(([k])=>k.startsWith(e.id+'_'))), emp:e.id, name:e.name, weeks, names:emps().map(x=>({id:x.id,name:x.name})), demandes:(S.demandes||[]).filter(r=>r.empId===e.id), pauses:(S.pauses||[]).filter(p=>p.empId===e.id&&p.day===td), rea:(S.rea||[]).filter(r=>r.empId===e.id), res:(S.res||[]).map(r=>({day:r.day,at:r.at,parts:r.parts,name:r.name,base:r.base,du:r.du,au:r.au,vend:r.vend})), bar:{bareme:bareme(), months:(S.team.settings||{}).reaMonths||{}, experts:Object.fromEntries(emps().filter(x=>expertOf(x)).map(x=>[x.id,expertOf(x)])), reglement:reg().pub||null, absRule:{...reg().abs}, anon:!!RHT().anonRank} };
 };
 async function publishWeek(wid, w){
   if(!S.db) return; const b=S.db.batch();
   const {O,meta}=await weekObjData(wid,w);
-  for(const e of emps()) b.set(S.db.rawDoc("publies/"+e.id+"/semaines/"+wid), JSON.parse(JSON.stringify(pubDoc(wid,w,e,O,meta))));
+  const old={}; await Promise.all(emps().map(async e=>{ try{ old[e.id]=snapData(await S.db.doc("publies/"+e.id+"/semaines/"+wid).get()); }catch(x){} }));
+  const lines=[];
+  const why=S.pubReason&&Date.now()-S.pubReason.at<15000?S.pubReason.t:"";
+  for(const e of emps()){ const d=JSON.parse(JSON.stringify(pubDoc(wid,w,e,O,meta))); d.motif=w.motif||why; const o=old[e.id];
+    if(o&&o.days){ const ch=d.days.map((x,i)=>{ const a=dayTxt(o.days[i]), c=dayTxt(x); return a!==c?DAYN[i].slice(0,3)+". "+fdShort(x.date).slice(0,5)+" : "+a+" → "+c:null; }).filter(Boolean); if(ch.length) lines.push([e,ch]); }
+    b.set(S.db.rawDoc("publies/"+e.id+"/semaines/"+wid), d); }
   await b.commit();
+  if(!Object.values(old).some(Boolean)) jlog("planning","Semaine "+wnum(wid)+" publiée aux collaborateurs");
+  lines.forEach(([e,ch])=>jlog("planning","S"+wnum(wid)+" · "+e.name+" — "+ch.join(" ; ")+" · motif : "+(w.motif||why||"non renseigné"), e.id));
 }
-async function unpublishWeek(wid){ if(!S.db) return; const b=S.db.batch(); for(const e of S.team.employees) b.delete(S.db.rawDoc("publies/"+e.id+"/semaines/"+wid)); await b.commit(); }
+async function unpublishWeek(wid){ if(!S.db) return; jlog("planning","Semaine "+wnum(wid)+" retirée de l'espace collaborateurs"); const b=S.db.batch(); for(const e of S.team.employees) b.delete(S.db.rawDoc("publies/"+e.id+"/semaines/"+wid)); await b.commit(); }
 let pubTimer=null;
 function schedulePublish(){ if(!S.db||!S.week.pub) return; clearTimeout(pubTimer); const wid=S.weekId, w=clone(S.week); pubTimer=setTimeout(()=>publishWeek(wid,w).then(()=>{ clearTimeout(S.monthRepubT); S.monthRepubT=setTimeout(()=>{ const yms=[...new Set(weekDays(wid).slice(0,6).map(dt=>ymOf(ymd(dt))))].filter(ym=>objMonth(ym)); yms.forEach(ym=>republishMonth(ym,wid)); },8000); }).catch(()=>setSave("off","Publication impossible")),1500); }
 async function togglePub(){
@@ -2561,6 +2638,251 @@ const ICO = {
   pub:'<path d="M12 16V4M7 9l5-5 5 5"/><path d="M4 16v4h16v-4"/>'
 };
 const ico = (k,c) => '<svg viewBox="0 0 24 24" width="26" height="26" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">'+ICO[k]+'</svg>';
+/* ====================== Suivi RH ====================== */
+const RHT = () => (S.team.settings ||= {});
+const fiche = e => (e.fiche ||= {});
+const fdShort = s => s ? s.slice(8,10)+"/"+s.slice(5,7)+"/"+s.slice(0,4) : "";
+const addDaysS = (s,n) => { const [y,m,d]=s.split("-").map(Number); const t=new Date(Date.UTC(y,m-1,d+n)); return t.getUTCFullYear()+"-"+pad(t.getUTCMonth()+1)+"-"+pad(t.getUTCDate()); };
+const addY = (s,n) => s ? (+s.slice(0,4)+n)+s.slice(4) : "";
+const isHol = s => !!holName(new Date(s+"T00:00:00Z"));
+const DTXT_L={RH:"Repos",CP:"Congés payés",M:"Maladie",FO:"Formation",AB:"Absence",FE:"Férié"};
+function dayTxt(x){ if(!x||!x.s) return "—"; const t=[x.m1&&x.m2?x.m1+"–"+x.m2:"", x.a1&&x.a2?x.a1+"–"+x.a2:""].filter(Boolean).join(" / "); const ms=(x.ms||[]).map(m=>m.l+" "+m.d+"–"+m.f).join(", "); return (x.s==="T"?(t||"Horaires à venir"):(DTXT_L[x.s]||x.s)+(x.s==="FO"&&t?" "+t:""))+(ms?" · "+ms:""); }
+const parseDur = v => { const t=String(v||"").trim().toLowerCase().replace(/\s/g,""); if(!t) return null; let m=/^(\d{1,2})[h:](\d{0,2})$/.exec(t); if(m) return +m[1]*60+(+m[2]||0); m=/^(\d+(?:[.,]\d+)?)$/.exec(t); if(m) return Math.round(parseFloat(m[1].replace(",","."))*60); return NaN; };
+const durIn = m => Math.floor(m/60)+"h"+pad(m%60);
+
+/* journal des actions */
+const JK={planning:"Planning",demande:"Demande",absence:"Absence",prime:"Primes",paie:"Paie",fiche:"Fiche salarié",heures:"Heures réelles",entretien:"Entretien",annonce:"Annonce",reglement:"Règlement"};
+function jlog(kind, txt, emp){ const r={at:new Date().toISOString(), kind, txt:String(txt).slice(0,1500), emp:emp||""};
+  if(!S.db){ (S.journal ||= []).unshift(r); return; }
+  S.db.doc("journal/"+Date.now().toString(36)+Math.random().toString(36).slice(2,6)).set(r).catch(()=>{}); }
+function subscribeRH(){ if(!S.db) return;
+  S.db.collection("journal").onSnapshot(q=>{ S.journal=q.docs.map(x=>({id:x.id,...snapData(x)})).sort((a,b)=>(b.at||"").localeCompare(a.at||"")); if(S.view==="rh"&&S.rhTab==="jr"&&!typingIn()) renderRH(); },()=>{});
+  S.db.collection("suivi").onSnapshot(q=>{ S.suivi={}; q.docs.forEach(x=>S.suivi[x.id]=snapData(x)); if(S.view==="rh"&&!typingIn()) renderRH(); renderPubInfo(); },()=>{});
+  S.db.collection("annonces").onSnapshot(q=>{ S.annonces=q.docs.map(x=>({id:x.id,...snapData(x)})).sort((a,b)=>(b.at||"").localeCompare(a.at||"")); if(S.view==="rh"&&!typingIn()) renderRH(); },()=>{}); }
+
+/* accusés de lecture du planning */
+const ackOf = (empId, wid) => (S.suivi||{})[empId+"_lec_"+wid];
+const pubTxt = (wid, w, e) => pubDoc(wid,w,e,null,[]).days.map(dayTxt);
+function ackState(wid, w, e){ const a=ackOf(e.id,wid); if(!a) return {ok:false,a:null}; return {ok:JSON.stringify(a.seen||[])===JSON.stringify(pubTxt(wid,w,e)), a}; }
+function renderPubInfo(){ const el=$("#pubInfo"); if(!el) return; if(document.activeElement&&document.activeElement.id==="pubMotif") return;
+  if(!S.week.pub){ el.innerHTML=""; return; } const L=emps(); const n=L.filter(e=>ackState(S.weekId,S.week,e).ok).length;
+  el.innerHTML='<button class="btn ghost" id="pubLu" title="Collaborateurs ayant confirmé avoir pris connaissance de la version actuelle">Lu '+n+'/'+L.length+'</button><input id="pubMotif" class="pmotif" placeholder="Motif si vous modifiez la semaine publiée" value="'+esc(S.week.motif||"")+'">';
+  $("#pubLu").onclick=()=>{ S.rhTab="suivi"; go("rh"); };
+  const m=$("#pubMotif"); m.onchange=()=>{ S.week.motif=m.value.trim(); changed(); }; }
+
+/* règlement des primes */
+const REG_DEF={v:0, expertCrit:"attribuée au collaborateur reconnu référent d'un univers ou d'un service : formation constructeur ou Boulanger validée, accompagnement des nouveaux collaborateurs, et résultats services au-dessus de la moyenne de l'équipe sur les 3 derniers mois. L'attribution est revue chaque trimestre ; le montant mensuel figure dans le barème.", abs:{on:true, nps:true, expert:false, excl:["CP","AT","MAT","FO","EVF"]}};
+function reg(){ const r=(RHT().reglement ||= JSON.parse(JSON.stringify(REG_DEF))); r.abs=r.abs||JSON.parse(JSON.stringify(REG_DEF.abs)); r.abs.excl=r.abs.excl||[]; if(r.expertCrit==null) r.expertCrit=REG_DEF.expertCrit; return r; }
+function absDaysIn(empId, ym){ const R=reg().abs; const [Y,M]=ym.split("-").map(Number); const first=ym+"-01", last=ym+"-"+pad(new Date(Y,M,0).getDate()); let n=0;
+  absList().filter(a=>a.empId===empId&&a.type!=="RET"&&!R.excl.includes(a.type)).forEach(a=>{ const f=a.from<first?first:a.from, t=(a.to||a.from)>last?last:(a.to||a.from); if(f>t) return; n+=datesBetween(f,t).filter(d=>dayIdxOfDate(d)<6&&!isHol(d)).length; }); return n; }
+function absRatioFor(empId, ym){ const R=reg().abs; if(!R.on) return 0; const [Y,M]=ym.split("-").map(Number); const first=ym+"-01", last=ym+"-"+pad(new Date(Y,M,0).getDate());
+  const open=datesBetween(first,last).filter(d=>dayIdxOfDate(d)<6&&!isHol(d)).length||1; return Math.min(1, absDaysIn(empId,ym)/open); }
+const absNps = (id, ym) => reg().abs.nps ? absRatioFor(id,ym) : 0;
+const expertNet = (e, ym) => { const x=expertOf(e); return x && reg().abs.expert ? r2(x*(1-absRatioFor(e.id,ym))) : x; };
+function reglementText(){ const B=bareme(), R=reg(); const T=(B.tiers||[]).slice().sort((a,b)=>a.pct-b.pct); const n=x=>String(x).replace(".",",");
+  const items=(B.items||[]).map(it=>it.name+" : "+(it.mode==="unit"?eur2(it.val)+" par unité":it.mode==="pct"?n(it.val)+" % du montant":it.mode==="seuil"?"si le taux individuel dépasse "+n(it.seuil)+" %, "+eur(it.val)+(it.margeMin?" (au prorata si la marge individuelle est inférieure à "+n(it.margeMin)+" %)":""):n(it.val))).join(" ; ");
+  const L=[
+    "1. Objet. Le présent règlement fixe les règles de calcul des primes variables des collaborateurs du magasin Boulanger Flers (SAS ANA). Il s'applique à tous de la même façon.",
+    "2. Prime sur objectif. Calculée chaque mois sur la PO HT réalisée par rapport à l'objectif individuel publié : "+T.map(t=>t.pct+" % de l'objectif → "+eur(t.amt)).join(", ")+(B.margeMin?". Versée sous réserve d'une marge du magasin d'au moins "+n(B.margeMin)+" %":"")+".",
+    "3. Primes services. "+items+".",
+    B.nps?"4. Prime NPS et note Google. "+eur(B.nps.amt)+" par collaborateur lorsque le NPS du magasin atteint "+B.nps.min+" ; si la note Google est inférieure à "+n(B.nps.google)+", la prime est versée au prorata de la note.":"4. Prime NPS. Non applicable.",
+    "5. Prime expert. "+R.expertCrit.charAt(0).toUpperCase()+R.expertCrit.slice(1),
+    "6. Absences. "+(R.abs.on&&(R.abs.nps||R.abs.expert)?"La prime "+[R.abs.nps?"NPS et note Google":"",R.abs.expert?"expert":""].filter(Boolean).join(" et la prime ")+" est réduite au prorata des jours d'absence sur les jours ouvrables du mois. Ne réduisent jamais une prime : "+R.abs.excl.map(k=>((ABS_TYPES[k]||{}).l||k).toLowerCase()).join(", ")+", ainsi que la grève, les heures de délégation et toute absence assimilée par la loi à du travail effectif. Les primes sur objectif et services ne sont pas proratisées : elles dépendent du réalisé.":"Les absences ne réduisent pas les primes."),
+    "7. Validation et versement. Les réalisés sont validés par la direction ; le palmarès officiel fait foi. Les primes sont versées avec le salaire après la clôture de paie du mois. Toute correction après clôture est régularisée le mois suivant.",
+    "8. Révision. Toute modification donne lieu à une nouvelle version, communiquée à chaque collaborateur dans son espace avant son application."];
+  return L.join("\n\n"); }
+
+/* publication de l'espace RH de chaque collaborateur (compteurs, contrat, entretiens) */
+let rhT=null; function scheduleRH(){ if(!S.db||!S.teamLoaded) return; clearTimeout(rhT); rhT=setTimeout(publishRH,6000); }
+function rhDocFor(e){ const f=fiche(e); const n=new Date(); const yms=[-1,0].map(k=>{ const d=new Date(n.getFullYear(),n.getMonth()+k,1); return d.getFullYear()+"-"+pad(d.getMonth()+1); });
+  const comp={}; yms.forEach(ym=>{ const cl=(RHT().closed||{})[ym]; const rows=cl?cl.rows:monthCounters(ym); const r=rows.find(c=>(c.emp?c.emp.id:c.empId)===e.id); if(!r) return;
+    comp[ym]={work:r.work||0,hs25:r.hs25||0,hs50:r.hs50||0,hc10:r.hc10||0,hc25:r.hc25||0,cp:r.cp||0,cpLeft:r.cpLeft==null?null:r.cpLeft,m:r.m||0,ab:r.ab||0,fo:r.fo||0,sunN:r.sunN||0,holN:r.holN||0,weeks:r.weeks||0,reelW:r.reelW||0,closed:cl?cl.at:"",abs:Math.round(absRatioFor(e.id,ym)*10000)/10000}; });
+  const ents=(RHT().entretiens||[]).filter(x=>x.empId===e.id).map(x=>({id:x.id,type:x.type,date:x.date,statut:x.statut||"planifié",shared:!!x.shared,cr:x.shared?x.cr||"":"",obj:x.shared?x.obj||"":"",form:x.shared?x.form||"":""}));
+  return {empId:e.id, drive:f.drive||"", contrat:{type:f.contrat||"",entree:f.entree||"",qualif:f.qualif||"",coef:f.coef||"",base:+e.base||0,finEssai:f.finEssai||"",finCdd:f.contrat==="CDD"?f.finCdd||"":""}, compteurs:comp, entretiens:ents}; }
+async function publishRH(){ if(!S.db||!S.teamLoaded) return;
+  try{ if(!S.allWeeks) await loadAllWeeks(); else S.allWeeks[S.weekId]=clone(S.week);
+    S.rhPub=S.rhPub||{}; const b=S.db.batch(); let k=0;
+    for(const e of emps()){ const d=rhDocFor(e); const js=JSON.stringify(d); if(S.rhPub[e.id]===js) continue; S.rhPub[e.id]=js; b.set(S.db.rawDoc("publies/"+e.id+"/rh/fiche"), {...d, at:new Date().toISOString()}); k++; }
+    if(k) await b.commit(); }catch(e){ console.warn("publishRH", e&&e.message); } }
+
+/* échéancier */
+function echeances(){ const td=todayStr(); const out=[]; const push=(e,date,txt,kind)=>{ if(!date) return; out.push({e,date,txt,kind,days:Math.round((Date.parse(date)-Date.parse(td))/864e5)}); };
+  emps().forEach(e=>{ const f=fiche(e); if(f.sortie&&f.sortie<td) return;
+    if(!f.contrat||!f.entree){ out.push({e,date:"",txt:"Fiche incomplète : type de contrat et date d'entrée à renseigner",kind:"fiche",days:-9999}); }
+    if(f.finEssai&&f.finEssai>=addDaysS(td,-7)) push(e,f.finEssai,"Fin de période d'essai : confirmer l'embauche ou renouveler par écrit avant la date","essai");
+    if(f.contrat==="CDD"&&f.finCdd&&f.finCdd>=addDaysS(td,-7)) push(e,f.finCdd,"Fin de CDD : renouvellement, CDI ou fin de contrat (prévenir le salarié)","cdd");
+    const vp=f.visiteProch||(f.visite?addY(f.visite,5):""); if(vp) push(e,vp,"Visite médicale de suivi à organiser","visite"); else if(f.entree) push(e,addDaysS(f.entree,90),"Visite d'information et de prévention à organiser (dans les 3 mois de l'embauche)","visite");
+    const ep=f.entPro?addY(f.entPro,2):(f.entree?addY(f.entree,2):""); if(ep) push(e,ep,"Entretien professionnel (tous les 2 ans)","entpro");
+    if(f.entree){ const y6=addY(f.entree,6); if(y6>=addDaysS(td,-90)) push(e,y6,"Bilan à 6 ans du parcours professionnel","bilan");
+      const yrs=+td.slice(0,4)-+f.entree.slice(0,4); [yrs,yrs+1].forEach(k=>{ if(k>0) push(e,addY(f.entree,k),"Anniversaire d'ancienneté : "+k+" an"+(k>1?"s":""),"anc"); }); }
+    if(f.entAnn) push(e,addY(f.entAnn,1),"Entretien annuel","entann");
+  });
+  (RHT().entretiens||[]).filter(x=>x.statut!=="réalisé"&&x.date).forEach(x=>{ const e=emps().find(y=>y.id===x.empId); if(e) push(e,x.date,"Entretien "+(ENT_T[x.type]||x.type)+" planifié","entplan"); });
+  return out.filter(x=>x.kind==="fiche"||(x.kind==="anc"?x.days>=0&&x.days<=30:x.days<=60)).sort((a,b)=>a.days-b.days); }
+const echUrgent = () => { try{ return echeances().filter(x=>x.days<=30).length; }catch(e){ return 0; } };
+const ENT_T={annuel:"annuel",pro:"professionnel",bilan:"bilan à 6 ans"};
+const CHK_IN=["DPAE effectuée","Contrat signé et remis","Mutuelle : adhésion ou dispense","Visite d'information et de prévention planifiée","Accès espace collaborateur créé et envoyé","Formation caisse et procédures","Règlement intérieur et règlement des primes remis","Parrain désigné"];
+const CHK_OUT=["Dernier planning et solde des heures","Solde de tout compte","Certificat de travail","Attestation France Travail","Reçu pour solde de tout compte signé","Accès espace collaborateur supprimé","Clés, badge et tenue restitués","Dossier archivé"];
+const FICHE_F=[["contrat","Type de contrat","sel",["","CDI","CDD","Apprentissage","Professionnalisation","Stage"]],["entree","Date d'entrée","date"],["finEssai","Fin de période d'essai","date"],["finCdd","Fin de CDD","date"],["qualif","Qualification / emploi","text"],["coef","Niveau / coefficient","text"],["visite","Dernière visite médicale","date"],["visiteProch","Prochaine visite médicale","date"],["entAnn","Dernier entretien annuel","date"],["entPro","Dernier entretien professionnel","date"],["drive","Lien du dossier documents (Drive)","text"],["sortie","Date de sortie","date"]];
+
+/* rendu de l'onglet */
+const okPill = (ok, t) => '<span class="pill '+(ok?"ok":"warn")+'">'+t+'</span>';
+async function renderRH(){ const v=$("#v-rh"); if(!v) return; const t=S.rhTab||"ech";
+  const T=[["ech","Échéancier"],["fiche","Fiches salariés"],["suivi","Lectures et accords"],["ent","Entretiens"],["ann","Annonces"],["reg","Règlement des primes"],["ind","Indicateurs"],["jr","Journal"]];
+  const head='<div class="panel"><h2>Suivi RH</h2><p class="lead">Échéances légales, dossiers des salariés, preuves de lecture et historique des décisions.</p><div class="seg rhseg">'+T.map(([k,l])=>'<button data-rt2="'+k+'" aria-pressed="'+(k===t)+'">'+l+(k==="ech"&&echUrgent()?' <span class="badge">'+echUrgent()+'</span>':'')+'</button>').join("")+'</div></div>';
+  let body="";
+  if(t==="ech") body=rhEchHTML();
+  if(t==="fiche") body=rhFicheHTML();
+  if(t==="suivi"){ if(!S.rhWk){ S.rhWk={}; const cw=isoWeekId(new Date()); for(const wid of [cw, shiftWeek(cw,1)]) S.rhWk[wid]= wid===S.weekId ? S.week : await loadWeek(wid); if(S.view!=="rh") return; } body=rhSuiviHTML(); }
+  if(t==="ent") body=rhEntHTML();
+  if(t==="ann") body=rhAnnHTML();
+  if(t==="reg") body=rhRegHTML();
+  if(t==="ind"){ if(!S.allWeeks){ v.innerHTML=head+'<div class="panel">Calcul des indicateurs…</div>'; await loadAllWeeks(); if(S.view!=="rh") return; } body=await rhIndHTML(); if(S.view!=="rh") return; }
+  if(t==="jr") body=rhJrHTML();
+  v.innerHTML=head+body;
+  v.querySelectorAll("[data-rt2]").forEach(b=>b.onclick=()=>{ S.rhTab=b.dataset.rt2; S.rhWk=null; renderRH(); });
+  bindRH(v, t); }
+
+function rhEchHTML(){ const L=echeances();
+  return '<div class="panel"><h2>Échéancier</h2><p class="lead">Échéances des 60 prochains jours et retards, calculées à partir des fiches salariés : période d\'essai, CDD, visites médicales, entretiens, ancienneté.</p>'+
+    (L.length?'<div class="tbl"><table class="rhtab"><thead><tr><th>Échéance</th><th>Collaborateur</th><th>À faire</th><th>Délai</th><th></th></tr></thead><tbody>'+L.map(x=>'<tr class="'+(x.days<0?"late":x.days<=30?"soon":"")+'"><td>'+(x.date?fdShort(x.date):"–")+'</td><td><b>'+esc(x.e.name)+'</b></td><td>'+esc(x.txt)+'</td><td>'+(x.kind==="fiche"?'<span class="pill warn">à compléter</span>':x.days<0?'<span class="pill bad">en retard de '+(-x.days)+' j</span>':x.days===0?'<span class="pill bad">aujourd\'hui</span>':'<span class="pill '+(x.days<=30?"warn":"ok")+'">dans '+x.days+' j</span>')+'</td><td><button class="btn ghost" data-of="'+esc(x.e.id)+'">Fiche</button></td></tr>').join("")+'</tbody></table></div>':'<div class="emptystate">Aucune échéance dans les 60 prochains jours.</div>')+'</div>'; }
+
+function rhFicheHTML(){ const L=emps(); if(!L.length) return '<div class="panel emptystate">Aucun collaborateur.</div>';
+  if(!S.rhEmp||!L.find(e=>e.id===S.rhEmp)) S.rhEmp=L[0].id; const e=L.find(x=>x.id===S.rhEmp); const f=fiche(e); const td=todayStr();
+  const fld=([k,l,ty,opts])=>'<label class="rhf"><span>'+l+'</span>'+(ty==="sel"?'<select data-ff="'+k+'">'+opts.map(o=>'<option value="'+o+'"'+((f[k]||"")===o?" selected":"")+'>'+(o||"—")+'</option>').join("")+'</select>':'<input data-ff="'+k+'" type="'+(ty==="date"?"date":"text")+'" value="'+esc(f[k]||"")+'"'+(k==="drive"?' placeholder="https://drive.google.com/…"':'')+'>')+'</label>';
+  const chk=(L2,key,title)=>'<div class="rhchk"><h3>'+title+' <small class="st-mut">'+L2.filter((_,i)=>(f[key]||{})[i]).length+'/'+L2.length+'</small></h3>'+L2.map((x,i)=>'<label class="chk"><input type="checkbox" data-ck="'+key+':'+i+'"'+((f[key]||{})[i]?" checked":"")+'> '+esc(x)+((f[key]||{})[i]?' <small class="st-mut">'+fdShort(f[key][i])+'</small>':'')+'</label>').join("")+'</div>';
+  const anc=f.entree?Math.max(0,Math.floor((Date.parse(td)-Date.parse(f.entree))/(365.25*864e5))):null;
+  return '<div class="panel"><div class="rhfiche"><div class="plist">'+L.map(x=>{ const ff=fiche(x); const miss=!ff.contrat||!ff.entree; return '<button data-fe="'+esc(x.id)+'" aria-pressed="'+(x.id===e.id)+'"><span><b>'+esc(x.name)+'</b><br><small style="color:var(--muted)">'+esc(ff.contrat||"contrat ?")+(ff.entree?' · depuis '+fdShort(ff.entree):'')+'</small></span>'+(miss?'<span class="pill warn">!</span>':'')+'</button>'; }).join("")+'</div>'+
+    '<div><h2>'+esc(e.name)+'</h2><p class="st-mut" style="margin-top:-6px">'+esc(e.role||"")+' · base '+fmtH(+e.base||0)+' h'+(matOf(e)?' · matricule '+esc(matOf(e)):'')+(anc!=null?' · ancienneté '+anc+' an'+(anc>1?'s':''):'')+'</p>'+
+    '<div class="rhgrid">'+FICHE_F.map(fld).join("")+'</div>'+
+    '<p class="st-mut">La fiche alimente l\'échéancier. Le type de contrat, la date d\'entrée, la qualification et le lien du dossier sont visibles par le collaborateur dans « Mon espace RH ». Toute modification est tracée dans le journal.</p>'+
+    '<div class="rhchks">'+chk(CHK_IN,"chkIn","Arrivée")+chk(CHK_OUT,"chkOut","Départ")+'</div></div></div></div>'; }
+
+function rhSuiviHTML(){ const L=emps(); const W=Object.entries(S.rhWk||{}).filter(([,w])=>w&&w.pub); const R=reg(); const pubV=(R.pub||{}).v||0; const A=(S.annonces||[]);
+  const cell=(wid,w,e)=>{ const s=ackState(wid,w,e); return s.ok?okPill(true,"✓ lu le "+when(s.a.at)):s.a?'<span class="pill bad">modifié depuis sa lecture</span>':'<span class="pill warn">non confirmé</span>'; };
+  return '<div class="panel"><h2>Lectures et accords</h2><p class="lead">Preuve horodatée que chaque collaborateur a pris connaissance de son planning (version en cours), du règlement des primes et des annonces.</p>'+
+    '<div class="tbl"><table class="rhtab"><thead><tr><th>Collaborateur</th>'+W.map(([wid])=>'<th>Planning S'+wnum(wid)+'</th>').join("")+'<th>Règlement'+(pubV?' v'+pubV:'')+'</th><th>Annonces lues</th></tr></thead><tbody>'+
+    L.map(e=>{ const rg=(S.suivi||{})[e.id+"_reg"]; const nl=A.filter(a=>(S.suivi||{})[e.id+"_ann_"+a.id]).length;
+      return '<tr><td><b>'+esc(e.name)+'</b></td>'+W.map(([wid,w])=>'<td>'+cell(wid,w,e)+'</td>').join("")+'<td>'+(!pubV?'<span class="st-mut">non publié</span>':rg&&rg.v===pubV?okPill(true,"✓ accepté le "+when(rg.at)):rg?'<span class="pill bad">v'+rg.v+' acceptée, v'+pubV+' à lire</span>':'<span class="pill warn">à accepter</span>')+'</td><td>'+(A.length?okPill(nl===A.length, nl+'/'+A.length):'<span class="st-mut">–</span>')+'</td></tr>'; }).join("")+
+    '</tbody></table></div>'+(W.length?'':'<p class="st-mut">Aucune semaine publiée cette semaine ou la suivante.</p>')+'</div>'; }
+
+function rhEntHTML(){ const L=(RHT().entretiens||[]).slice().sort((a,b)=>(b.date||"").localeCompare(a.date||"")); const E=emps(); const cur=S.rhEnt&&L.find(x=>x.id===S.rhEnt);
+  let h='<div class="panel"><h2>Entretiens</h2><p class="lead">Entretien annuel (bilan et objectifs) et entretien professionnel obligatoire tous les 2 ans (évolution, formation), avec bilan à 6 ans. Le collaborateur prépare l\'entretien dans son espace ; le compte rendu partagé lui est soumis pour prise de connaissance.</p>'+
+    '<div class="reamonth"><label>Collaborateur<select id="en-e">'+E.map(e=>'<option value="'+esc(e.id)+'">'+esc(e.name)+'</option>').join("")+'</select></label><label>Type<select id="en-t"><option value="annuel">Annuel</option><option value="pro">Professionnel</option><option value="bilan">Bilan à 6 ans</option></select></label><label>Date<input id="en-d" type="date"></label><button class="btn primary" id="en-add" style="align-self:end">Planifier</button></div>'+
+    (L.length?'<div class="tbl" style="margin-top:12px"><table class="rhtab"><thead><tr><th>Date</th><th>Collaborateur</th><th>Type</th><th>Statut</th><th>Préparation</th><th>Compte rendu</th><th></th></tr></thead><tbody>'+L.map(x=>{ const s=(S.suivi||{})[x.empId+"_ent_"+x.id]||{};
+      return '<tr'+(cur&&cur.id===x.id?' class="sel"':'')+'><td>'+fdShort(x.date)+'</td><td><b>'+esc(empName(x.empId))+'</b></td><td>'+esc(ENT_T[x.type]||x.type)+'</td><td>'+okPill(x.statut==="réalisé", x.statut||"planifié")+'</td><td>'+(s.prep?okPill(true,"reçue"):'<span class="st-mut">–</span>')+'</td><td>'+(x.shared?(s.crLu?okPill(true,"lu le "+when(s.crLu)):'<span class="pill warn">partagé, non lu</span>'):'<span class="st-mut">non partagé</span>')+'</td><td><button class="btn ghost" data-eo="'+esc(x.id)+'">Ouvrir</button></td></tr>'; }).join("")+'</tbody></table></div>':'<p class="st-mut" style="margin-top:12px">Aucun entretien planifié.</p>')+'</div>';
+  if(cur){ const e=E.find(y=>y.id===cur.empId)||{name:empName(cur.empId)}; const f=e.id?fiche(e):{}; const s=(S.suivi||{})[cur.empId+"_ent_"+cur.id]||{}; const p=s.prep||{};
+    const fo=absList().filter(a=>a.empId===cur.empId&&a.type==="FO"&&a.from>=addDaysS(todayStr(),-365)).length;
+    h+='<div class="panel"><h2>Entretien '+esc(ENT_T[cur.type]||cur.type)+' · '+esc(e.name)+' · '+fdShort(cur.date)+'</h2>'+
+      '<div class="rhrep"><div><small>Contrat</small><b>'+esc(f.contrat||"–")+'</b></div><div><small>Entrée</small><b>'+(f.entree?fdShort(f.entree):"–")+'</b></div><div><small>Dernier entretien pro</small><b>'+(f.entPro?fdShort(f.entPro):"aucun")+'</b></div><div><small>Formations (12 mois)</small><b>'+fo+'</b></div></div>'+
+      '<h3>Préparation du collaborateur</h3>'+(s.prep?'<div class="rhprep"><p><b>Réussites :</b> '+esc(p.r||"–")+'</p><p><b>Difficultés :</b> '+esc(p.d||"–")+'</p><p><b>Souhaits (formation, évolution) :</b> '+esc(p.s||"–")+'</p></div>':'<p class="st-mut">Pas encore de préparation envoyée.</p>')+
+      (s.com?'<p><b>Commentaire du collaborateur sur le compte rendu :</b> '+esc(s.com)+'</p>':'')+
+      '<label class="rhf wide"><span>Bilan / compte rendu</span><textarea id="en-cr" rows="5">'+esc(cur.cr||"")+'</textarea></label>'+
+      '<label class="rhf wide"><span>Objectifs fixés</span><textarea id="en-ob" rows="3">'+esc(cur.obj||"")+'</textarea></label>'+
+      '<label class="rhf wide"><span>Formations et évolution retenues</span><textarea id="en-fo" rows="2">'+esc(cur.form||"")+'</textarea></label>'+
+      '<div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:10px"><button class="btn" id="en-save">Enregistrer</button><button class="btn primary" id="en-done">'+(cur.shared?"Mettre à jour le compte rendu partagé":"Marquer réalisé et partager au collaborateur")+'</button><button class="btn ghost" id="en-close">Fermer</button><button class="btn danger" id="en-del">Supprimer</button></div></div>'; }
+  return h; }
+
+function rhAnnHTML(){ const A=S.annonces||[]; const L=emps();
+  return '<div class="panel"><h2>Annonces et notes de service</h2><p class="lead">Consignes, opérations commerciales, sécurité, procédures : chaque collaborateur la voit sur son accueil et confirme sa lecture.</p>'+
+    '<label class="rhf wide"><span>Titre</span><input id="an-t" maxlength="120"></label><label class="rhf wide"><span>Message</span><textarea id="an-x" rows="4" maxlength="3000"></textarea></label><button class="btn primary" id="an-add" style="margin-top:8px">Publier l\'annonce</button>'+
+    (A.length?'<div class="anlist">'+A.map(a=>{ const lus=L.filter(e=>(S.suivi||{})[e.id+"_ann_"+a.id]); const non=L.filter(e=>!(S.suivi||{})[e.id+"_ann_"+a.id]);
+      return '<div class="ann"><div class="ann-h"><b>'+esc(a.titre)+'</b><span class="st-mut">'+when(a.at)+'</span></div><p>'+esc(a.texte).replace(/\n/g,"<br>")+'</p><div>'+okPill(!non.length,"Lu "+lus.length+"/"+L.length)+(non.length?' <span class="st-mut">non lu : '+esc(non.map(e=>e.name).join(", "))+'</span>':'')+' <button class="btn ghost danger" data-ad="'+esc(a.id)+'">Retirer</button></div></div>'; }).join("")+'</div>':'')+'</div>'; }
+
+function rhRegHTML(){ const R=reg(); const P=R.pub||{}; const L=emps(); const acc=P.v?L.filter(e=>((S.suivi||{})[e.id+"_reg"]||{}).v===P.v).length:0; const txt=reglementText(); const changedTxt=P.text!==txt;
+  return '<div class="panel"><h2>Règlement des primes</h2><p class="lead">Le règlement écrit et accepté sécurise les primes : critères objectifs de la prime expert, règle unique pour les absences. Il est généré à partir du barème (onglet Réalisés) et des règles ci-dessous.</p>'+
+    '<label class="rhf wide"><span>Critères de la prime expert</span><textarea id="rg-ex" rows="3">'+esc(R.expertCrit)+'</textarea></label>'+
+    '<div class="rhreg"><label class="chk"><input type="checkbox" id="rg-on"'+(R.abs.on?" checked":"")+'> Proratiser selon les absences</label><label class="chk"><input type="checkbox" id="rg-nps"'+(R.abs.nps?" checked":"")+'> prime NPS / Google</label><label class="chk"><input type="checkbox" id="rg-exp"'+(R.abs.expert?" checked":"")+'> prime expert</label></div>'+
+    '<p style="margin:10px 0 4px"><b>Absences qui ne réduisent jamais une prime</b></p><div class="rhreg">'+Object.entries(ABS_TYPES).filter(([k])=>k!=="RET").map(([k,o])=>'<label class="chk"><input type="checkbox" data-rgx="'+k+'"'+(R.abs.excl.includes(k)?" checked":"")+'> '+esc(o.l)+'</label>').join("")+'</div>'+
+    '<p class="st-mut">Maternité, accident du travail, formation et congés payés doivent rester exclus : les cocher protège d\'un risque de discrimination. Calcul : jours d\'absence comptés / jours ouvrables du mois.</p>'+
+    '<div class="rhreg" style="margin-top:6px"><label class="chk"><input type="checkbox" id="rg-anon"'+(RHT().anonRank?" checked":"")+'> Classement d\'équipe anonymisé dans l\'espace collaborateur (chacun voit son nom, les autres sont masqués)</label></div>'+
+    '<h3 style="margin-top:14px">Texte '+(changedTxt?'<span class="pill warn">modifié, à publier</span>':'<span class="pill ok">publié</span>')+'</h3><div class="regtxt">'+esc(txt)+'</div>'+
+    '<div style="display:flex;gap:10px;align-items:center;flex-wrap:wrap;margin-top:10px"><button class="btn primary" id="rg-pub"'+(changedTxt?'':' disabled')+'>Publier la version '+((P.v||0)+1)+' aux collaborateurs</button><span class="st-mut">'+(P.v?'Version '+P.v+' publiée le '+when(P.at)+' · acceptée par '+acc+'/'+L.length:'Aucune version publiée')+'</span></div></div>'; }
+
+async function rhIndHTML(){ const n=new Date(); if(!S.rhMonth) S.rhMonth=n.getFullYear()+"-"+pad(n.getMonth()+1); const ym=S.rhMonth; S.allWeeks[S.weekId]=clone(S.week);
+  const cl=(RHT().closed||{})[ym]; let rows; if(cl) rows=cl.rows.map(r=>({...r, emp:emps().find(e=>e.id===r.empId)||{id:r.empId,name:r.name}})); else { rows=monthCounters(ym); await primesForMonth(ym, rows); }
+  const months=[]; for(let i=-6;i<=0;i++){ const d=new Date(n.getFullYear(),n.getMonth()+i,1); months.push(d.getFullYear()+"-"+pad(d.getMonth()+1)); }
+  const mN=x=>["janvier","février","mars","avril","mai","juin","juillet","août","septembre","octobre","novembre","décembre"][+x.slice(5)-1]+" "+x.slice(0,4);
+  const sum=f=>rows.reduce((t,c)=>t+(+f(c)||0),0); const work=sum(c=>c.work), hs=sum(c=>(c.hs25||0)+(c.hs50||0)+(c.hc10||0)+(c.hc25||0));
+  const absD=sum(c=>(c.m||0)+(c.ab||0)), wd=sum(c=>c.workD||0); const absRate=wd+absD?absD/(wd+absD)*100:0;
+  const cpL=sum(c=>c.cpLeft==null?0:c.cpLeft); const prim=sum(c=>c.prime?c.prime.total:0);
+  const P=(S.res||[]).filter(r=>r.vend&&(r.day||"").startsWith(ym)).sort((a,b)=>b.day.localeCompare(a.day))[0]; const ca=P?Object.values(P.vend).reduce((t,x)=>t+(+x.ca||0),0):0;
+  const y1=addDaysS(todayStr(),-365); const ent=S.team.employees.filter(e=>fiche(e).entree>=y1).length, sor=S.team.employees.filter(e=>fiche(e).sortie&&fiche(e).sortie>=y1).length; const eff=emps().length;
+  const k=(l,v,s,cls)=>'<div class="rhk '+(cls||"")+'"><small>'+l+'</small><b>'+v+'</b>'+(s?'<em>'+s+'</em>':'')+'</div>';
+  return '<div class="panel"><div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:8px"><h2>Indicateurs RH · '+mN(ym)+'</h2><select id="rh-m" class="btn">'+months.map(m=>'<option value="'+m+'"'+(m===ym?" selected":"")+'>'+mN(m)+'</option>').join("")+'</select></div>'+(cl?'<p class="st-mut">Mois clôturé : chiffres figés à la clôture.</p>':'')+
+    '<div class="rhkpis">'+k("Effectif",eff,"collaborateurs actifs")+k("Heures travaillées",hh(work),"tous contrats")+k("Heures sup. et compl.",hh(hs),work?String(Math.round(hs/work*1000)/10).replace(".",",")+" % des heures":"",hs>work*0.05?"warn":"")+k("Absentéisme",String(Math.round(absRate*10)/10).replace(".",",")+" %",absD+" j maladie et absences",absRate>5?"bad":absRate>3?"warn":"ok")+k("CP restants",fmtH(cpL)+" j",n.getMonth()>=3&&n.getMonth()<=4?"à poser avant le 31 mai":"solde de l'équipe")+k("Primes du mois",eur2(prim),ca?String(Math.round(prim/ca*10000)/100).replace(".",",")+" % du "+(P.base||"CA")+" ("+eur(ca)+")":"palmarès du mois absent")+k("Entrées / sorties (12 mois)",ent+" / "+sor,eff?"turnover "+Math.round(sor/eff*100)+" %":"")+'</div>'+
+    '<div class="tbl" style="margin-top:12px"><table class="rhtab"><thead><tr><th>Collaborateur</th><th>Heures</th><th>HS / HC</th><th>Maladie (j)</th><th>Absences (j)</th><th>Absentéisme</th><th>CP restants</th><th>Primes</th></tr></thead><tbody>'+
+    rows.map(c=>{ const h2=(c.hs25||0)+(c.hs50||0)+(c.hc10||0)+(c.hc25||0); const a=(c.m||0)+(c.ab||0); const r=(c.workD||0)+a?a/((c.workD||0)+a)*100:0; return '<tr><td><b>'+esc(c.emp.name)+'</b></td><td class="n">'+hh(c.work)+'</td><td class="n">'+hh(h2)+'</td><td class="n">'+(c.m||"–")+'</td><td class="n">'+(c.ab||"–")+'</td><td class="n">'+(a?String(Math.round(r*10)/10).replace(".",",")+" %":"–")+'</td><td class="n">'+(c.cpLeft==null?'<span class="st-mut">à saisir</span>':fmtH(c.cpLeft))+'</td><td class="n">'+(c.prime?eur2(c.prime.total):"–")+'</td></tr>'; }).join("")+'</tbody></table></div></div>'; }
+
+function rhJrHTML(){ const J=S.journal||[]; const fk=S.jrKind||"", fe=S.jrEmp||""; const L=J.filter(r=>(!fk||r.kind===fk)&&(!fe||r.emp===fe)).slice(0,400);
+  return '<div class="panel"><div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:8px"><h2>Journal des actions</h2><div style="display:flex;gap:8px;flex-wrap:wrap"><select id="jr-k" class="btn"><option value="">Tous les types</option>'+Object.entries(JK).map(([k,l])=>'<option value="'+k+'"'+(k===fk?" selected":"")+'>'+l+'</option>').join("")+'</select><select id="jr-e" class="btn"><option value="">Tous les collaborateurs</option>'+S.team.employees.map(e=>'<option value="'+esc(e.id)+'"'+(e.id===fe?" selected":"")+'>'+esc(e.name)+'</option>').join("")+'</select><button class="btn" id="jr-csv">Exporter (.csv)</button></div></div>'+
+    '<p class="lead">Qui a changé quoi et quand : planning publié, demandes, absences, primes, paie, fiches. Le journal n\'est jamais modifiable ; il sert de preuve en cas de contestation.</p>'+
+    (L.length?'<div class="tbl"><table class="rhtab"><thead><tr><th style="width:130px">Date</th><th style="width:120px">Type</th><th>Détail</th></tr></thead><tbody>'+L.map(r=>'<tr><td>'+when(r.at)+'</td><td>'+esc(JK[r.kind]||r.kind)+'</td><td>'+esc(r.txt)+'</td></tr>').join("")+'</tbody></table></div>':'<div class="emptystate">Aucune action enregistrée'+(fk||fe?" pour ce filtre":"")+'.</div>')+'</div>'; }
+
+function bindRH(v, t){
+  v.querySelectorAll("[data-of]").forEach(b=>b.onclick=()=>{ S.rhEmp=b.dataset.of; S.rhTab="fiche"; renderRH(); });
+  if(t==="fiche"){ const e=emps().find(x=>x.id===S.rhEmp); if(!e) return; const f=fiche(e);
+    v.querySelectorAll("[data-fe]").forEach(b=>b.onclick=()=>{ S.rhEmp=b.dataset.fe; renderRH(); });
+    v.querySelectorAll("[data-ff]").forEach(inp=>inp.onchange=()=>{ const k=inp.dataset.ff; const val=inp.value.trim(); if((f[k]||"")===val) return; if(k==="drive"&&val&&!/^https:\/\//.test(val)){ toast("Le lien doit commencer par https://"); return; }
+      f[k]=val; const lab=(FICHE_F.find(x=>x[0]===k)||[k,k])[1]; jlog("fiche", e.name+" : "+lab+" → "+(val?(inp.type==="date"?fdShort(val):val):"effacé"), e.id); teamChanged(); scheduleRH(); });
+    v.querySelectorAll("[data-ck]").forEach(cb=>cb.onchange=()=>{ const [key,i]=cb.dataset.ck.split(":"); const o=(f[key] ||= {}); if(cb.checked) o[i]=todayStr(); else delete o[i]; const L2=key==="chkIn"?CHK_IN:CHK_OUT; jlog("fiche", e.name+" : "+(key==="chkIn"?"arrivée":"départ")+" · "+L2[+i]+(cb.checked?" fait":" décoché"), e.id); teamChanged(); }); }
+  if(t==="ent"){
+    $("#en-add").onclick=()=>{ const empId=$("#en-e").value, type=$("#en-t").value, date=$("#en-d").value; if(!date){ toast("Indiquez la date de l'entretien"); return; }
+      const x={id:"en"+Date.now().toString(36), empId, type, date, statut:"planifié", createdAt:new Date().toISOString()}; (RHT().entretiens ||= []).push(x); S.rhEnt=x.id;
+      jlog("entretien","Entretien "+(ENT_T[type]||type)+" planifié le "+fdShort(date)+" pour "+empName(empId), empId); teamChanged(); scheduleRH(); toast("Entretien planifié : le collaborateur peut le préparer dans son espace"); };
+    v.querySelectorAll("[data-eo]").forEach(b=>b.onclick=()=>{ S.rhEnt=b.dataset.eo; renderRH(); });
+    const cur=(RHT().entretiens||[]).find(x=>x.id===S.rhEnt); if(cur){
+      const grab=()=>{ cur.cr=$("#en-cr").value.trim(); cur.obj=$("#en-ob").value.trim(); cur.form=$("#en-fo").value.trim(); };
+      $("#en-save").onclick=()=>{ grab(); teamChanged(); if(cur.shared) scheduleRH(); toast("Compte rendu enregistré"); };
+      $("#en-done").onclick=()=>{ grab(); if(!cur.cr){ toast("Rédigez le compte rendu avant de le partager"); return; } const first=!cur.shared; cur.statut="réalisé"; cur.shared=true; cur.doneAt=new Date().toISOString();
+        const e=S.team.employees.find(y=>y.id===cur.empId); if(e){ const f=fiche(e); if(cur.type==="annuel") f.entAnn=cur.date; else f.entPro=cur.date; }
+        jlog("entretien","Entretien "+(ENT_T[cur.type]||cur.type)+" du "+fdShort(cur.date)+" de "+empName(cur.empId)+(first?" réalisé, compte rendu partagé":" : compte rendu mis à jour"), cur.empId); teamChanged(); scheduleRH(); toast("Compte rendu partagé : le collaborateur le confirmera dans son espace"); };
+      $("#en-close").onclick=()=>{ S.rhEnt=null; renderRH(); };
+      $("#en-del").onclick=ev=>{ const b=ev.currentTarget; if(b.dataset.sure!=="1"){ b.dataset.sure="1"; b.textContent="Confirmer ?"; return; } RHT().entretiens=(RHT().entretiens||[]).filter(x=>x.id!==cur.id); jlog("entretien","Entretien du "+fdShort(cur.date)+" de "+empName(cur.empId)+" supprimé", cur.empId); S.rhEnt=null; teamChanged(); scheduleRH(); }; } }
+  if(t==="ann"){
+    $("#an-add").onclick=async()=>{ const titre=$("#an-t").value.trim(), texte=$("#an-x").value.trim(); if(!titre||!texte){ toast("Titre et message obligatoires"); return; } if(!S.db){ toast("Les annonces fonctionnent dans la version en ligne"); return; }
+      const id="an"+Date.now().toString(36); try{ await S.db.doc("annonces/"+id).set({titre, texte, at:new Date().toISOString()}); jlog("annonce","Annonce publiée : "+titre); toast("Annonce publiée sur l'accueil de chaque collaborateur"); }catch(e){ toast("Publication impossible : vérifiez les règles Firestore"); } };
+    v.querySelectorAll("[data-ad]").forEach(b=>b.onclick=async()=>{ if(b.dataset.sure!=="1"){ b.dataset.sure="1"; b.textContent="Confirmer ?"; return; } const a=(S.annonces||[]).find(x=>x.id===b.dataset.ad); try{ await S.db.doc("annonces/"+b.dataset.ad).delete(); jlog("annonce","Annonce retirée : "+(a?a.titre:b.dataset.ad)); }catch(e){ toast("Suppression impossible"); } }); }
+  if(t==="reg"){ const R=reg(); const upd=()=>{ teamChanged(true); renderRH(); };
+    $("#rg-ex").onchange=ev=>{ R.expertCrit=ev.target.value.trim()||REG_DEF.expertCrit; upd(); };
+    $("#rg-on").onchange=ev=>{ R.abs.on=ev.target.checked; upd(); }; $("#rg-nps").onchange=ev=>{ R.abs.nps=ev.target.checked; upd(); }; $("#rg-exp").onchange=ev=>{ R.abs.expert=ev.target.checked; upd(); };
+    v.querySelectorAll("[data-rgx]").forEach(cb=>cb.onchange=()=>{ const k=cb.dataset.rgx; R.abs.excl=R.abs.excl.filter(x=>x!==k); if(cb.checked) R.abs.excl.push(k); upd(); });
+    $("#rg-anon").onchange=ev=>{ RHT().anonRank=ev.target.checked; jlog("reglement","Classement d'équipe "+(ev.target.checked?"anonymisé":"nominatif")+" dans l'espace collaborateur"); baremeChanged(); renderRH(); };
+    $("#rg-pub").onclick=()=>{ const P=R.pub||{}; R.pub={v:(P.v||0)+1, at:new Date().toISOString(), text:reglementText()}; jlog("reglement","Règlement des primes version "+R.pub.v+" publié"); baremeChanged(); renderRH(); toast("Règlement publié : chaque collaborateur doit le lire et l'accepter"); }; }
+  if(t==="ind"){ $("#rh-m").onchange=ev=>{ S.rhMonth=ev.target.value; renderRH(); }; }
+  if(t==="jr"){ $("#jr-k").onchange=ev=>{ S.jrKind=ev.target.value; renderRH(); }; $("#jr-e").onchange=ev=>{ S.jrEmp=ev.target.value; renderRH(); };
+    $("#jr-csv").onclick=()=>{ const q=s=>'"'+String(s||"").replace(/"/g,'""')+'"'; const csv="﻿Date;Type;Collaborateur;Détail\n"+(S.journal||[]).map(r=>[q(when(r.at)),q(JK[r.kind]||r.kind),q(r.emp?empName(r.emp):""),q(r.txt)].join(";")).join("\n");
+      const a=document.createElement("a"); a.href=URL.createObjectURL(new Blob([csv],{type:"text/csv"})); a.download="journal-rh-F890.csv"; a.click(); setTimeout(()=>URL.revokeObjectURL(a.href),2000); }; }
+}
+
+/* contrôle légal d'un échange de journée (semaine affichée) */
+function echCheck(r){ try{ const wid=weekOfDate(r.date); if(wid!==S.weekId) return '<div class="st-mut" style="font-size:12px">Contrôle légal : ouvrez la semaine '+wnum(wid)+' dans le planning pour le voir.</div>';
+  const d=dayIdxOfDate(r.date); const saved=S.week; const w=clone(S.week); const a=(w.entries[r.empId] ||= [null,null,null,null,null,null,null]), b=(w.entries[r.avec] ||= [null,null,null,null,null,null,null]); const t=a[d]; a[d]=b[d]; b[d]=t;
+  let pb=[]; try{ S.week=w; pb=[r.empId,r.avec].map(id=>{ const e=emps().find(x=>x.id===id); return e?checks(e).filter(c=>c.lvl==="bad").map(c=>e.name+" : "+c.t):[]; }).flat(); } finally { S.week=saved; }
+  return pb.length?'<div class="notice" style="margin:6px 0">⚠ Après l\'échange : '+esc(pb.join(" · "))+'</div>':'<div class="st-mut" style="font-size:12px">✓ Contrôle légal après échange : repos, durées et pauses conformes.</div>'; }catch(e){ return ""; } }
+
+/* heures réelles (validation hebdomadaire) */
+function reelPanelHTML(){ const cw=isoWeekId(new Date()); if(!S.reelWeek) S.reelWeek=shiftWeek(cw,-1); const wid=S.reelWeek; const w=wid===S.weekId?S.week:(S.allWeeks||{})[wid]; const ds=weekDays(wid);
+  const opts=[-4,-3,-2,-1,0].map(k=>shiftWeek(cw,k)); const D=((S.reelDraft||{})[wid])||{};
+  const errs=(S.demandes||[]).filter(r=>r.type==="ERREUR"&&r.weekId===wid&&r.status==="attente");
+  let h='<div class="panel"><div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:8px"><h2>Heures réelles · semaine '+wnum(wid)+'</h2><select id="reel-w" class="btn">'+opts.map(x=>'<option value="'+x+'"'+(x===wid?" selected":"")+'>Semaine '+wnum(x)+'</option>').join("")+'</select></div>'+
+    '<p class="lead">Décompte du temps de travail : les heures du planning sont reprises par défaut. Corrigez uniquement les écarts (retard, départ anticipé, heures en plus), puis validez la semaine. Les compteurs, l\'export paie et l\'espace de chaque collaborateur utilisent les heures validées.</p>'+
+    (errs.length?'<div class="notice">Erreurs signalées par les collaborateurs pour cette semaine : '+errs.map(r=>esc(empName(r.empId))+(r.note?" (« "+esc(r.note)+" »)":"")).join(" · ")+'</div>':'');
+  if(!w||!w.entries){ return h+'<div class="emptystate">Semaine non planifiée.</div></div>'; }
+  h+='<div class="tbl"><table class="rhtab reel"><thead><tr><th>Collaborateur</th>'+ds.map((dt,i)=>'<th>'+DAYN[i].slice(0,3)+'. '+pad(dt.getUTCDate())+'</th>').join("")+'<th>Prévu</th><th>Réel</th></tr></thead><tbody>'+
+    emps().map(e=>{ const r=(w.entries||{})[e.id]||[]; const R=(w.reel||{})[e.id]||[]; const Dd=D[e.id]||{}; let tp=0, tr=0;
+      const cells=ds.map((dt,d)=>{ const x=r[d]; if(!x||!TIMED(x.s)){ const m=mins(x); tp+=m; tr+=m; return '<td class="st-mut">'+(x&&x.s?esc(DTXT_L[x.s]||x.s):"–")+'</td>'; }
+        const p=mins(x); const val=Dd[d]!=null?Dd[d]:R[d]!=null?R[d]:p; tp+=p; tr+=val; return '<td class="'+(val!==p?"chg":"")+'"><input data-rl="'+esc(e.id)+':'+d+'" value="'+durIn(val)+'" inputmode="decimal"><small>prévu '+durIn(p)+'</small></td>'; }).join("");
+      return '<tr><td><b>'+esc(e.name)+'</b></td>'+cells+'<td class="n">'+durIn(tp)+'</td><td class="n'+(tr!==tp?" chg":"")+'"><b>'+durIn(tr)+'</b></td></tr>'; }).join("")+'</tbody></table></div>'+
+    '<div style="display:flex;gap:10px;align-items:center;flex-wrap:wrap;margin-top:10px"><button class="btn primary" id="reel-ok">'+(w.reelOk?"Revalider la semaine":"Valider la semaine")+'</button><span class="st-mut">'+(w.reelOk?'Validée le '+when(w.reelOk.at):'Non validée')+'</span></div></div>';
+  return h; }
+function bindReel(v){ const sel=v.querySelector("#reel-w"); if(!sel) return; sel.onchange=()=>{ S.reelWeek=sel.value; renderCpt(); };
+  v.querySelectorAll("[data-rl]").forEach(inp=>inp.onchange=()=>{ const [id,d]=inp.dataset.rl.split(":"); const m=parseDur(inp.value); if(m==null||isNaN(m)||m<0||m>16*60){ toast("Durée invalide : écrivez par exemple 7h30"); return; } const wid=S.reelWeek; ((S.reelDraft ||= {})[wid] ||= {}); (S.reelDraft[wid][id] ||= {})[+d]=m; renderCpt(); });
+  const ok=v.querySelector("#reel-ok"); if(ok) ok.onclick=async()=>{ const wid=S.reelWeek; const D=((S.reelDraft||{})[wid])||{}; const ch=[];
+    await editWeekDoc(wid, w=>{ w.reel=w.reel||{}; emps().forEach(e=>{ const r=(w.entries||{})[e.id]||[]; const R=(w.reel[e.id] ||= [null,null,null,null,null,null,null]); for(let d=0; d<7; d++){ const x=r[d]; if(!x||!TIMED(x.s)){ R[d]=null; continue; } const p=mins(x); const val=(D[e.id]&&D[e.id][d]!=null)?D[e.id][d]:(R[d]!=null?R[d]:p); R[d]=val===p?null:val; if(val!==p) ch.push(e.name+" "+DAYN[d].slice(0,3)+". "+durIn(p)+" → "+durIn(val)); } }); w.reelOk={at:new Date().toISOString()}; });
+    if(S.reelDraft) delete S.reelDraft[wid]; S.allWeeks=null; jlog("heures","Semaine "+wnum(wid)+" : heures réelles validées"+(ch.length?" · écarts : "+ch.join(" ; "):" · conformes au planning")); scheduleRH(); toast("Heures réelles de la semaine "+wnum(wid)+" validées"); renderCpt(); }; }
+
+window.F890_RH={ publish:()=>publishRH(), S:()=>S, changed:()=>changed() };
 function renderHome(){
   const v=$("#v-home"); const now=new Date(); const curW=isoWeekId(now)===S.weekId; const td=(now.getDay()+6)%7;
   const dayStr=["dimanche","lundi","mardi","mercredi","jeudi","vendredi","samedi"][now.getDay()]+" "+now.getDate()+" "+["janvier","février","mars","avril","mai","juin","juillet","août","septembre","octobre","novembre","décembre"][now.getMonth()];
@@ -2594,13 +2916,14 @@ function renderHome(){
       tile("staff","staff","Équipe",L.length+" collaborateurs","t-nv")+
       tile("roul","roul","Roulements","Cycles et horaires","t-vi")+
       tile("cpt","cpt","Compteurs","Heures et paie","t-gr")+
+      tile("rh","staff","Suivi RH","Échéances, entretiens, journal","t-vi",echUrgent())+
       tile("send","send","Transmettre","Mails aux équipes","t-bl")+
       tile("indiv","indiv","Individuel","PDF par personne","t-nv")+
       tile("tpl","tpl","Horaires types","Modèles d\'horaires","t-gy")+
     '</div>'+
     (curW&&!isClosed(td)?'<div class="today"><div class="today-hd"><b>Aujourd\'hui en magasin</b><button class="lnk" data-go="team" data-today="1">Voir la journée ›</button></div>'+
       (sorted.length?'<div class="today-list">'+sorted.map(e=>{ const x=getE(e.id,td); return '<div class="tp"><span class="av">'+esc((e.name||"?")[0])+'</span><span class="tn"><b>'+esc(e.name)+'</b><small>'+esc(x.tag||({vente:"Vente",caisse:"Caisse",livraison:"Livraison"}[fonctionOf(e)]||""))+'</small></span><span class="tt">'+(hasTimes(x)?(x.m1?x.m1+"–"+x.m2:"")+(x.m1&&x.a1?'<br>':'')+(x.a1?x.a1+"–"+x.a2:""):'<i class="st-mut">à définir</i>')+'</span></div>'; }).join("")+'</div>':'<p class="st-mut" style="margin:6px 0 0">Personne n\'est planifié aujourd\'hui.</p>')+'</div>':'')+
-    '<div class="qa"><button class="qbtn" id="hGen">'+ico("gen")+'<span>Générer la semaine</span></button><button class="qbtn'+(S.week.pub?" on":"")+'" id="hPub">'+ico("pub")+'<span>'+(S.week.pub?"Semaine publiée":"Publier aux collaborateurs")+'</span></button></div><p class="appver">Version du 14/10 13:30</p>';
+    '<div class="qa"><button class="qbtn" id="hGen">'+ico("gen")+'<span>Générer la semaine</span></button><button class="qbtn'+(S.week.pub?" on":"")+'" id="hPub">'+ico("pub")+'<span>'+(S.week.pub?"Semaine publiée":"Publier aux collaborateurs")+'</span></button></div><p class="appver">Version du 14/10 19:30</p>';
   v.querySelectorAll("[data-go]").forEach(b=>b.onclick=()=>{ if(b.dataset.today && curW) S.mDay=td; go(b.dataset.go); });
   $("#hGen").onclick=()=>{ go("team"); generateWeek(); };
   $("#hPub").onclick=()=>togglePub();
@@ -2673,7 +2996,7 @@ function startFirebase(){
       if(d && !S.teamLoaded){ S.teamDirty=false; clearTimeout(teamTimer); }
       if(d){ S.srvTeam=clone(d); S.srvCount=(d.employees||[]).length; }
       if(S.teamLoaded && (S.teamDirty||teamWriting)) return; if(d && S.teamLoaded && JSON.stringify(d)===JSON.stringify(clone(S.team))) return; if(d && S.teamLoaded && typingIn()){ S.teamPendingSnap=snap; return; } if(d){ S.team={...d, employees:d.employees||[],templates:(d.templates&&d.templates.length)?d.templates:DEFAULT_TPL.slice(),settings:d.settings||{}}; } if(d){ S.teamLoaded=true; showLoading(false); } render(); },()=>setSave("off","Connexion perdue"));
-    subscribeWeek(); subscribeDemandes(); subscribePauses(); subscribeRea(); subscribeRes(); setTimeout(()=>{ if(S.teamLoaded) publishBareme(); },6000);
+    subscribeWeek(); subscribeDemandes(); subscribePauses(); subscribeRea(); subscribeRes(); subscribeRH(); setTimeout(()=>{ if(S.teamLoaded){ publishBareme(); scheduleRH(); } },6000);
     S.db.collection("weeks").get().then(q=>{ S.openSunWeeks=q.docs.filter(x=>{const d=snapData(x); return d&&d.open&&d.open["6"];}).map(x=>x.id); render(); }).catch(()=>{});
   });
 }

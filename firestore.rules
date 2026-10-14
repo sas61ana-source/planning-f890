@@ -34,12 +34,38 @@ service cloud.firestore {
       allow read: if isAdmin() || (hasAccess() && myEmp() == empId);
       allow write: if isAdmin();
     }
+    match /publies/{empId}/rh/{doc} {
+      allow read: if isAdmin() || (hasAccess() && myEmp() == empId);
+      allow write: if isAdmin();
+    }
+    // accusés de lecture, acceptation du règlement, préparation d'entretien : écrits par le collaborateur lui-même
+    match /suivi/{id} {
+      allow read: if isAdmin() || (hasAccess() && resource.data.empId == myEmp());
+      allow create: if hasAccess()
+        && request.resource.data.empId == myEmp()
+        && id.matches(myEmp() + "_.+")
+        && request.resource.data.kind in ["lecture", "reglement", "annonce", "entretien"];
+      allow update: if isAdmin() || (hasAccess()
+        && resource.data.empId == myEmp()
+        && request.resource.data.empId == myEmp()
+        && request.resource.data.kind == resource.data.kind);
+      allow delete: if isAdmin();
+    }
+    match /annonces/{id} {
+      allow read: if isAdmin() || hasAccess();
+      allow write: if isAdmin();
+    }
+    // journal des actions : ajout seulement, jamais modifié ni supprimé
+    match /journal/{id} {
+      allow read, create: if isAdmin();
+      allow update, delete: if false;
+    }
     match /demandes/{id} {
       allow read: if isAdmin() || (hasAccess() && resource.data.empId == myEmp());
       allow create: if hasAccess()
         && request.resource.data.empId == myEmp()
         && request.resource.data.status == "attente"
-        && request.resource.data.type in ["CP", "ECHANGE", "ERREUR"];
+        && request.resource.data.type in ["CP", "ECHANGE", "ERREUR", "ABSENCE"];
       allow update, delete: if isAdmin();
     }
     match /pauses/{id} {
