@@ -122,6 +122,10 @@ body.locked .cube[data-lock]::after{content:"";position:absolute;top:14px;right:
 .mres{background:linear-gradient(160deg,#0d2240,#1c3a66);color:#fff;border:0}.mres small{color:#b9c6da}
 .mres-h{display:flex;justify-content:space-between;align-items:flex-end;gap:10px;margin-bottom:12px}.mres-h b{display:block;font-size:30px;font-family:var(--font-display,inherit);letter-spacing:-.02em}.mres-h .rk{text-align:right}.mres-h .rk b{font-size:26px;color:#ffb27a}
 .kpis{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px}.kpi{background:rgba(255,255,255,.08);border-radius:12px;padding:8px 10px;min-width:0}.kpi small{display:block;font-size:11.5px;line-height:1.2}.kpi b{font-size:16px}.kpi em{font-style:normal;font-size:11.5px;color:#b9c6da;margin-left:4px}
+.kpi.pos{background:rgba(67,209,122,.16);box-shadow:inset 3px 0 0 #43d17a}.kpi.neg{background:rgba(255,107,107,.16);box-shadow:inset 3px 0 0 #ff6b6b}.kpi small i{font-style:normal;margin-left:5px;font-size:10px}.kpi.pos small i,.kpi.pos b{color:#7ff0aa}.kpi.neg small i,.kpi.neg b{color:#ffa3a3}.kpi em.tm{display:block;margin:2px 0 0}
+.pn{display:grid;gap:8px;margin-bottom:10px}.pn small{display:block;font-size:11.5px;margin-bottom:4px;color:#b9c6da}.pn span{display:inline-block;margin:0 5px 5px 0;padding:3px 9px;border-radius:999px;font-size:12.5px;font-weight:600}.pn-p span{background:rgba(67,209,122,.2);color:#9ff5c0}.pn-n span{background:rgba(255,107,107,.2);color:#ffb3b3}
+.leg{font-size:11.5px;color:#b9c6da;margin:8px 0 0}.leg .lp{color:#7ff0aa;font-style:normal}.leg .ln{color:#ffa3a3;font-style:normal}
+.fam.pos u{color:#7ff0aa;text-decoration:none;font-weight:700}.fam.neg u{color:#ffa3a3;text-decoration:none;font-weight:700}.fam u{text-decoration:none}
 .fams{margin-top:12px;display:grid;gap:7px}.fam{display:grid;grid-template-columns:auto minmax(0,1fr);gap:2px 10px;font-size:13px}.fam span{text-align:right;font-size:12px}.fam .bar{grid-column:1/-1;height:6px;border-radius:4px;background:rgba(255,255,255,.12);overflow:hidden}.fam .bar i{display:block;height:100%;background:#f59a45;border-radius:4px}.fam span{color:#b9c6da}
 .ooff{margin-top:8px;padding-top:8px;border-top:1px dashed var(--line)}.ooff small{display:block;color:var(--muted);font-size:11.5px}.ooff b{font-size:14px}.obar{display:block;height:5px;border-radius:3px;background:var(--surface-2);margin-top:4px;overflow:hidden}.obar i{display:block;height:100%;background:var(--accent)}
 .sv .sv-hd{display:flex;justify-content:space-between;align-items:flex-end;gap:10px}.sv-hd small{display:block;color:var(--muted);font-size:12px}.sv-hd b{font-size:28px;letter-spacing:-.02em}
@@ -227,7 +231,7 @@ input.big{font-size:22px;font-weight:600}
 </div>
 <div class="ov" id="ovScan" hidden><h2 id="scT">Scannez le QR code</h2><p id="scP">Visez l'affiche « PAUSE » du magasin.</p><div class="cam"><video id="vid" playsinline muted></video><div class="scanl"></div></div><p id="scMsg"></p><button class="btn ghost" id="scCancel">Annuler</button></div>
 <div class="ov" id="ovPz" hidden></div>
-<p style="text-align:center;color:var(--muted);font-size:12px;margin:0 0 20px">Version du 13/10 20:00</p>
+<p style="text-align:center;color:var(--muted);font-size:12px;margin:0 0 20px">Version du 14/10 09:45</p>
 <div class="toast" id="toast" hidden></div>
 
 <script type="module">
@@ -459,17 +463,35 @@ function suiviHTML(m){
     (prevS?'<div class="sv-ev"><small>Depuis le palmarès du '+frD(prevS.k)+'</small><div>'+[["PO","ca",v=>eur(v)],["Factures","fact",nb2],["Club+","clubp",nb2],["Infinity","inf1",nb2],["Protection","prot",nb2]].map(([l,k,f])=>{ const d=dl(k,f); return d?'<span>'+l+' '+d+'</span>':''; }).join("")+'</div></div>':'')+
     (rowsS?'<div class="sv-s"><small>Mes objectifs services du mois</small>'+rowsS+'</div>':'')+'</div>';
 }
+/* comparaison à la moyenne de l'équipe : vert = au-dessus, rouge = en dessous */
+const RATE_K=["txm","pdmAcc","pdmSvc","cegTx","vcTx","trc","remise","club100","bp100","clubp100","ci100","ci2100"];
+const PER_PO={prot:r=>r.prot, pice:r=>r.pice, bdom:r=>r.bdom, inf:r=>r.inf1==null&&r.inf2==null&&r.inf3==null?null:(r.inf1||0)+(r.inf2||0)+(r.inf3||0), mob:r=>r.mobUno==null&&r.mobFam==null?null:(r.mobUno||0)+(r.mobFam||0)};
+function teamCmp(team, r, key){
+  const T=Object.values(team||{});
+  if(RATE_K.includes(key)){ const v=r[key]; const L=T.map(x=>x[key]).filter(x=>x!=null); if(v==null||!L.length) return {c:""}; const avg=L.reduce((a,b)=>a+b,0)/L.length;
+    const gap=key==="remise"?v-avg:(avg?(v-avg)/Math.abs(avg):(v>0?1:0)); const thr=key==="remise"?0.15:0.05; return {c:gap>thr?"pos":gap<-thr?"neg":"", avg}; }
+  if(PER_PO[key]){ const f=PER_PO[key], v=f(r); if(v==null||!r.ca) return {c:""}; let sv=0,sc=0; T.forEach(x=>{ const y=f(x); if(y!=null&&x.ca>0){ sv+=y; sc+=x.ca; } }); if(!sc) return {c:""};
+    const me=v/r.ca, av=sv/sc; const gap=av?(me-av)/av:(me>0?1:0); return {c:gap>0.1?"pos":gap<-0.1?"neg":"", avg:av*r.ca}; }
+  return {c:""};
+}
 function meResHTML(m){ const r=m&&m.vend&&m.vend[st.emp]; if(!r) return '<p class="mut">'+(m&&m.vend?"Pas de résultat à votre nom dans ce document.":"Les chiffres de ce document n\'ont pas encore été extraits.")+'</p>';
-  const k=(t,v,e)=>'<div class="kpi"><small>'+t+'</small><b>'+v+'</b>'+(e?'<em>'+e+'</em>':'')+'</div>';
+  const T=m.vend, B=m.base==="PO"?"PO":"CA"; const pos=[], neg=[];
+  const k=(t,v,e,key,fmtAvg)=>{ const c=key?teamCmp(T,r,key):{c:""}; if(c.c==="pos") pos.push(t); if(c.c==="neg") neg.push(t);
+    const cap=c.avg!=null&&fmtAvg?'<em class="tm">équipe '+fmtAvg(c.avg)+'</em>':''; return '<div class="kpi '+c.c+'"><small>'+t+(c.c?'<i>'+(c.c==="pos"?"▲":"▼")+'</i>':'')+'</small><b>'+v+'</b>'+(e?'<em>'+e+'</em>':'')+cap+'</div>'; };
+  const per100=x=>x!=null?nb2(x)+" / 100 k€":"";
   const per=m.du?"du "+m.du.slice(0,5)+" au "+m.au.slice(0,5):"";
   const fam=(r.fam||[]).slice().sort((a,b)=>(b.ca||0)-(a.ca||0)); const mx=Math.max(1,...fam.map(f=>f.pdm||0));
-  return '<div class="card mres"><div class="mres-h"><div><small>Mes résultats '+per+'</small><b>'+eur(r.ca)+'</b><small>'+(m.base==="PO"?"PO HT (prise d\'ordre)":"CA net")+'</small></div><div class="rk"><small>Classement</small><b>'+rangTxt(r.rang)+'</b><small>sur '+r.sur+' vendeurs</small></div></div>'+
-    '<div class="kpis">'+k("Factures",nb2(r.fact))+k("Taux de marge",pc2(r.txm))+k("PDM accessoires",pc2(r.pdmAcc))+k("PDM services",pc2(r.pdmSvc))+
-    k("CEG",nb2(r.cegQ),pc2(r.cegTx))+(m.base==="PO"?k("Assurance nomade",nb2(r.vcQ),pc2(r.vcTx)):k("Vol / Casse",nb2(r.vcQ),pc2(r.vcTx)))+k("Club",nb2(r.club),r.club100!=null?nb2(r.club100)+" / 100 k€":"")+k("B+",nb2(r.bp),r.bp100!=null?nb2(r.bp100)+" / 100 k€":"")+
-    k("Club+",nb2(r.clubp),r.clubp100!=null?nb2(r.clubp100)+" / 100 k€":"")+k(r.ci2!=null&&m.base==="PO"?"Club Infinity Maison":"Club Infinity",nb2(r.ci),r.ci100!=null?nb2(r.ci100)+" / 100 k€":"")+(r.ci2!=null&&m.base==="PO"?k("Club Infinity Mobile",nb2(r.ci2),r.ci2100!=null?nb2(r.ci2100)+" / 100 k€":""):"")+
-    (r.inf1!=null||r.inf2!=null||r.inf3!=null?k("Infinity Uno · Duo · Trio",nb2(r.inf1||0)+" · "+nb2(r.inf2||0)+" · "+nb2(r.inf3||0)):"")+(r.mobUno!=null||r.mobFam!=null?k("Infinity Mobile Uno · Famille",nb2(r.mobUno||0)+" · "+nb2(r.mobFam||0)):"")+k("Protection mesure",nb2(r.prot))+k("TRC",pc2(r.trc))+
-    k("Piceasoft",nb2(r.pice))+k("BDOM",nb2(r.bdom))+(r.apple!=null?k("Apple Music",nb2(r.apple)):"")+(r.txAttach!=null?k("Attache accessoires",pc2(r.txAttach),r.nbAcc!=null?nb2(r.nbAcc)+" acc.":""):"")+k("Remise MAG",pc2(r.remise))+k("Ventes X",pc2(r.ventesX))+(r.ffnn!=null?k("CA FF / NN",pc2(r.ffnn)):"")+'</div>'+
-    (fam.length?'<div class="fams"><small>Mon '+(m.base==="PO"?"PO":"CA")+' par famille</small>'+fam.map(f=>'<div class="fam"><b>'+esc(f.lp.charAt(0)+f.lp.slice(1).toLowerCase())+'</b><span>'+eur(f.ca)+' · '+pc2(f.pdm)+' · marge '+pc2(f.txm)+'</span><div class="bar"><i style="width:'+Math.max(2,Math.round((f.pdm||0)/mx*100))+'%"></i></div></div>').join("")+'</div>':'')+'</div>';
+  const famAvg=lp=>{ const L=Object.values(T).map(x=>(x.fam||[]).find(f=>f.lp===lp)).filter(f=>f&&f.txm!=null&&f.ca>0); return L.length?L.reduce((a,f)=>a+f.txm,0)/L.length:null; };
+  const kp=k("Taux de marge",pc2(r.txm),"","txm",pc2)+k("PDM accessoires",pc2(r.pdmAcc),"","pdmAcc",pc2)+k("PDM services",pc2(r.pdmSvc),"","pdmSvc",pc2)+
+    k("CEG",nb2(r.cegQ),pc2(r.cegTx),"cegTx",pc2)+k(B==="PO"?"Assurance nomade":"Vol / Casse",nb2(r.vcQ),pc2(r.vcTx),"vcTx",pc2)+k("Club",nb2(r.club),per100(r.club100),"club100",x=>nb2(x)+" / 100 k€")+k("B+",nb2(r.bp),per100(r.bp100),"bp100",x=>nb2(x)+" / 100 k€")+
+    k("Club+",nb2(r.clubp),per100(r.clubp100),"clubp100",x=>nb2(x)+" / 100 k€")+k(r.ci2!=null&&B==="PO"?"Club Infinity Maison":"Club Infinity",nb2(r.ci),per100(r.ci100),"ci100",x=>nb2(x)+" / 100 k€")+(r.ci2!=null&&B==="PO"?k("Club Infinity Mobile",nb2(r.ci2),per100(r.ci2100),"ci2100",x=>nb2(x)+" / 100 k€"):"")+
+    (r.inf1!=null||r.inf2!=null||r.inf3!=null?k("Infinity Uno · Duo · Trio",nb2(r.inf1||0)+" · "+nb2(r.inf2||0)+" · "+nb2(r.inf3||0),"","inf"):"")+(r.mobUno!=null||r.mobFam!=null?k("Infinity Mobile Uno · Famille",nb2(r.mobUno||0)+" · "+nb2(r.mobFam||0),"","mob"):"")+
+    k("Protection mesure",nb2(r.prot),"","prot")+k("TRC",pc2(r.trc),"","trc",pc2)+k("Piceasoft",nb2(r.pice),"","pice")+k("BDOM",nb2(r.bdom),"","bdom")+(r.apple!=null?k("Apple Music",nb2(r.apple)):"")+
+    k("Remise MAG",pc2(r.remise),"","remise",pc2)+k("Factures",nb2(r.fact))+k("Ventes X",pc2(r.ventesX))+(r.ffnn!=null?k("CA FF / NN",pc2(r.ffnn)):"");
+  const sum=(pos.length||neg.length)?'<div class="pn">'+(pos.length?'<div class="pn-p"><small>Mes points forts</small>'+pos.map(x=>'<span>'+esc(x)+'</span>').join("")+'</div>':'')+(neg.length?'<div class="pn-n"><small>À travailler</small>'+neg.map(x=>'<span>'+esc(x)+'</span>').join("")+'</div>':'')+'</div>':'';
+  return '<div class="card mres"><div class="mres-h"><div><small>Mes résultats '+per+'</small><b>'+eur(r.ca)+'</b><small>'+(B==="PO"?"PO HT (prise d\'ordre)":"CA net")+'</small></div><div class="rk"><small>Classement</small><b>'+rangTxt(r.rang)+'</b><small>sur '+r.sur+' vendeurs</small></div></div>'+
+    sum+'<div class="kpis">'+kp+'</div><p class="leg"><i class="lp">▲</i> au-dessus de la moyenne de l\'équipe · <i class="ln">▼</i> en dessous</p>'+
+    (fam.length?'<div class="fams"><small>Mon '+B+' par famille</small>'+fam.map(f=>{ const a=famAvg(f.lp); const c=a==null||f.txm==null?"":f.txm>a+1?"pos":f.txm<a-1?"neg":""; return '<div class="fam '+c+'"><b>'+esc(f.lp.charAt(0)+f.lp.slice(1).toLowerCase())+'</b><span>'+eur(f.ca)+' · '+pc2(f.pdm)+' · marge <u>'+pc2(f.txm)+'</u></span><div class="bar"><i style="width:'+Math.max(2,Math.round((f.pdm||0)/mx*100))+'%"></i></div></div>'; }).join("")+'</div>':'')+'</div>';
 }
 async function resB64(meta){
   if(st.preview){ const f=window.parent!==window&&window.parent.F890_RESPDF; return f?await f(meta.day):null; }

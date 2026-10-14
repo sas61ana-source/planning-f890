@@ -400,7 +400,7 @@ tr.abs-cur td{background:rgba(227,6,19,.04)}
 .t-tl .ti{background:linear-gradient(135deg,#0e8a8a,#3cc2b5)}
 .resdrop{display:flex;flex-wrap:wrap;gap:10px;align-items:end;margin:6px 0 4px}.resdrop label{display:grid;gap:4px;font-size:12px;font-weight:600;color:var(--muted)}
 .resdrop input[type=date]{padding:7px 9px;border:1px solid var(--line);border-radius:8px;background:var(--surface)}
-.ptab td,.ptab th{white-space:nowrap}.ptab .ptot td{border-top:2px solid var(--line);background:var(--surface-2)}.ptabs{margin:4px 0 12px}
+.ptab td,.ptab th{white-space:nowrap}.ptab td.cpos{background:var(--ok-soft);color:var(--ok);font-weight:700}.ptab td.cneg{background:var(--bad-soft);color:var(--bad);font-weight:700}.ptab .ptot td{border-top:2px solid var(--line);background:var(--surface-2)}.ptabs{margin:4px 0 12px}
 .resfile{position:relative;overflow:hidden}.resfile input{position:absolute;inset:0;opacity:0;cursor:pointer}
 @media(max-width:900px){.pzgrid{grid-template-columns:1fr}}
 
@@ -521,6 +521,7 @@ tr.abs-cur td{background:rgba(227,6,19,.04)}
   <section id="v-cpt" hidden></section>
 </div>
 <div class="toast" id="toast" hidden></div>
+<style>#loadOv{position:fixed;inset:0;z-index:90;background:rgba(244,246,250,.82);backdrop-filter:blur(2px);display:grid;place-items:center}#loadOv[hidden]{display:none}#loadOv div{background:var(--surface);border:1px solid var(--line);border-radius:16px;padding:18px 22px;display:grid;gap:4px;text-align:center;box-shadow:0 10px 30px -12px rgba(16,24,40,.3)}#loadOv small{color:var(--muted)}</style>
 <div id="login" hidden><div class="lbox"></div></div>
 
 <script>
@@ -1045,7 +1046,11 @@ async function flushTeam(){
   clearTimeout(teamTimer); if(!S.teamDirty) return;
   if(!S.db){ S.teamDirty=false; const ok=localSave(); setSave(ok?"ok":"off",ok?"Enregistré sur cet ordinateur · "+nowHM():"Non enregistré : exportez vos données"); return; }
   if(teamWriting){ teamTimer=setTimeout(flushTeam,300); return; }
-  teamWriting=true; const body=clone(S.team); S.teamDirty=false;
+  if(S.fb && !S.teamLoaded){ S.teamDirty=false; toast("Données encore en chargement : modification non enregistrée. Patientez puis recommencez."); return; }
+  const body=clone(S.team);
+  if(S.fb && S.srvCount>=3 && (body.employees||[]).length < S.srvCount){ S.teamDirty=false; setSave("off","Enregistrement bloqué"); toast("Enregistrement bloqué : l'équipe affichée est incomplète. Rechargez la page (Ctrl+F5)."); return; }
+  teamWriting=true; S.teamDirty=false;
+  try{ const day=todayStr(); if(S.fb && S.srvTeam && S.backupDay!==day){ S.backupDay=day; await S.db.doc("config/sauvegarde-"+day).set({...S.srvTeam, savedAt:new Date().toISOString()}); } }catch(e){}
   try{ await S.db.doc("config/team").set(body); if(!S.dirty && !S.teamDirty) setSave("ok","Enregistré · "+nowHM()); if(S.fb) publishAnnuaire(); }
   catch(e){ S.teamDirty=true; setSave("off","Échec d'enregistrement, nouvel essai…"); teamTimer=setTimeout(flushTeam,3000); }
   finally{ teamWriting=false; }
@@ -1620,18 +1625,21 @@ function palmTables(m, F){
   const nm=id=>(S.team.employees.find(e=>e.id===id)||{}).name||id; const B=m.base==="PO"?"PO":"CA";
   const ids=Object.keys(F.rows).sort((a,b)=>(F.rows[a].rang||99)-(F.rows[b].rang||99)); const R=id=>F.rows[id];
   const sum=k=>ids.reduce((t,id)=>t+(+R(id)[k]||0),0);
-  const syn={title:"Synthèse", cols:[["Rang","rang","n"],["Collaborateur",null,"t"],[B+" HT","ca","e"],["Factures","fact","n"],["Marge €","marge","e"],["Tx marge","txm","p"],["PVM","pvm","e"],["PDM accessoires","pdmAcc","p"],["Attache acc.","txAttach","p"],["Nb acc.","nbAcc","n"],["Remise MAG","remise","p"],["Ventes X","ventesX","p"],[B+" services","caSvc","e"],["PDM services","pdmSvc","p"],["CEG qté","cegQ","n"],["CEG tx","cegTx","p"],["CEG "+B,"cegCA","e"],[B==="PO"?"Ass. nomade qté":"Vol/Casse qté","vcQ","n"],[B==="PO"?"Ass. nomade tx":"Vol/Casse tx","vcTx","p"],["Protection","prot","n"],["Piceasoft","pice","n"],["BDOM","bdom","n"],["TRC","trc","p"]]};
+  const syn={title:"Synthèse", cols:[["Rang","rang","n"],["Collaborateur",null,"t"],[B+" HT","ca","e"],["Factures","fact","n"],["Marge €","marge","e"],["Tx marge","txm","p"],["PVM","pvm","e"],["PDM accessoires","pdmAcc","p"],["Nb acc.","nbAcc","n"],["Remise MAG","remise","p"],["Ventes X","ventesX","p"],[B+" services","caSvc","e"],["PDM services","pdmSvc","p"],["CEG qté","cegQ","n"],["CEG tx","cegTx","p"],["CEG "+B,"cegCA","e"],[B==="PO"?"Ass. nomade qté":"Vol/Casse qté","vcQ","n"],[B==="PO"?"Ass. nomade tx":"Vol/Casse tx","vcTx","p"],["Protection","prot","n"],["Piceasoft","pice","n"],["BDOM","bdom","n"],["TRC","trc","p"]]};
   const club={title:"Club et Infinity", cols:[["Collaborateur",null,"t"],["Club","club","n"],["Club / 100 k€","club100","n"],["B+","bp","n"],["Club+","clubp","n"],["Club+ / 100 k€","clubp100","n"],["Infinity hors mobile","infM","n"],["Infinity Uno (1 univ.)","inf1","n"],["Infinity Duo (2 univ.)","inf2","n"],["Infinity Trio (3 univ.)","inf3","n"],["Mobile Uno","mobUno","n"],["Mobile Famille","mobFam","n"]]};
   const fams=[...new Set([...PALM_FAM, ...ids.flatMap(id=>(R(id).fam||[]).map(f=>f.lp))])].filter(lp=>ids.some(id=>(R(id).fam||[]).some(f=>f.lp===lp&&f.ca)));
   return {B, ids, R, sum, nm, syn, club, fams};
 }
+const PALM_GOOD=["txm","pdmAcc","pdmSvc","cegTx","vcTx","trc","remise","club100","bp100","clubp100","ci100","ci2100"];
+function palmCell(T,id,k){ if(!PALM_GOOD.includes(k)) return ""; const v=T.R(id)[k]; const L=T.ids.map(x=>T.R(x)[k]).filter(x=>x!=null); if(v==null||L.length<2) return ""; const avg=L.reduce((a,b)=>a+b,0)/L.length;
+  const gap=k==="remise"?v-avg:(avg?(v-avg)/Math.abs(avg):(v>0?1:0)), thr=k==="remise"?0.15:0.05; return gap>thr?"cpos":gap<-thr?"cneg":""; }
 const palmFmt = (t,v) => v==null||v===""?"–": t==="e"?eur(v): t==="p"?pct1(v): n1(v);
 function resTeamHTML(m){
   if(!m) return "";
   if(!m.vend) return '<div class="panel"><h2>Données extraites</h2><p class="lead">Ce PDF n\'a pas été reconnu comme un « Palmarès vendeurs ». Aucune donnée n\'a été extraite.</p><button class="btn" id="res-re">Relire le PDF</button></div>';
   const F=palmFull(m); if(!F) return '<div class="panel"><h2>Données extraites</h2><p class="st-mut">Chargement des données…</p></div>';
   const T=palmTables(m,F); const tab=S.resTab||"syn";
-  const tbl=(def,rows,tot)=>'<div class="tbl"><table class="ptab"><thead><tr>'+def.cols.map(c=>'<th>'+esc(c[0])+'</th>').join("")+'</tr></thead><tbody>'+rows.map(id=>'<tr>'+def.cols.map(c=>c[1]?'<td class="n mono">'+palmFmt(c[2],T.R(id)[c[1]])+'</td>':'<td><b>'+esc(T.nm(id))+'</b></td>').join("")+'</tr>').join("")+
+  const tbl=(def,rows,tot)=>'<div class="tbl"><table class="ptab"><thead><tr>'+def.cols.map(c=>'<th>'+esc(c[0])+'</th>').join("")+'</tr></thead><tbody>'+rows.map(id=>'<tr>'+def.cols.map(c=>c[1]?'<td class="n mono '+palmCell(T,id,c[1])+'">'+palmFmt(c[2],T.R(id)[c[1]])+'</td>':'<td><b>'+esc(T.nm(id))+'</b></td>').join("")+'</tr>').join("")+
     (tot?'<tr class="ptot">'+def.cols.map(c=>!c[1]?'<td><b>Équipe</b></td>':((c[2]==="e"&&c[1]!=="pvm")||(c[2]==="n"&&c[1]!=="rang"&&!/100/.test(c[1])))?'<td class="n mono"><b>'+palmFmt(c[2],T.sum(c[1]))+'</b></td>':'<td></td>').join("")+'</tr>':'')+'</tbody></table></div>';
   let body="";
   if(tab==="syn") body=tbl(T.syn,T.ids,true);
@@ -1643,7 +1651,7 @@ function resTeamHTML(m){
   if(tab==="suivi") body=S.resSuiviHTML||'<p class="st-mut">Calcul en cours…</p>';
   const noMat=emps().filter(e=>!m.vend[e.id]);
   return '<div class="panel"><div style="display:flex;gap:10px;flex-wrap:wrap;align-items:center;justify-content:space-between"><h2>Données extraites · '+(T.B==="PO"?"palmarès en PO":"palmarès en CA")+'</h2><span><button class="btn" id="res-xls">Exporter en Excel</button> <button class="btn ghost" id="res-re">Relire le PDF</button></span></div>'+
-    '<p class="lead">Période du '+esc(m.du)+' au '+esc(m.au)+'. Ces données sont enregistrées dans l\'application'+(T.B==="PO"?' et servent de réalisé officiel pour les primes et le suivi des objectifs du mois (les saisies des vendeurs ne comptent qu\'après le '+esc(m.au)+')':'')+'. Chaque collaborateur voit uniquement sa ligne, sans montant en euros hors '+T.B+'.</p>'+
+    '<p class="lead">Période du '+esc(m.du)+' au '+esc(m.au)+'. Ces données sont enregistrées dans l\'application'+(T.B==="PO"?' et servent de réalisé officiel pour les primes et le suivi des objectifs du mois (les saisies des vendeurs ne comptent qu\'après le '+esc(m.au)+')':'')+'. Chaque collaborateur voit uniquement sa ligne, sans montant en euros hors '+T.B+'. <span class="pill ok">vert</span> au-dessus de la moyenne de l\'équipe, <span class="pill bad">rouge</span> en dessous.</p>'+
     '<div class="seg ptabs" id="res-tabs">'+[["syn","Synthèse"],["fam","Par famille"],["club","Club et Infinity"]].concat(T.B==="PO"?[["suivi","Suivi des objectifs"],["prime","Primes"]]:[]).map(([k,l])=>'<button data-rt="'+k+'" aria-pressed="'+(tab===k)+'">'+l+'</button>').join("")+'</div>'+body+
     ((m.unk||[]).length?'<p class="st-mut" style="margin-top:10px">Vendeurs du PDF non rattachés (ignorés) : '+m.unk.map(u=>'<span style="display:inline-flex;gap:6px;align-items:center;margin-right:10px">'+esc(u.mat)+' '+esc(u.nom)+' '+esc(u.prenom)+' <select data-unk="'+esc(u.mat)+'"><option value="">Rattacher à…</option>'+noMat.map(e=>'<option value="'+esc(e.id)+'">'+esc(e.name)+'</option>').join("")+'</select></span>').join("")+'</p>':'')+
     (noMat.length?'<p class="st-mut">Sans données dans ce PDF : '+noMat.map(e=>esc(e.name)).join(", ")+'.</p>':'')+(F.partial?'<p class="st-mut">Données détaillées indisponibles pour ce dépôt : cliquez sur « Relire le PDF ».</p>':'')+'</div>';
@@ -2523,7 +2531,7 @@ function renderHome(){
     '</div>'+
     (curW&&!isClosed(td)?'<div class="today"><div class="today-hd"><b>Aujourd\'hui en magasin</b><button class="lnk" data-go="team" data-today="1">Voir la journée ›</button></div>'+
       (sorted.length?'<div class="today-list">'+sorted.map(e=>{ const x=getE(e.id,td); return '<div class="tp"><span class="av">'+esc((e.name||"?")[0])+'</span><span class="tn"><b>'+esc(e.name)+'</b><small>'+esc(x.tag||({vente:"Vente",caisse:"Caisse",livraison:"Livraison"}[fonctionOf(e)]||""))+'</small></span><span class="tt">'+(hasTimes(x)?(x.m1?x.m1+"–"+x.m2:"")+(x.m1&&x.a1?'<br>':'')+(x.a1?x.a1+"–"+x.a2:""):'<i class="st-mut">à définir</i>')+'</span></div>'; }).join("")+'</div>':'<p class="st-mut" style="margin:6px 0 0">Personne n\'est planifié aujourd\'hui.</p>')+'</div>':'')+
-    '<div class="qa"><button class="qbtn" id="hGen">'+ico("gen")+'<span>Générer la semaine</span></button><button class="qbtn'+(S.week.pub?" on":"")+'" id="hPub">'+ico("pub")+'<span>'+(S.week.pub?"Semaine publiée":"Publier aux collaborateurs")+'</span></button></div><p class="appver">Version du 13/10 20:00</p>';
+    '<div class="qa"><button class="qbtn" id="hGen">'+ico("gen")+'<span>Générer la semaine</span></button><button class="qbtn'+(S.week.pub?" on":"")+'" id="hPub">'+ico("pub")+'<span>'+(S.week.pub?"Semaine publiée":"Publier aux collaborateurs")+'</span></button></div><p class="appver">Version du 14/10 09:45</p>';
   v.querySelectorAll("[data-go]").forEach(b=>b.onclick=()=>{ if(b.dataset.today && curW) S.mDay=td; go(b.dataset.go); });
   $("#hGen").onclick=()=>{ go("team"); generateWeek(); };
   $("#hPub").onclick=()=>togglePub();
@@ -2564,11 +2572,12 @@ function showLogin(mode, msg){
   $("#l-new").onclick=async()=>{ const m=$("#l-mail").value.trim(), p=$("#l-pw").value; if(m.toLowerCase()!==ADMIN_EMAIL){ $("#lmsg").textContent="Seule l'adresse "+ADMIN_EMAIL+" peut créer le compte gestionnaire."; return; } if(p.length<8){ $("#lmsg").textContent="Choisissez un mot de passe de 8 caractères minimum."; return; } try{ await window.FB.signup(m,p); }catch(e){ err(e); } };
   $("#l-forgot").onclick=async()=>{ try{ await window.FB.reset($("#l-mail").value.trim()); $("#lmsg").textContent="E-mail de réinitialisation envoyé."; }catch(e){ err(e); } };
 }
+function showLoading(on){ let o=$("#loadOv"); if(!o){ o=document.createElement("div"); o.id="loadOv"; o.innerHTML='<div><b>Chargement des données…</b><small>Patientez, l\'équipe et les plannings arrivent.</small></div>'; document.body.appendChild(o); } o.hidden=!on; }
 function hideLogin(){ $("#login").hidden=true; $("#app").removeAttribute("aria-hidden"); }
 async function seedIfEmpty(){
   const snap=await S.db.doc("config/team").get(); if(snapData(snap)) return false;
   return await new Promise(resolve=>{
-    const L=$("#login"); L.hidden=false;
+    const L=$("#login"); L.hidden=false; showLoading(false);
     L.querySelector(".lbox").innerHTML='<h1>Installation</h1><p>La base est vide. Importez le fichier <b>F890_donnees_initiales.json</b> reçu avec l\'application : il contient l\'équipe, les horaires types et les semaines déjà faites.</p><label class="btn primary" for="seedf" style="text-align:center">Choisir le fichier</label><input type="file" id="seedf" accept=".json,application/json" hidden><button class="btn ghost" id="seedskip">Commencer avec une équipe vide</button><p class="lmsg" id="lmsg"></p>';
     const go=async data=>{ try{
         const team=data.team||{employees:[],templates:DEFAULT_TPL.slice(),settings:{}}; team.settings=team.settings||{}; team.settings.rules=team.settings.rules||DEF_RULES;
@@ -2587,12 +2596,15 @@ function startFirebase(){
     if(!u){ showLogin(); return; }
     if((u.email||"").toLowerCase()!==ADMIN_EMAIL){ await window.FB.logout(); showLogin("", "Ce compte n'est pas le compte gestionnaire. Les collaborateurs utilisent l'espace collaborateur."); return; }
     if(!u.emailVerified){ showLogin("verify"); return; }
-    hideLogin(); $("#logoutB").hidden=false;
+    hideLogin(); $("#logoutB").hidden=false; showLoading(true);
     S.db=window.FB.adapter; S.local=false;
-    try{ const seeded=await seedIfEmpty(); if(seeded) toast("Installation terminée"); }catch(e){ setSave("off","Accès refusé : vérifiez les règles Firestore"); toast("Firestore refuse l'accès. Collez les règles de sécurité fournies, puis rechargez."); return; }
+    try{ const seeded=await Promise.race([seedIfEmpty(), new Promise(r=>setTimeout(()=>r("lent"),12000))]); if(seeded===true) toast("Installation terminée"); }catch(e){ setSave("off","Accès refusé : vérifiez les règles Firestore"); toast("Firestore refuse l'accès. Collez les règles de sécurité fournies, puis rechargez."); return; }
     setSave("ok","Synchronisé");
-    S.db.doc("config/team").onSnapshot(snap=>{ if(S.teamDirty||teamWriting) return; const d=snapData(snap); if(d && S.teamLoaded && JSON.stringify(d)===JSON.stringify(clone(S.team))) return; if(d && S.teamLoaded && typingIn()){ S.teamPendingSnap=snap; return; } if(d){ S.team={...d, employees:d.employees||[],templates:(d.templates&&d.templates.length)?d.templates:DEFAULT_TPL.slice(),settings:d.settings||{}}; } S.teamLoaded=true; render(); },()=>setSave("off","Connexion perdue"));
-    subscribeWeek(); subscribeDemandes(); subscribePauses(); subscribeRea(); subscribeRes(); setTimeout(publishBareme,4000);
+    S.db.doc("config/team").onSnapshot(snap=>{ const d=snapData(snap);
+      if(d && !S.teamLoaded){ S.teamDirty=false; clearTimeout(teamTimer); }
+      if(d){ S.srvTeam=clone(d); S.srvCount=(d.employees||[]).length; }
+      if(S.teamLoaded && (S.teamDirty||teamWriting)) return; if(d && S.teamLoaded && JSON.stringify(d)===JSON.stringify(clone(S.team))) return; if(d && S.teamLoaded && typingIn()){ S.teamPendingSnap=snap; return; } if(d){ S.team={...d, employees:d.employees||[],templates:(d.templates&&d.templates.length)?d.templates:DEFAULT_TPL.slice(),settings:d.settings||{}}; } if(d){ S.teamLoaded=true; showLoading(false); } render(); },()=>setSave("off","Connexion perdue"));
+    subscribeWeek(); subscribeDemandes(); subscribePauses(); subscribeRea(); subscribeRes(); setTimeout(()=>{ if(S.teamLoaded) publishBareme(); },6000);
     S.db.collection("weeks").get().then(q=>{ S.openSunWeeks=q.docs.filter(x=>{const d=snapData(x); return d&&d.open&&d.open["6"];}).map(x=>x.id); render(); }).catch(()=>{});
   });
 }
@@ -2634,7 +2646,8 @@ try{
   const cfg = {"apiKey":"AIzaSyDEoDBsdANV89bseWyrIgOryGriPVZLkqo","authDomain":"planning-890.firebaseapp.com","projectId":"planning-890","storageBucket":"planning-890.firebasestorage.app","messagingSenderId":"752375265204","appId":"1:752375265204:web:76652191c3b72f610b64e1"};
   const app = initializeApp(cfg);
   const auth = getAuth(app);
-  let db; try{ db = initializeFirestore(app, { localCache: persistentLocalCache({ tabManager: persistentMultipleTabManager() }) }); }catch(e){ db = initializeFirestore(app, {}); }
+  // cache mémoire : le cache persistant multi-onglets bloquait la connexion quand un autre onglet était en veille
+  const db = initializeFirestore(app, {});
   const authStaff = getAuth(initializeApp(cfg, "comptes"));
   const authGmail = getAuth(initializeApp(cfg, "gmail"));
   const d = p => doc(db, p);
