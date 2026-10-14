@@ -441,7 +441,10 @@ tr.abs-cur td{background:rgba(227,6,19,.04)}
 .bartab input,.bartab select{width:100%;padding:5px 8px;border:1px solid var(--line);border-radius:8px;background:var(--surface)}
 .hrow{display:flex;flex-wrap:wrap;gap:10px;align-items:center;padding:8px 0;border-bottom:1px solid var(--line)}.hrow>b{min-width:150px}.hseg{display:flex;gap:6px;align-items:center}.hseg .tsel{min-width:86px}
 .hmonths{display:flex;flex-wrap:wrap;gap:6px 14px;margin-bottom:6px}.hmonths .chk{display:flex;gap:5px;align-items:center}
-.crel{font-size:10px;font-weight:700;color:#fff;background:var(--tag-caisse);border-radius:4px;padding:0 4px}</style>
+.crel{font-size:10px;font-weight:700;color:#fff;background:var(--tag-caisse);border-radius:4px;padding:0 4px}
+.cms{display:flex;flex-wrap:wrap;gap:2px;margin-top:2px}.ms{display:inline-block;font-size:10px;font-weight:700;border-radius:4px;padding:1px 4px;line-height:1.3;white-space:nowrap}
+.ms-caisse{background:#6f42c1;color:#fff}.ms-rec{background:#1d5fd1;color:#fff}.ms-rea{background:#e8620f;color:#fff}.ms-liv{background:#2e9e44;color:#fff}
+.msrow{display:flex;flex-wrap:wrap;gap:6px 14px;align-items:center;margin-top:6px}.msrow .tf label{min-width:auto}.msrow .tf{gap:4px}.msk{display:inline-block;width:8px;height:8px;border-radius:2px;margin-right:4px}</style>
 
 </head><body>
 <div class="wrap" id="app">
@@ -536,6 +539,12 @@ const STATUS = {
 };
 const TIMED = s => s === "T" || s === "FO";
 const TAGS = ["", "Caisse", "Aide Caisse", "Livraison", "SAV", "Réception", "Vente"];
+/* missions horaires dans la journée : 2 créneaux caisse, réception, réa, aide livraison */
+const MISSIONS = [["c1","Caisse","Caisse 1"],["c2","Caisse","Caisse 2"],["rec","Réception","Réception"],["rea","Réa","Réa"],["liv","Aide livraison","Aide livraison"]];
+const MS_CLS = {c1:"caisse",c2:"caisse",rec:"rec",rea:"rea",liv:"liv"};
+function tasksOf(x){ if(!x||!TIMED(x.s)) return []; const m={...(x.ms||{})}; if(x.rel&&!m.c1) m.c1=x.rel; return MISSIONS.filter(([k])=>m[k]&&m[k][0]&&m[k][1]).map(([k,l])=>({k,l,d:m[k][0],f:m[k][1]})); }
+const hhm = t => String(t||"").replace(":00","h").replace(":","h");
+const msChips = x => tasksOf(x).map(t=>'<span class="ms ms-'+MS_CLS[t.k]+'" title="'+esc(t.l)+' de '+t.d+' à '+t.f+'">'+esc(t.l)+' '+hhm(t.d)+'–'+hhm(t.f)+'</span>').join("");
 const DAYN = ["lundi","mardi","mercredi","jeudi","vendredi","samedi","dimanche"];
 const MON = ["janv.","févr.","mars","avr.","mai","juin","juil.","août","sept.","oct.","nov.","déc."];
 const DEFAULT_TPL = [
@@ -742,8 +751,7 @@ function cellHTML(e, d){
     (e.tag?'<span class="tag '+esc(e.tag.split(" ")[0])+'">'+esc(e.tag)+'</span>':'')+
     (e.p?'<span class="pz" title="Pause 10 min déduite">P</span>':'')+
     (e.retard?'<span class="cret" title="Retard">⏱ '+e.retard+' min</span>':'')+
-    (e.rel?'<span class="crel" title="Relève caisse">Caisse '+e.rel[0].replace(":00","h")+'–'+e.rel[1].replace(":00","h")+'</span>':'')+
-    '<span class="dur">'+fmt(mins(e))+'</span></div></div>';
+    '<span class="dur">'+fmt(mins(e))+'</span></div>'+(tasksOf(e).length?'<div class="cms">'+msChips(e)+'</div>':'')+'</div>';
 }
 function renderGrid(){
   const g=$("#grid"); const ds=weekDays(S.weekId); const today=ymd(new Date(Date.UTC(new Date().getFullYear(),new Date().getMonth(),new Date().getDate())));
@@ -818,10 +826,11 @@ function renderEditor(){
       '<div class="tf"><label for="i-a1">Après-midi</label>'+timeSel("i-a1","a1",e.a1,!timed)+'–'+timeSel("i-a2","a2",e.a2,!timed)+'</div>'+
       '<label class="chk"><input type="checkbox" id="i-p"'+(e.p?" checked":"")+(timed?"":" disabled")+'> Pause 10 min</label>'+
       '<div class="tf"><label for="i-tag">Poste</label><select id="i-tag">'+TAGS.map(t=>'<option'+(t===(e.tag||"")?" selected":"")+' value="'+esc(t)+'">'+(t||"—")+'</option>').join("")+'</select></div>'+
-      '<div class="tf" title="Heures passées en caisse par un collaborateur dont ce n\'est pas le poste (relève)"><label for="i-r1">Caisse de</label>'+timeSel("i-r1","a1",(e.rel||[])[0]||"",!TIMED(e.s))+'–'+timeSel("i-r2","a2",(e.rel||[])[1]||"",!TIMED(e.s))+'</div>'+
+
       '<span class="dur" style="margin-left:0">'+(TIMED(e.s)?fmt(mins(e)):"")+'</span>'+
       '<span class="spacer"></span><button class="btn ghost" id="e-copy">Copier</button><button class="btn ghost" id="e-paste"'+(S.clip?"":" disabled")+'>Coller</button><button class="btn ghost danger" id="e-clr">Vider</button>'+
-    '</div><div class="tpls">'+tpls+'</div>';
+    '</div><div class="row msrow"><b style="font-size:12px">Missions :</b>'+(()=>{ const T={}; tasksOf(e).forEach(t=>T[t.k]=t); return MISSIONS.map(([k,l,lab])=>'<div class="tf"><label for="i-ms-'+k+'-1"><i class="msk ms-'+MS_CLS[k]+'"></i>'+lab+' de</label>'+timeSel("i-ms-"+k+"-1","a1",T[k]?T[k].d:"",!TIMED(e.s))+'à'+timeSel("i-ms-"+k+"-2","a2",T[k]?T[k].f:"",!TIMED(e.s))+'</div>').join(""); })()+'</div>'+
+    '<div class="tpls">'+tpls+'</div>';
   bindTpl(ed);
   ed.querySelectorAll("[data-st]").forEach(b=>b.onclick=()=>applyStatus(b.dataset.st));
   for(const f of ["m1","m2","a1","a2"]){
@@ -831,8 +840,9 @@ function renderEditor(){
   }
   $("#i-p").onchange=ev=>applyField({p:ev.target.checked});
   $("#i-tag").onchange=ev=>applyField({tag:ev.target.value});
-  const relCh=()=>{ const a=$("#i-r1").value, b=$("#i-r2").value; if(a&&b&&toMin(b)>toMin(a)) applyField({rel:[a,b]}); else if(!a&&!b) applyField({rel:null}); };
-  $("#i-r1").onchange=relCh; $("#i-r2").onchange=relCh;
+  MISSIONS.forEach(([k,l])=>{ const ch=()=>{ const a=$("#i-ms-"+k+"-1").value, b=$("#i-ms-"+k+"-2").value; if(a&&b&&toMin(b)<=toMin(a)){ toast(l+" : l'heure de fin doit être après le début"); return; } if((a&&!b)||(!a&&b)) return;
+      forSel((id,d)=>{ const old=getE(id,d); if(!old||!TIMED(old.s)) return; const ms={...(old.ms||{})}; if(old.rel&&!ms.c1) ms.c1=old.rel; if(a&&b) ms[k]=[a,b]; else delete ms[k]; const nx={...old, ms}; delete nx.rel; if(!Object.keys(ms).length) delete nx.ms; setE(id,d,nx); }); };
+    $("#i-ms-"+k+"-1").onchange=ch; $("#i-ms-"+k+"-2").onchange=ch; });
   $("#e-copy").onclick=copySel; $("#e-paste").onclick=pasteSel; $("#e-clr").onclick=clearSel;
 }
 function bindTpl(root){ root.querySelectorAll("[data-tpl]").forEach(b=>b.onclick=()=>applyTpl(+b.dataset.tpl)); }
@@ -1120,7 +1130,7 @@ function renderIndiv(){
     '<div><div class="sheet"><div class="hd"><div><h3>'+esc(emp.name)+'</h3><div>'+esc(emp.role||"")+'</div><div style="opacity:.75;margin-top:6px">Semaine '+wnum(S.weekId)+' · '+dShort(ds[0])+' → '+dShort(ds[6])+'</div></div><div class="r"><small>TOTAL SEMAINE</small><b>'+fmt(tt.t)+'</b><span>'+(tt.diff===0?"OK":fmtSigned(tt.diff))+' · base '+fmtH(baseOf(emp))+'h</span></div></div>'+
     '<div style="overflow-x:auto"><table><thead><tr><th>Jour</th><th>Statut</th><th>Matin</th><th>Après-midi</th><th>Pause</th><th>Durée</th></tr></thead><tbody>'+
     ds.map((d,i)=>{const e=r[i]; const lab=e?STATUS[e.s].l:"—"; const t=e&&TIMED(e.s);
-      return '<tr><td><b style="text-transform:capitalize">'+DAYN[i]+'</b> '+dShort(d)+'</td><td>'+lab+(e&&e.tag?' <span class="tag '+esc(e.tag.split(" ")[0])+'">'+esc(e.tag)+'</span>':'')+'</td><td class="m">'+(t&&e.m1?e.m1+" – "+e.m2:"")+'</td><td class="m">'+(t&&e.a1?e.a1+" – "+e.a2:"")+'</td><td>'+(t?(e.p?"10 min":"Non"):"")+'</td><td class="m"><b>'+(t?fmt(mins(e)):"")+'</b></td></tr>';}).join("")+
+      return '<tr><td><b style="text-transform:capitalize">'+DAYN[i]+'</b> '+dShort(d)+'</td><td>'+lab+(e&&e.tag?' <span class="tag '+esc(e.tag.split(" ")[0])+'">'+esc(e.tag)+'</span>':'')+(t&&tasksOf(e).length?'<div class="cms" style="margin-top:4px">'+msChips(e)+'</div>':'')+'</td><td class="m">'+(t&&e.m1?e.m1+" – "+e.m2:"")+'</td><td class="m">'+(t&&e.a1?e.a1+" – "+e.a2:"")+'</td><td>'+(t?(e.p?"10 min":"Non"):"")+'</td><td class="m"><b>'+(t?fmt(mins(e)):"")+'</b></td></tr>';}).join("")+
     '</tbody></table></div></div><div style="margin-top:12px;display:flex;gap:8px;flex-wrap:wrap"><button class="btn primary" id="indOne">Exporter le PDF de '+esc(emp.name)+'</button></div></div></div>';
   v.querySelectorAll("[data-e]").forEach(b=>b.onclick=()=>{S.indivEmp=b.dataset.e;renderIndiv();});
   $("#indOne").onclick=()=>exportOne(emp.id); $("#indAll").onclick=exportAllZip;
@@ -1946,6 +1956,7 @@ function pdfIndividualPage(doc, emp){
     if(e && TIMED(e.s)){
       const lab=e.s==="FO"?"Formation":"Travail";
       doc.setFontSize(10); doc.setTextColor(C.txt); doc.text(lab,cols[1]+10,e.tag?mid-8:mid);
+      { const T=tasksOf(e); if(T.length){ doc.setFont("helvetica","bold"); doc.setFontSize(7.5); doc.setTextColor("#6f42c1"); doc.text(T.map(t=>t.l+" "+hhm(t.d)+"-"+hhm(t.f)).join("  ·  "),cols[2]+10,mid+12); doc.setFont("helvetica","normal"); } }
       if(e.tag){ const tc=C.tag[e.tag]||[C.navy,C.white]; doc.setFontSize(8); const tw=doc.getTextWidth(e.tag)+12;
         doc.setFillColor(tc[0]); doc.roundedRect(cols[1]+10,mid-2,tw,14,3,3,"F"); doc.setTextColor(tc[1]); doc.text(e.tag,cols[1]+16,mid+8); }
       doc.setFont("helvetica","normal"); doc.setFontSize(11); doc.setTextColor(C.txt);
@@ -2061,7 +2072,7 @@ function coverage(d){
   const R=rules(), list=emps(), out=[]; const OI=openIntervals(d).length?openIntervals(d):[[toMin(R.open),toMin(R.close)]]; const o=OI[0][0], c=OI[OI.length-1][1];
   const inOpen = t => OI.some(([a,b])=>t>=a&&t<b);
   const at = (t, pred) => list.filter(e=>pred(e,getE(e.id,d)) && intervals(getE(e.id,d)).some(([a,b])=>a<=t&&b>t)).length;
-  const relAt = t => list.filter(e=>{ const x=getE(e.id,d); return x&&x.rel&&toMin(x.rel[0])<=t&&toMin(x.rel[1])>t; }).length;
+  const relAt = t => list.filter(e=>{ const x=getE(e.id,d); return tasksOf(x).some(m=>(m.k==="c1"||m.k==="c2")&&toMin(m.d)<=t&&toMin(m.f)>t); }).length;
   const isCaisse = (e,x) => !!x && TIMED(x.s) && (x.tag==="Caisse" || x.tag==="Aide Caisse" || (fonctionOf(e)==="caisse" && !x.tag));
   // caisse : trous de couverture
   if(R.caisseMin>0){ let gap=null; const gaps=[];
@@ -2072,7 +2083,7 @@ function coverage(d){
   const nOpen=at(o,(e,x)=>!!x), nClose=at(c-1,(e,x)=>!!x);
   if(nOpen<R.openMin) out.push({k:"ouv",t:"Ouverture "+pad(Math.floor(o/60))+":"+pad(o%60)+" : "+nOpen+" présent"+(nOpen>1?"s":"")+" sur "+R.openMin});
   if(nClose<R.closeMin) out.push({k:"ferm",t:"Fermeture "+pad(Math.floor(c/60))+":"+pad(c%60)+" : "+nClose+" présent"+(nClose>1?"s":"")+" sur "+R.closeMin});
-  const need=+R.livreurs[d]||0; if(need){ const n=list.filter(e=>{ const x=getE(e.id,d); return intervals(x).length && (x.tag==="Livraison" || (fonctionOf(e)==="livraison" && (!x.tag||x.tag==="Livraison"))); }).length; if(n<need) out.push({k:"liv",t:"Livreurs : "+n+" sur "+need}); }
+  const need=+R.livreurs[d]||0; if(need){ const n=list.filter(e=>{ const x=getE(e.id,d); return intervals(x).length && (x.tag==="Livraison" || tasksOf(x).some(m=>m.k==="liv") || (fonctionOf(e)==="livraison" && (!x.tag||x.tag==="Livraison"))); }).length; if(n<need) out.push({k:"liv",t:"Livreurs : "+n+" sur "+need}); }
   return out;
 }
 
@@ -2326,27 +2337,45 @@ async function renderCpt(){
   if(!S.allWeeks){ v.innerHTML='<div class="panel">Chargement des semaines…</div>'; await loadAllWeeks(); }
   else S.allWeeks[S.weekId]=clone(S.week);
   const rows=monthCounters(S.cptMonth); const [Y,M]=S.cptMonth.split("-").map(Number);
+  await primesForMonth(S.cptMonth, rows); if(S.view!=="cpt") return;
   const months=[]; for(let i=-6;i<=2;i++){ const d=new Date(Y,M-1+i,1); months.push(d.getFullYear()+"-"+pad(d.getMonth()+1)); }
   const mName = ym => { const [y,m]=ym.split("-").map(Number); return ["janvier","février","mars","avril","mai","juin","juillet","août","septembre","octobre","novembre","décembre"][m-1]+" "+y; };
   v.innerHTML='<div class="panel"><div style="display:flex;gap:10px;flex-wrap:wrap;align-items:center;justify-content:space-between"><h2>Compteurs · '+mName(S.cptMonth)+'</h2>'+
   '<div style="display:flex;gap:8px;flex-wrap:wrap"><select id="cpt-m" class="btn">'+[...new Set([...months,S.cptMonth])].sort().map(m=>'<option value="'+m+'"'+(m===S.cptMonth?" selected":"")+'>'+mName(m)+'</option>').join("")+'</select>'+
   '<button class="btn" id="cpt-reload">Actualiser</button><button class="btn primary" id="cpt-xlsx">Export paie Excel</button><button class="btn primary" id="cpt-pdf">Récapitulatif PDF</button></div></div>'+
   '<p class="lead">Heures supplémentaires et complémentaires calculées sur les semaines qui se terminent dans le mois (+25 % de 35h à 43h, +50 % au-delà ; temps partiels : +10 % jusqu\'à 1/10e du contrat, +25 % au-delà). CP en jours ouvrables. Les dépassements de pause (au-delà de 10 min par jour) sont déduits des heures travaillées.</p>'+
-  '<div class="tbl"><table class="cpt"><thead><tr><th>Collaborateur</th><th>Contrat</th><th>Heures travaillées</th><th>HS 25 %</th><th>HS 50 %</th><th>HC 10 %</th><th>HC 25 %</th><th>Dimanches</th><th>Fériés travaillés</th><th>Fériés chômés</th><th>CP pris</th><th>CP restants</th><th>Maladie (j)</th><th>Absences (j)</th><th>Formation</th><th>Retards</th><th>Dépassement pauses</th></tr></thead><tbody>'+
-  rows.map(c=>'<tr><td><b>'+esc(c.emp.name)+'</b></td><td>'+fmtH(+c.emp.base||0)+'h</td><td class="n">'+hh(c.work)+'</td><td class="n">'+hh(c.hs25)+'</td><td class="n">'+hh(c.hs50)+'</td><td class="n">'+hh(c.hc10)+'</td><td class="n">'+hh(c.hc25)+'</td><td class="n">'+(c.sunN?c.sunN+" · "+fmt(c.sunM):"–")+'</td><td class="n">'+(c.holN?c.holN+" · "+fmt(c.holM):"–")+'</td><td class="n">'+(c.fe||"–")+'</td><td class="n">'+(c.cp||"–")+'</td><td class="n">'+(c.cpLeft==null?'<span class="st-mut">à saisir</span>':fmtH(c.cpLeft))+'</td><td class="n">'+(c.m||"–")+'</td><td class="n">'+(c.ab||"–")+'</td><td class="n">'+hh(c.fo)+'</td><td class="n">'+(c.retN?c.retN+" · "+c.retM+" min":"–")+'</td><td class="n">'+(c.pzOver?'<b class="bad">'+fmt(c.pzOver)+'</b>':'–')+'</td></tr>').join("")+
-  '</tbody></table></div><p class="st-mut" style="margin-top:8px">Les soldes CP se saisissent dans l\'onglet Collaborateurs (solde et date de référence).</p></div>';
+  '<div class="tbl"><table class="cpt"><thead><tr><th>Collaborateur</th><th>Contrat</th><th>Heures travaillées</th><th>HS 25 %</th><th>HS 50 %</th><th>HC 10 %</th><th>HC 25 %</th><th>Dimanches</th><th>Fériés travaillés</th><th>Fériés chômés</th><th>CP pris</th><th>CP restants</th><th>Maladie (j)</th><th>Absences (j)</th><th>Formation</th><th>Retards</th><th>Dépassement pauses</th><th>Primes</th></tr></thead><tbody>'+
+  rows.map(c=>'<tr><td><b>'+esc(c.emp.name)+'</b></td><td>'+fmtH(+c.emp.base||0)+'h</td><td class="n">'+hh(c.work)+'</td><td class="n">'+hh(c.hs25)+'</td><td class="n">'+hh(c.hs50)+'</td><td class="n">'+hh(c.hc10)+'</td><td class="n">'+hh(c.hc25)+'</td><td class="n">'+(c.sunN?c.sunN+" · "+fmt(c.sunM):"–")+'</td><td class="n">'+(c.holN?c.holN+" · "+fmt(c.holM):"–")+'</td><td class="n">'+(c.fe||"–")+'</td><td class="n">'+(c.cp||"–")+'</td><td class="n">'+(c.cpLeft==null?'<span class="st-mut">à saisir</span>':fmtH(c.cpLeft))+'</td><td class="n">'+(c.m||"–")+'</td><td class="n">'+(c.ab||"–")+'</td><td class="n">'+hh(c.fo)+'</td><td class="n">'+(c.retN?c.retN+" · "+c.retM+" min":"–")+'</td><td class="n">'+(c.pzOver?'<b class="bad">'+fmt(c.pzOver)+'</b>':'–')+'</td><td class="n"><b>'+(c.prime?eur2(c.prime.total):'–')+'</b>'+(c.prime&&c.prime.pending?'<br><small class="st-mut">'+c.prime.pending+' j en attente</small>':'')+'</td></tr>').join("")+
+  '</tbody></table></div><p class="st-mut" style="margin-top:8px">Les soldes CP se saisissent dans l\'onglet Collaborateurs (solde et date de référence).</p></div>'+primesPanel(rows);
   $("#cpt-m").onchange=ev=>{ S.cptMonth=ev.target.value; renderCpt(); };
   $("#cpt-reload").onclick=async()=>{ S.allWeeks=null; renderCpt(); };
   $("#cpt-xlsx").onclick=()=>exportPaieXlsx(rows, mName(S.cptMonth));
   $("#cpt-pdf").onclick=()=>exportPaiePdf(rows, mName(S.cptMonth));
 }
 const dec = m => Math.round(m/60*100)/100;
+/* primes du mois à transmettre au comptable (réalisés validés + palmarès officiel) */
+async function primesForMonth(ym, rows){
+  const B=bareme(), RM=reaMonth(ym); let MO=null; try{ MO=await objMonthEmp(ym); }catch(e){}
+  rows.forEach(c=>{ const id=c.emp.id; const obj=MO&&MO.res[id]?MO.res[id].po:0; const off=officialFor(S.res,id,ym); const L=withOfficial((S.rea||[]).filter(r=>r.empId===id&&(r.day||"").startsWith(ym)),off);
+    if(!L.length&&!obj){ c.prime=null; return; } const pr=primeCalc(B,obj,L,RM,0); const V=pr.valid;
+    c.prime={obj, po:V.po, pct:V.pct, tier:V.tier, items:V.items, nps:V.nps, total:V.total, lines:V.lines, pending:pr.pending, off:!!off, au:off&&off.au}; });
+}
+function primesPanel(rows){ const R=rows.filter(c=>c.prime); const tot=R.reduce((t,c)=>t+c.prime.total,0);
+  return '<div class="panel"><h2>Primes à transmettre au comptable</h2><p class="lead">Montants bruts validés du mois : réalisés validés dans l\'onglet Réalisés et, s\'il existe, le dernier palmarès en PO du mois (réalisé officiel). Les saisies encore en attente ne sont pas comptées : validez-les avant d\'envoyer.</p>'+
+    (R.length?'<div class="tbl"><table class="cpt"><thead><tr><th>Collaborateur</th><th>Objectif PO</th><th>PO réalisé</th><th>Atteinte</th><th>Prime objectif</th><th>Prime services</th><th>Prime NPS / Google</th><th>Total brut</th><th>Détail services</th></tr></thead><tbody>'+
+      R.map(c=>{ const p=c.prime; return '<tr><td><b>'+esc(c.emp.name)+'</b>'+(p.pending?'<br><small class="pill warn">'+p.pending+' saisie'+(p.pending>1?'s':'')+' en attente</small>':'')+'</td><td class="n">'+(p.obj?eur(p.obj):'–')+'</td><td class="n">'+eur(p.po)+(p.off?'<br><small class="st-mut">palmarès au '+p.au.slice(8)+'/'+p.au.slice(5,7)+'</small>':'')+'</td><td class="n">'+(p.obj?Math.round(p.pct)+' %':'–')+'</td><td class="n">'+eur2(p.tier)+'</td><td class="n">'+eur2(p.items)+'</td><td class="n">'+eur2(p.nps)+'</td><td class="n"><b>'+eur2(p.total)+'</b></td><td class="st-mut" style="white-space:normal;min-width:220px">'+p.lines.map(l=>esc(l.name)+' '+(l.mode==="pct"?eur(l.q):l.q)+' → '+eur2(l.amt)).join(' · ')+'</td></tr>'; }).join("")+
+      '<tr><td><b>Total équipe</b></td><td></td><td></td><td></td><td class="n"><b>'+eur2(R.reduce((t,c)=>t+c.prime.tier,0))+'</b></td><td class="n"><b>'+eur2(R.reduce((t,c)=>t+c.prime.items,0))+'</b></td><td class="n"><b>'+eur2(R.reduce((t,c)=>t+c.prime.nps,0))+'</b></td><td class="n"><b>'+eur2(tot)+'</b></td><td></td></tr></tbody></table></div><p class="st-mut" style="margin-top:8px">Les primes figurent dans l\'export paie Excel (colonnes et onglet « Primes ») et dans le récapitulatif PDF.</p>':'<p class="st-mut">Aucune prime calculée pour ce mois (pas de réalisé validé ni de palmarès en PO).</p>')+'</div>'; }
+const r2 = n => Math.round((+n||0)*100)/100;
 function exportPaieXlsx(rows, label){
   if(!window.XLSX){ toast("Le module Excel n'a pas pu se charger. Rechargez la page."); return; }
-  const head=["Salarié","Poste","Contrat (h/sem)","Heures travaillées","HS 25 %","HS 50 %","H. compl. 10 %","H. compl. 25 %","Dimanches (nb)","Dimanches (h)","Fériés travaillés (nb)","Fériés travaillés (h)","Fériés chômés (j)","CP pris (j ouvrables)","CP restants (j)","Maladie (j)","Absences (j)","Formation (h)","Retards (nb)","Retards (min)","Dépassement pauses (min, déduit)"];
-  const data=[["SAS ANA – Boulanger Flers F890 · Éléments variables de paie · "+label],[],head, ...rows.map(c=>[c.emp.name,c.emp.role||"",+c.emp.base||0,dec(c.work),dec(c.hs25),dec(c.hs50),dec(c.hc10),dec(c.hc25),c.sunN,dec(c.sunM),c.holN,dec(c.holM),c.fe,c.cp,c.cpLeft==null?"":c.cpLeft,c.m,c.ab,dec(c.fo),c.retN,c.retM,c.pzOver])];
+  const head=["Salarié","Poste","Contrat (h/sem)","Heures travaillées","HS 25 %","HS 50 %","H. compl. 10 %","H. compl. 25 %","Dimanches (nb)","Dimanches (h)","Fériés travaillés (nb)","Fériés travaillés (h)","Fériés chômés (j)","CP pris (j ouvrables)","CP restants (j)","Maladie (j)","Absences (j)","Formation (h)","Retards (nb)","Retards (min)","Dépassement pauses (min, déduit)","Prime objectif (€)","Prime services (€)","Prime NPS (€)","Total primes brut (€)"];
+  const data=[["SAS ANA – Boulanger Flers F890 · Éléments variables de paie · "+label],[],head, ...rows.map(c=>[c.emp.name,c.emp.role||"",+c.emp.base||0,dec(c.work),dec(c.hs25),dec(c.hs50),dec(c.hc10),dec(c.hc25),c.sunN,dec(c.sunM),c.holN,dec(c.holM),c.fe,c.cp,c.cpLeft==null?"":c.cpLeft,c.m,c.ab,dec(c.fo),c.retN,c.retM,c.pzOver,c.prime?r2(c.prime.tier):0,c.prime?r2(c.prime.items):0,c.prime?r2(c.prime.nps):0,c.prime?r2(c.prime.total):0])];
   const ws=XLSX.utils.aoa_to_sheet(data); ws["!cols"]=head.map((h,i)=>({wch:i<2?22:14}));
   const wb=XLSX.utils.book_new(); XLSX.utils.book_append_sheet(wb,ws,"Paie");
+  { const P=[["Primes · "+label+" (montants bruts validés)"],[],["Salarié","Objectif PO (€)","PO réalisé (€)","Atteinte (%)","Prime objectif (€)","Service","Quantité / montant","Prime service (€)","Prime NPS (€)","Total (€)","Saisies en attente"]];
+    rows.filter(c=>c.prime).forEach(c=>{ const p=c.prime; const L=p.lines.length?p.lines:[null];
+      L.forEach((l,k)=>P.push([k?"":c.emp.name, k?"":r2(p.obj), k?"":r2(p.po), k?"":(p.obj?Math.round(p.pct):""), k?"":r2(p.tier), l?l.name:"", l?(l.mode==="pct"?r2(l.q):l.q):"", l?r2(l.amt):"", k?"":r2(p.nps), k?"":r2(p.total), k?"":(p.pending||"")])); });
+    const w3=XLSX.utils.aoa_to_sheet(P); w3["!cols"]=[{wch:16},{wch:14},{wch:14},{wch:11},{wch:14},{wch:26},{wch:16},{wch:14},{wch:12},{wch:12},{wch:14}]; XLSX.utils.book_append_sheet(wb,w3,"Primes"); }
   { const ym=S.cptMonth, [Y,M]=ym.split("-").map(Number), f=ym+"-01", l=ym+"-"+pad(new Date(Y,M,0).getDate());
     const L=absList().filter(a=>a.from<=l && (a.to||a.from)>=f).sort((a,b)=>a.from.localeCompare(b.from));
     const nm=id=>(S.team.employees.find(e=>e.id===id)||{}).name||id;
@@ -2371,6 +2400,13 @@ function exportPaiePdf(rows, label){
     const vals=[c.emp.name,fmtH(+c.emp.base||0)+"h",hh(c.work),hh(c.hs25),hh(c.hs50),hh(c.hc10),hh(c.hc25),c.sunN?c.sunN+" / "+fmt(c.sunM):"-",c.holN?c.holN+" / "+fmt(c.holM):"-",String(c.fe||"-"),String(c.cp||"-"),c.cpLeft==null?"-":fmtH(c.cpLeft),String(c.m||"-"),String(c.ab||"-"),hh(c.fo)];
     vals.forEach((v2,i)=>{ doc.text(String(v2).replace(/–/g,"-"),x+4,y+14); x+=wd[i]; }); y+=22; });
   doc.setDrawColor(C.line); doc.rect(30,74,W-60,y-74,"S");
+  { const R=rows.filter(c=>c.prime); if(R.length){ y+=24; if(y>480){ doc.addPage(); y=40; } doc.setFont("helvetica","bold"); doc.setFontSize(11); doc.setTextColor(C.navy); doc.text("PRIMES DU MOIS (brut validé)",30,y); y+=10;
+    const pc=["Salarié","Objectif PO","PO réalisé","Atteinte","Prime objectif","Prime services","Prime NPS","Total"], pw=[130,90,90,60,90,90,80,90]; let px=30;
+    doc.setFillColor(C.navy); doc.rect(30,y,pw.reduce((a,b)=>a+b,0),18,"F"); doc.setTextColor(C.white); doc.setFontSize(8); pc.forEach((h,i)=>{ doc.text(h,px+4,y+12); px+=pw[i]; }); y+=18; doc.setFont("helvetica","normal");
+    const e2=n=>(Math.round((n||0)*100)/100).toFixed(2).replace(".",",")+" EUR", e0=n=>Math.round(n||0).toLocaleString("fr-FR").replace(/\u202f|\u00a0/g," ")+" EUR";
+    R.forEach((c,ri)=>{ const p=c.prime; px=30; doc.setFillColor(ri%2?"#f6f7f9":C.white); doc.rect(30,y,pw.reduce((a,b)=>a+b,0),18,"F"); doc.setTextColor(C.txt); doc.setFontSize(9);
+      [c.emp.name,p.obj?e0(p.obj):"-",e0(p.po),p.obj?Math.round(p.pct)+" %":"-",e2(p.tier),e2(p.items),e2(p.nps),e2(p.total)].forEach((v2,i)=>{ doc.text(String(v2),px+4,y+12); px+=pw[i]; }); y+=18; });
+    doc.setFont("helvetica","bold"); doc.text("Total équipe : "+e2(R.reduce((t,c)=>t+c.prime.total,0)),30,y+14); doc.setFont("helvetica","normal"); y+=20; } }
   doc.setFontSize(7.5); doc.setTextColor(C.muted);
   doc.text("HS : semaines se terminant dans le mois, +25 % de 35h à 43h, +50 % au-delà. HC : temps partiels, +10 % jusqu'à 1/10e du contrat, +25 % au-delà. CP en jours ouvrables.",30,y+18);
   doc.text("Édité le "+new Date().toLocaleDateString("fr-FR")+" - Éric TABARAND, Président - SAS ANA",30,y+30);
@@ -2431,7 +2467,7 @@ function pubDoc(wid, w, e, O, meta){
   const oe=O&&O.emp[e.id]; const months={}; Object.entries((O&&O.months)||{}).forEach(([ym,r])=>{ const m=r.res[e.id]; if(m) months[ym]={po:Math.round(m.po), v:m.v, est:r.est}; });
   const obj = oe && (oe.week.po || Object.keys(oe.week.v).length || Object.keys(months).length) ? {svc:meta, week:{po:Math.round(oe.week.po), v:oe.week.v}, days:oe.days.map(x=>x?{po:Math.round(x.po), v:x.v}:null), months} : null;
   return { obj, weekId:wid, empId:e.id, name:e.name, role:e.role||"", base:b, total:r.reduce((a,x)=>a+mins(x),0),
-    days:ds.map((dt,d)=>{ const x=r[d]||null; return {date:ymd(dt), hol:holName(dt)||"", open:!!(w.open&&w.open[d]), s:x?x.s:"", m1:x&&x.m1||"", m2:x&&x.m2||"", a1:x&&x.a1||"", a2:x&&x.a2||"", p:!!(x&&x.p), tag:(x&&x.tag||"")+(x&&x.rel?((x&&x.tag)?" · ":"")+"Relève caisse "+x.rel[0]+"–"+x.rel[1]:""), min:mins(x)}; }),
+    days:ds.map((dt,d)=>{ const x=r[d]||null; return {date:ymd(dt), hol:holName(dt)||"", open:!!(w.open&&w.open[d]), s:x?x.s:"", m1:x&&x.m1||"", m2:x&&x.m2||"", a1:x&&x.a1||"", a2:x&&x.a2||"", p:!!(x&&x.p), tag:(x&&x.tag||""), ms:tasksOf(x).map(t=>({k:t.k,l:t.l,d:t.d,f:t.f})), min:mins(x)}; }),
     publishedAt:new Date().toISOString() };
 }
 async function objMonthEmp(ym, wid0, w0){
@@ -2549,7 +2585,7 @@ function renderHome(){
     '</div>'+
     (curW&&!isClosed(td)?'<div class="today"><div class="today-hd"><b>Aujourd\'hui en magasin</b><button class="lnk" data-go="team" data-today="1">Voir la journée ›</button></div>'+
       (sorted.length?'<div class="today-list">'+sorted.map(e=>{ const x=getE(e.id,td); return '<div class="tp"><span class="av">'+esc((e.name||"?")[0])+'</span><span class="tn"><b>'+esc(e.name)+'</b><small>'+esc(x.tag||({vente:"Vente",caisse:"Caisse",livraison:"Livraison"}[fonctionOf(e)]||""))+'</small></span><span class="tt">'+(hasTimes(x)?(x.m1?x.m1+"–"+x.m2:"")+(x.m1&&x.a1?'<br>':'')+(x.a1?x.a1+"–"+x.a2:""):'<i class="st-mut">à définir</i>')+'</span></div>'; }).join("")+'</div>':'<p class="st-mut" style="margin:6px 0 0">Personne n\'est planifié aujourd\'hui.</p>')+'</div>':'')+
-    '<div class="qa"><button class="qbtn" id="hGen">'+ico("gen")+'<span>Générer la semaine</span></button><button class="qbtn'+(S.week.pub?" on":"")+'" id="hPub">'+ico("pub")+'<span>'+(S.week.pub?"Semaine publiée":"Publier aux collaborateurs")+'</span></button></div><p class="appver">Version du 14/10 12:20</p>';
+    '<div class="qa"><button class="qbtn" id="hGen">'+ico("gen")+'<span>Générer la semaine</span></button><button class="qbtn'+(S.week.pub?" on":"")+'" id="hPub">'+ico("pub")+'<span>'+(S.week.pub?"Semaine publiée":"Publier aux collaborateurs")+'</span></button></div><p class="appver">Version du 14/10 13:15</p>';
   v.querySelectorAll("[data-go]").forEach(b=>b.onclick=()=>{ if(b.dataset.today && curW) S.mDay=td; go(b.dataset.go); });
   $("#hGen").onclick=()=>{ go("team"); generateWeek(); };
   $("#hPub").onclick=()=>togglePub();

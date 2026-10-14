@@ -46,6 +46,7 @@ h1{font-family:var(--font-display);color:var(--accent);text-transform:uppercase;
 .nw{white-space:nowrap}
 .st{display:inline-block;border-radius:7px;padding:3px 9px;font-weight:700;font-size:13px}
 .st.RH{background:var(--surface-2);color:var(--muted)}.st.CP{background:#e1ebfd;color:#1a4fb0}.st.M{background:var(--bad-soft);color:var(--bad)}.st.AB{background:var(--warn-soft);color:var(--warn)}.st.FE{background:var(--ok-soft);color:var(--ok)}.st.FO{background:#e9e1fb;color:#5b30b8}
+.dms{display:flex;flex-wrap:wrap;gap:4px;margin-top:5px}.dms span{font-size:12px;font-weight:700;border-radius:6px;padding:2px 7px;color:#fff;white-space:nowrap}.dms .k-caisse{background:#6f42c1}.dms .k-rec{background:#1d5fd1}.dms .k-rea{background:#e8620f}.dms .k-liv{background:#2e9e44}
 .tag{font-size:11px;font-weight:700;border-radius:5px;padding:1px 6px;background:var(--navy);color:#fff;margin-left:6px}
 .hol{color:var(--accent);font-size:11px;font-weight:700;display:block}
 .empty{color:var(--muted);text-align:center;padding:24px 10px}
@@ -66,7 +67,7 @@ h3{margin:0 0 10px;font-family:var(--font-display);font-size:20px;text-transform
 .hero>*{position:relative;z-index:1}.hero small{opacity:.8;display:block}.hero small::first-letter{text-transform:uppercase}
 .hero h2{font-family:var(--font-display);font-size:30px;margin:2px 0 10px;line-height:1.05}
 .hday{display:flex;justify-content:space-between;align-items:center;gap:10px;background:rgba(255,255,255,.1);border-radius:14px;padding:10px 12px}
-.hday b{font-family:var(--font-mono);font-size:15px;line-height:1.4}.hday .st{background:rgba(255,255,255,.18);color:#fff}
+.hday b{font-family:var(--font-mono);font-size:15px;line-height:1.4}.hdr{display:flex;flex-direction:column;align-items:flex-end;text-align:right}.hdr .dms{justify-content:flex-end}.hday .st{background:rgba(255,255,255,.18);color:#fff}
 .budget{margin-top:10px;display:flex;align-items:center;gap:10px;font-size:13px}.budget .bar{flex:1;height:8px;border-radius:6px;background:rgba(255,255,255,.18);overflow:hidden}.budget .bar i{display:block;height:100%;background:#43d17a}.budget.over .bar i{background:#ff6b6b}
 .cubes{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:16px}
 .cube{position:relative;aspect-ratio:1/1;border:1px solid var(--line);border-radius:22px;background:var(--surface);padding:14px;display:flex;flex-direction:column;justify-content:flex-end;align-items:flex-start;text-align:left;gap:2px;cursor:pointer;box-shadow:0 1px 2px rgba(16,24,40,.05),0 8px 20px -14px rgba(16,24,40,.25);transition:transform .12s}
@@ -136,6 +137,9 @@ em.up{color:#17803d!important;font-style:normal}em.dn{color:#b42318!important;fo
 .sv-ch{width:100%;height:auto;display:block;margin:4px 0 6px}.sv-line{fill:none;stroke:var(--accent);stroke-width:2.5;stroke-linejoin:round}.sv-dot{fill:var(--accent)}.sv-obj{stroke:#17a34a;stroke-dasharray:4 4;stroke-width:1.5}.sv-proj{stroke:var(--accent);stroke-dasharray:3 4;opacity:.6;stroke-width:2}.sv-ax{stroke:var(--line)}.sv-t{font-size:10px;fill:var(--muted)}
 .sv-ev{font-size:13px;margin:6px 0}.sv-ev small{color:var(--muted)}.sv-ev div{display:flex;flex-wrap:wrap;gap:6px 12px;margin-top:3px}
 .sv-s{margin-top:8px;display:grid;gap:8px}.sv-s>small{color:var(--muted)}.sv-r{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:2px 8px;font-size:14px}.sv-r .sv-b{grid-column:1/-1}.sv-v small{color:var(--muted)}
+.tres .tr{border:1px solid var(--line);border-radius:14px;padding:9px 11px;margin-bottom:8px}.tres .tr.me{border-color:var(--accent);box-shadow:0 0 0 2px rgba(232,98,15,.18)}
+.tr-h{display:flex;align-items:center;gap:8px}.tr-h b{flex:1;min-width:0}.tr-h small{color:var(--muted);font-weight:500}.tr-r{font-weight:800;color:var(--accent);min-width:28px}.tr-po{font-family:var(--font-mono);font-weight:700}
+.tr-k{display:flex;flex-wrap:wrap;gap:4px;margin-top:6px}.tr-k span{font-size:11.5px;background:var(--surface-2);border-radius:999px;padding:2px 8px;color:var(--muted)}.tr-k span b{color:var(--text,#101828)}.tr-k span.pos{background:#e3f5e9;color:#17803d}.tr-k span.pos b{color:#17803d}.tr-k span.neg{background:#fde8e6;color:#b42318}.tr-k span.neg b{color:#b42318}
 .resh{display:flex;justify-content:space-between;align-items:center;gap:10px;margin-bottom:10px}.resh small{color:var(--muted)}
 .prime{background:linear-gradient(135deg,#0f5f30,#17803d 60%,#2aa35a);color:#fff;border-radius:20px;padding:16px;margin-bottom:14px;box-shadow:0 14px 30px -18px rgba(23,128,61,.8)}
 .prime-hd small{opacity:.85;display:block}.prime-hd b{display:block;font-family:var(--font-display);font-size:38px;line-height:1.05}.prime-hd em{font-style:normal;font-size:13px;opacity:.9}
@@ -231,7 +235,7 @@ input.big{font-size:22px;font-weight:600}
 </div>
 <div class="ov" id="ovScan" hidden><h2 id="scT">Scannez le QR code</h2><p id="scP">Visez l'affiche « PAUSE » du magasin.</p><div class="cam"><video id="vid" playsinline muted></video><div class="scanl"></div></div><p id="scMsg"></p><button class="btn ghost" id="scCancel">Annuler</button></div>
 <div class="ov" id="ovPz" hidden></div>
-<p style="text-align:center;color:var(--muted);font-size:12px;margin:0 0 20px">Version du 14/10 12:20</p>
+<p style="text-align:center;color:var(--muted);font-size:12px;margin:0 0 20px">Version du 14/10 13:15</p>
 <div class="toast" id="toast" hidden></div>
 
 <script type="module">
@@ -286,6 +290,9 @@ onAuthStateChanged(auth, async u=>{
   renderHome();
 });
 
+const MSK={c1:"caisse",c2:"caisse",rec:"rec",rea:"rea",liv:"liv"};
+const hm2 = t => String(t||"").replace(":","h");
+function msHTML(x){ const L=(x&&x.ms)||[]; return L.length?'<div class="dms">'+L.map(m=>'<span class="k-'+(MSK[m.k]||"caisse")+'">'+esc(m.l)+' '+hm2(m.d)+' – '+hm2(m.f)+'</span>').join("")+'</div>':""; }
 function renderWeeks(){
   const cw=isoWeekId(new Date());
   const shown=st.weeks.filter(w=>w.weekId>=prevWeek(cw));
@@ -299,7 +306,7 @@ function renderWeeks(){
   $("#week").innerHTML=(op?objSummary(w):'')+'<div class="whd"><div><h2>Semaine '+(+w.weekId.split("-W")[1])+'</h2><small>'+frD(d0)+' → '+frD(d6)+'</small></div><div class="tot">'+fmt(w.total)+'<small>sur '+String(w.base).replace(".",",")+'h</small></div></div>'+
   '<div class="days">'+w.days.map((x,i)=>{ const timed=x.s==="T"||x.s==="FO"; const ob=w.obj&&w.obj.days&&w.obj.days[i];
     return '<div class="day'+(x.date===today?" today":"")+'"><div class="dn">'+DAYN[i]+'<small>'+frD(x.date)+(x.hol?'<span class="hol">'+esc(x.hol)+'</span>':'')+'</small></div>'+
-    '<div class="dt">'+(!x.s?'<span class="mut">—</span>':timed?((x.m1?'<span class="nw">'+x.m1+" – "+x.m2+'</span>':"")+(x.m1&&x.a1?"<br>":"")+(x.a1?'<span class="nw">'+x.a1+" – "+x.a2+'</span>':"")||"Horaires à venir")+(x.tag?'<span class="tag">'+esc(x.tag)+'</span>':'')+(x.s==="FO"?'<span class="tag">Formation</span>':''):'<span class="st '+x.s+'">'+(LAB[x.s]||x.s)+'</span>')+'</div>'+
+    '<div class="dt">'+(!x.s?'<span class="mut">—</span>':timed?((x.m1?'<span class="nw">'+x.m1+" – "+x.m2+'</span>':"")+(x.m1&&x.a1?"<br>":"")+(x.a1?'<span class="nw">'+x.a1+" – "+x.a2+'</span>':"")||"Horaires à venir")+(x.tag?'<span class="tag">'+esc(x.tag)+'</span>':'')+msHTML(x)+(x.s==="FO"?'<span class="tag">Formation</span>':''):'<span class="st '+x.s+'">'+(LAB[x.s]||x.s)+'</span>')+'</div>'+
     '<div class="dd">'+(timed&&x.min?fmt(x.min):"")+'</div>'+(op&&ob?'<div class="dobj"><b>PO '+eur(ob.po)+'</b>'+chipsOf(w.obj.svc,ob.v,true)+'</div>':'')+'</div>'; }).join("")+'</div>'+
   (op&&w.obj?'<div class="card"><b>Objectif PO de la semaine : '+eur(w.obj.week.po)+' HT</b><div class="chips" style="margin-top:8px">'+chipsOf(w.obj.svc,w.obj.week.v).replace(/<span>/g,'<span class="pill attente">')+'</div></div>':'');
   $("#r-week").innerHTML=st.weeks.map(x=>'<option value="'+x.weekId+'"'+(x.weekId===st.cur?" selected":"")+'>Semaine '+(+x.weekId.split("-W")[1])+'</option>').join("");
@@ -342,7 +349,7 @@ function renderHome(){
   const timed=x&&(x.s==="T"||x.s==="FO");
   const used=usedToday(), rem=BUDGET-used, pct=Math.min(100,Math.round(used/BUDGET*100));
   h.innerHTML='<small>'+ds+'</small><h2>Bonjour '+esc((st.me||"").split(" ")[0])+'</h2>'+
-    '<div class="hday"><span>Aujourd\'hui</span>'+(!x?'<span class="mut" style="color:#cfd8e6">Planning non publié</span>':timed?'<b>'+(x.m1?x.m1+" – "+x.m2:"")+(x.m1&&x.a1?"<br>":"")+(x.a1?x.a1+" – "+x.a2:"")+'</b>':'<span class="st">'+(LAB[x.s]||x.s)+'</span>')+'</div>'+
+    '<div class="hday"><span>Aujourd\'hui</span>'+(!x?'<span class="mut" style="color:#cfd8e6">Planning non publié</span>':timed?'<span class="hdr"><b>'+(x.m1?x.m1+" – "+x.m2:"")+(x.m1&&x.a1?"<br>":"")+(x.a1?x.a1+" – "+x.a2:"")+'</b>'+msHTML(x)+'</span>':'<span class="st">'+(LAB[x.s]||x.s)+'</span>')+'</div>'+
     (!isOpen()?'<div class="hlock"><span>🔒</span><span>'+lockMsg()+'</span></div>':'')+
     (()=>{ const t=isOpen()&&todayObj(); return t?'<div class="hobj"><small>'+(t.today?'Objectif du jour':'Prochain objectif · '+DAYN[t.i]+' '+frD(t.date))+'</small><div><b>'+eur(t.d.po)+'</b> <small>PO HT</small></div><div class="chips">'+chipsOf(t.svc,t.d.v)+'</div></div>':''; })()+
     (!isOpen()?'':'<div class="budget'+(rem<0?" over":"")+'"><span>Pause du jour</span><span class="bar"><i style="width:'+pct+'%"></i></span><b>'+(rem<0?"+"+mmss(-rem)+" dépassé":mmss(rem)+" / 10:00")+'</b></div>');
@@ -474,6 +481,16 @@ function teamCmp(team, r, key){
     const me=v/r.ca, av=sv/sc; const gap=av?(me-av)/av:(me>0?1:0); return {c:gap>0.1?"pos":gap<-0.1?"neg":"", avg:av*r.ca}; }
   return {c:""};
 }
+function teamResHTML(m){
+  if(!m||!m.vend) return ""; const T=m.vend, B=m.base==="PO"?"PO":"CA"; const ids=Object.keys(T).sort((a,b)=>(T[a].rang||99)-(T[b].rang||99));
+  const nm=id=>((st.names||[]).find(x=>x.id===id)||{}).name||id;
+  const chip=(r,l,v,key)=>{ const c=key?teamCmp(T,r,key).c:""; return '<span class="'+c+'">'+l+' <b>'+v+'</b></span>'; };
+  return '<div class="card tres"><h3>Résultats de l\'équipe</h3><p class="mut" style="margin:-4px 0 10px;font-size:12.5px">Du '+esc(m.du)+' au '+esc(m.au)+' · vert au-dessus de la moyenne de l\'équipe, rouge en dessous</p>'+
+    ids.map(id=>{ const r=T[id]; const inf=(r.inf1||0)+(r.inf2||0)+(r.inf3||0);
+      return '<div class="tr'+(id===st.emp?' me':'')+'"><div class="tr-h"><span class="tr-r">'+rangTxt(r.rang)+'</span><b>'+esc(nm(id))+(id===st.emp?' <small>(moi)</small>':'')+'</b><span class="tr-po">'+eur(r.ca)+'</span></div><div class="tr-k">'+
+        chip(r,"Marge",pc2(r.txm),"txm")+chip(r,"Acc.",pc2(r.pdmAcc),"pdmAcc")+chip(r,"Services",pc2(r.pdmSvc),"pdmSvc")+chip(r,"Club+",nb2(r.clubp),"clubp100")+
+        (r.inf1!=null||r.inf2!=null||r.inf3!=null?chip(r,"Infinity",nb2(inf),"inf"):chip(r,"Infinity",nb2(r.ci),"ci100"))+chip(r,"Protection",nb2(r.prot),"prot")+chip(r,"TRC",pc2(r.trc),"trc")+chip(r,"CEG",nb2(r.cegQ),"cegTx")+'</div></div>'; }).join("")+'</div>';
+}
 function meResHTML(m){ const r=m&&m.vend&&m.vend[st.emp]; if(!r) return '<p class="mut">'+(m&&m.vend?"Pas de résultat à votre nom dans ce document.":"Les chiffres de ce document n\'ont pas encore été extraits.")+'</p>';
   const T=m.vend, B=m.base==="PO"?"PO":"CA"; const pos=[], neg=[];
   const k=(t,v,e,key,fmtAvg)=>{ const c=key?teamCmp(T,r,key):{c:""}; if(c.c==="pos") pos.push(t); if(c.c==="neg") neg.push(t);
@@ -505,7 +522,7 @@ async function renderRes(){
   tabs.innerHTML=list.slice(0,7).map(r=>'<button data-d="'+r.day+'" aria-pressed="'+(r.day===st.resDay)+'">'+(r.day===today?"Aujourd'hui":jourCourt(r.day))+'</button>').join("");
   tabs.querySelectorAll("[data-d]").forEach(b=>b.onclick=()=>{ st.resDay=b.dataset.d; renderRes(); });
   const meta=list.find(r=>r.day===st.resDay); const key=meta.day+"|"+meta.at;
-  $("#resMe").innerHTML=suiviHTML(meta)+meResHTML(meta);
+  $("#resMe").innerHTML=suiviHTML(meta)+meResHTML(meta)+teamResHTML(meta);
   if(box.dataset.key===key+(st.resPdf===key?"|pdf":"")) return; box.dataset.key=key+(st.resPdf===key?"|pdf":"");
   if(!st.resPdf || st.resPdf!==key){ box.innerHTML='<button class="btn ghost" id="resShow" style="width:100%">Voir le document d\'origine (PDF)</button>'; $("#resShow").onclick=()=>{ st.resPdf=key; box.dataset.key=""; renderRes(); }; return; }
   box.innerHTML='<div class="resh"><div><b>Document du '+jourTxt(meta.day)+'</b><br><small>Publié par la direction</small></div><button class="btn ghost" id="resOpen" disabled>Agrandir</button></div><div class="pdfp" id="pdfp"><p class="mut">Chargement…</p></div>';
