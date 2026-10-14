@@ -2245,7 +2245,7 @@ function renderRoul(){
       return '<div class="cw'+(i===idx?" cur":"")+'" data-ci="'+i+'"><div class="cw-hd">Semaine '+(i+1)+(i===idx?' <span class="pill info">S'+wnum(S.weekId)+'</span>':' <span class="st-mut">S'+wnum(shiftWeek(S.weekId,i-idx))+'</span>')+
         '<span class="cw-tot">'+fmt(t)+(t?' <em class="'+(Math.abs(diff)<1?"ok":diff>0?"warn":"bad")+'">'+fmtSigned(diff)+'</em>':'')+'</span></div>'+
         '<div class="roul-row"><label>Heures prévues</label><input class="mono cwb" data-k="base" inputmode="decimal" placeholder="'+esc(String(e.base||0))+'" value="'+esc(b==null?"":String(b))+'"> h'+
-        '<button class="btn ghost" data-k="take">Prendre la S'+wnum(S.weekId)+'</button>'+(i?'<button class="btn ghost" data-k="copy">Copier la semaine '+i+'</button>':'')+'<button class="btn ghost danger" data-k="clear">Vider</button></div>'+
+        '<button class="btn ghost" data-k="take">Prendre la S'+wnum(S.weekId)+'</button>'+(i?'<button class="btn ghost" data-k="copy">Reprendre la semaine '+i+'</button>':'')+'<button class="btn ghost" data-k="clip" title="Copier cette semaine">📋 Copier</button>'+(S.roulClip?'<button class="btn ghost" data-k="paste" title="Coller : '+esc(S.roulClip.label)+'">📥 Coller</button>':'')+'<button class="btn ghost danger" data-k="clear">Vider</button></div>'+
         '<div class="tbl"><table class="rtab"><thead><tr><th></th><th>Horaire</th><th>Matin</th><th></th><th>Ap.-midi</th><th></th><th>Pause</th><th>Durée</th></tr></thead><tbody>'+
         [0,1,2,3,4,5,6].map(d=>dayRow(e,i,d,r[d])).join("")+'</tbody></table></div></div>'; }).join("")+'</div>':'')+
     '</div>'; }).join("")+'</div></div>';
@@ -2265,6 +2265,8 @@ function renderRoul(){
     if(k==="take"){ const row=cleanCycleRow(S.week.entries[e.id]); if(!row.some(Boolean)){ toast("La ligne de "+e.name+" est vide en S"+wnum(S.weekId)); return; } c.weeks[i]=row; c.start=shiftWeek(S.weekId,-i); toast(e.name+" : semaine "+(i+1)+" = S"+wnum(S.weekId)); }
     if(k==="copy"&&i>0){ c.weeks[i]=clone(c.weeks[i-1]||[]); c.bases=c.bases||[]; c.bases[i]=(c.bases[i-1]??null); }
     if(k==="clear"){ c.weeks[i]=[null,null,null,null,null,null,null]; }
+    if(k==="clip"){ const r=c.weeks[i]||[]; if(!r.some(Boolean)){ toast("Cette semaine est vide"); return; } S.roulClip={row:clone(r), base:(c.bases||[])[i]??null, label:e.name+" · semaine "+(i+1)}; toast("Copié : "+S.roulClip.label+" · cliquez sur « Coller » dans la semaine voulue"); renderRoul(); return; }
+    if(k==="paste"){ if(!S.roulClip) return; c.weeks[i]=clone(S.roulClip.row); while(c.weeks[i].length<7) c.weeks[i].push(null); c.bases=c.bases||[]; if(S.roulClip.base!=null) c.bases[i]=S.roulClip.base; toast("Collé dans "+e.name+" · semaine "+(i+1)); }
     teamChanged(); });
 }
 
@@ -2531,7 +2533,7 @@ function renderHome(){
     '</div>'+
     (curW&&!isClosed(td)?'<div class="today"><div class="today-hd"><b>Aujourd\'hui en magasin</b><button class="lnk" data-go="team" data-today="1">Voir la journée ›</button></div>'+
       (sorted.length?'<div class="today-list">'+sorted.map(e=>{ const x=getE(e.id,td); return '<div class="tp"><span class="av">'+esc((e.name||"?")[0])+'</span><span class="tn"><b>'+esc(e.name)+'</b><small>'+esc(x.tag||({vente:"Vente",caisse:"Caisse",livraison:"Livraison"}[fonctionOf(e)]||""))+'</small></span><span class="tt">'+(hasTimes(x)?(x.m1?x.m1+"–"+x.m2:"")+(x.m1&&x.a1?'<br>':'')+(x.a1?x.a1+"–"+x.a2:""):'<i class="st-mut">à définir</i>')+'</span></div>'; }).join("")+'</div>':'<p class="st-mut" style="margin:6px 0 0">Personne n\'est planifié aujourd\'hui.</p>')+'</div>':'')+
-    '<div class="qa"><button class="qbtn" id="hGen">'+ico("gen")+'<span>Générer la semaine</span></button><button class="qbtn'+(S.week.pub?" on":"")+'" id="hPub">'+ico("pub")+'<span>'+(S.week.pub?"Semaine publiée":"Publier aux collaborateurs")+'</span></button></div><p class="appver">Version du 14/10 09:45</p>';
+    '<div class="qa"><button class="qbtn" id="hGen">'+ico("gen")+'<span>Générer la semaine</span></button><button class="qbtn'+(S.week.pub?" on":"")+'" id="hPub">'+ico("pub")+'<span>'+(S.week.pub?"Semaine publiée":"Publier aux collaborateurs")+'</span></button></div><p class="appver">Version du 14/10 11:50</p>';
   v.querySelectorAll("[data-go]").forEach(b=>b.onclick=()=>{ if(b.dataset.today && curW) S.mDay=td; go(b.dataset.go); });
   $("#hGen").onclick=()=>{ go("team"); generateWeek(); };
   $("#hPub").onclick=()=>togglePub();
