@@ -235,7 +235,7 @@ input.big{font-size:22px;font-weight:600}
 </div>
 <div class="ov" id="ovScan" hidden><h2 id="scT">Scannez le QR code</h2><p id="scP">Visez l'affiche « PAUSE » du magasin.</p><div class="cam"><video id="vid" playsinline muted></video><div class="scanl"></div></div><p id="scMsg"></p><button class="btn ghost" id="scCancel">Annuler</button></div>
 <div class="ov" id="ovPz" hidden></div>
-<p style="text-align:center;color:var(--muted);font-size:12px;margin:0 0 20px">Version du 14/10 13:15</p>
+<p style="text-align:center;color:var(--muted);font-size:12px;margin:0 0 20px">Version du 14/10 13:30</p>
 <div class="toast" id="toast" hidden></div>
 
 <script type="module">
@@ -641,7 +641,7 @@ function officialFor(resList, empId, ym){
   return {day:au, au, du:frIso(c.du), po:v.ca||0, status:"validé", official:true, items:{club:v.clubp??v.clubpN??0, iuno:v.inf1||0, iduo:v.inf2||0, itrio:v.inf3||0, isolo:v.mobUno||0, ifam:v.mobFam||0, psm:v.prot||0, ceg:v.cegCA||0}};
 }
 const withOfficial = (L, off) => off ? [off, ...L.filter(r=>r.day>off.au)] : L;
-function myPrime(ym){ const B=(st.bar&&st.bar.bareme)||DEF_BAREME; const M=(st.bar&&st.bar.months||{})[ym]||{}; const mo=monthObj(ym); const off=officialFor(st.res, st.emp, ym); const L=withOfficial((st.rea||[]).filter(r=>(r.day||"").startsWith(ym)), off); return {B, mo, pr:primeCalc(B, mo?mo.po:0, L, M, 0), L, off}; }
+function myPrime(ym){ const B=(st.bar&&st.bar.bareme)||DEF_BAREME; const M=(st.bar&&st.bar.months||{})[ym]||{}; const mo=monthObj(ym); const off=officialFor(st.res, st.emp, ym); const L=withOfficial((st.rea||[]).filter(r=>(r.day||"").startsWith(ym)), off); const pr=primeCalc(B, mo?mo.po:0, L, M, 0); const ex=+((st.bar&&st.bar.experts||{})[st.emp]||0); if(ex){ ["all","valid"].forEach(k=>{ pr[k].expert=ex; pr[k].total+=ex; }); } return {B, mo, pr, L, off}; }
 function renderRea(fill){
   const box=$("#primeBox"); if(!box||!st.emp) return; const ym=curYM(); const {B,mo,pr,L}=myPrime(ym); const A=pr.all, V=pr.valid;
   const pct=mo&&mo.po?Math.min(100,A.pct/1.3):0;
@@ -655,7 +655,7 @@ function renderRea(fill){
         '<div class="pobj-k"><div><small>Objectif PO du mois</small><b>'+(obj?eur(obj):'non publié')+'</b></div><div><small>Réalisé du mois</small><b>'+eur(A.po)+'</b><em>dont validé '+eur(V.po)+'</em></div><div><small>Reste à faire (100 %)</small><b>'+(obj?eur(Math.max(0,obj-A.po)):'–')+'</b>'+(obj&&obj>A.po&&left?'<em>'+eur((obj-A.po)/left)+' / jour · '+left+' j restants</em>':'')+'</div></div>'+
         '<div class="prog-b"><i style="width:'+pct+'%"></i>'+T.map(t=>'<s style="left:'+Math.min(100,+t.pct/1.3)+'%"></s>').join("")+'</div>'+
         '<div class="tiers">'+T.map(t=>{ const need=obj?obj*t.pct/100:0, ok=obj&&A.po>=need; return '<div class="'+(ok?'ok':'')+'"><span>'+t.pct+' % · <b>'+eur(t.amt)+'</b></span><em>'+(!obj?'–':ok?'atteint ✓':'reste '+eur(need-A.po))+'</em></div>'; }).join("")+'</div></div>'; })()+
-    '<div class="plines"><div><span>Prime PO</span><b>'+eur2(A.tier)+'</b></div>'+A.lines.map(l=>'<div><span>'+esc(l.name)+' · '+(l.mode==="pct"?eur(l.q)+' × '+String(l.val).replace(".",",")+' %':l.q+' × '+eur2(l.val))+'</span><b>'+eur2(l.amt)+'</b></div>').join("")+(A.nps?'<div><span>Prime NPS / Google</span><b>'+eur2(A.nps)+'</b></div>':'')+'</div>'+
+    '<div class="plines"><div><span>Prime PO</span><b>'+eur2(A.tier)+'</b></div>'+A.lines.map(l=>'<div><span>'+esc(l.name)+' · '+(l.mode==="pct"?eur(l.q)+' × '+String(l.val).replace(".",",")+' %':l.q+' × '+eur2(l.val))+'</span><b>'+eur2(l.amt)+'</b></div>').join("")+(A.nps?'<div><span>Prime NPS / Google</span><b>'+eur2(A.nps)+'</b></div>':'')+(A.expert?'<div><span>Prime expert</span><b>'+eur2(A.expert)+'</b></div>':'')+'</div>'+
     (A.tier && A.marge==null?'<p class="mut" style="margin:6px 0 0">Prime PO sous réserve d\'une marge ≥ '+B.margeMin+' %.</p>':'')+'</div>';
   // formulaire
   const dayI=$("#ra-day"); if(fill||!dayI.value){ dayI.value=dayI.value||today; dayI.max=today; }

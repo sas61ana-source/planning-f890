@@ -400,7 +400,7 @@ tr.abs-cur td{background:rgba(227,6,19,.04)}
 .t-tl .ti{background:linear-gradient(135deg,#0e8a8a,#3cc2b5)}
 .resdrop{display:flex;flex-wrap:wrap;gap:10px;align-items:end;margin:6px 0 4px}.resdrop label{display:grid;gap:4px;font-size:12px;font-weight:600;color:var(--muted)}
 .resdrop input[type=date]{padding:7px 9px;border:1px solid var(--line);border-radius:8px;background:var(--surface)}
-.ptab td,.ptab th{white-space:nowrap}.ptab td.cpos{background:var(--ok-soft);color:var(--ok);font-weight:700}.ptab td.cneg{background:var(--bad-soft);color:var(--bad);font-weight:700}.ptab .ptot td{border-top:2px solid var(--line);background:var(--surface-2)}.ptabs{margin:4px 0 12px}
+.ptab td,.ptab th{white-space:nowrap}.pdet td,.pdet th{white-space:nowrap}.pdet .ptot td{border-top:2px solid var(--line);background:var(--surface-2)}.ptab td.cpos{background:var(--ok-soft);color:var(--ok);font-weight:700}.ptab td.cneg{background:var(--bad-soft);color:var(--bad);font-weight:700}.ptab .ptot td{border-top:2px solid var(--line);background:var(--surface-2)}.ptabs{margin:4px 0 12px}
 .roul-all{background:var(--surface-2);border-radius:12px;padding:10px 12px;margin-bottom:12px}
 .resfile{position:relative;overflow:hidden}.resfile input{position:absolute;inset:0;opacity:0;cursor:pointer}
 @media(max-width:900px){.pzgrid{grid-template-columns:1fr}}
@@ -1454,7 +1454,8 @@ const reaMonth = ym => ((S.team.settings||{}).reaMonths||{})[ym] || {};
 function subscribeRea(){ if(!S.db) return; S.unsubRea&&S.unsubRea();
   S.unsubRea=S.db.collection("realises").onSnapshot(q=>{ S.rea=q.docs.map(x=>({id:x.id,...snapData(x)})); badgeRea(); if(S.view==="rea"&&!typingIn()) renderRea(); if(S.view==="home") { const b=document.querySelector('[data-go="rea"] .tbadge'); if(b){ const n=(S.rea||[]).filter(r=>r.status==="attente").length; b.textContent=n; b.hidden=!n; } } },()=>{}); }
 function badgeRea(){ const n=(S.rea||[]).filter(r=>r.status==="attente").length; const b=$('#tabs button[data-v="rea"]'); if(b) b.innerHTML='Réalisés'+(n?' <span class="badge">'+n+'</span>':''); }
-async function publishBareme(){ if(!S.db) return; try{ await S.db.doc("annuaire/primes").set({bareme:bareme(), months:(S.team.settings||{}).reaMonths||{}, updatedAt:new Date().toISOString()}); }catch(e){} }
+const expertOf = e => (e&&e.primeExpert>0)?+e.primeExpert:0;
+async function publishBareme(){ if(!S.db) return; try{ const experts={}; emps().forEach(e=>{ if(expertOf(e)) experts[e.id]=expertOf(e); }); await S.db.doc("annuaire/primes").set({bareme:bareme(), months:(S.team.settings||{}).reaMonths||{}, experts, updatedAt:new Date().toISOString()}); }catch(e){} }
 let barT=null; const baremeChanged=()=>{ teamChanged(true); clearTimeout(barT); barT=setTimeout(publishBareme,1200); };
 const eur2 = n => (Math.round((n||0)*100)/100).toLocaleString("fr-FR",{minimumFractionDigits:2,maximumFractionDigits:2})+" €";
 async function renderRea(){
@@ -1476,7 +1477,7 @@ async function renderRea(){
   v.innerHTML+='<div class="panel"><h2>Primes du mois</h2><div class="reamonth"><label>Marge du magasin (%)<input data-rm="marge" inputmode="decimal" value="'+esc(RM.marge==null?"":String(RM.marge).replace(".",","))+'" placeholder="non saisie"></label><label>NPS du mois<input data-rm="nps" inputmode="decimal" value="'+esc(RM.nps==null?"":String(RM.nps).replace(".",","))+'" placeholder="–"></label><label>Note Google<input data-rm="google" inputmode="decimal" value="'+esc(RM.google==null?"":String(RM.google).replace(".",","))+'" placeholder="–"></label></div>'+
     '<div class="tbl"><table><thead><tr><th>Collaborateur</th><th>Objectif PO</th><th>Réalisé validé</th><th>Atteinte</th><th>Prime PO</th><th>Prime services</th><th>Prime NPS</th><th>Total validé</th><th>Estimé (avec attente)</th></tr></thead><tbody>'+
     P.map(e=>{ const obj=MO&&MO.res[e.id]?MO.res[e.id].po:0; const off=officialFor(S.res,e.id,ym); const L=withOfficial(all.filter(r=>r.empId===e.id),off); const pr=primeCalc(B,obj,L,RM,0); const V=pr.valid, A=pr.all;
-      return '<tr><td><b>'+esc(e.name)+'</b></td><td class="n mono">'+(obj?eur(obj):"–")+'</td><td class="n mono">'+eur(V.po)+(off?'<br><small class="st-mut">palmarès au '+off.au.slice(8)+'/'+off.au.slice(5,7)+'</small>':'')+'</td><td class="n mono">'+(obj?Math.round(V.pct)+" %":"–")+'</td><td class="n mono">'+eur2(V.tier)+'</td><td class="n mono">'+eur2(V.items)+'</td><td class="n mono">'+eur2(V.nps)+'</td><td class="n mono"><b>'+eur2(V.total)+'</b></td><td class="n mono st-mut">'+eur2(A.total)+(pr.pending?' · '+pr.pending+' en attente':'')+'</td></tr>'; }).join("")+
+      return '<tr><td><b>'+esc(e.name)+'</b></td><td class="n mono">'+(obj?eur(obj):"–")+'</td><td class="n mono">'+eur(V.po)+(off?'<br><small class="st-mut">palmarès au '+off.au.slice(8)+'/'+off.au.slice(5,7)+'</small>':'')+'</td><td class="n mono">'+(obj?Math.round(V.pct)+" %":"–")+'</td><td class="n mono">'+eur2(V.tier)+'</td><td class="n mono">'+eur2(V.items)+'</td><td class="n mono">'+eur2(V.nps)+(expertOf(e)?'<br><small class="st-mut">+ expert '+eur2(expertOf(e))+'</small>':'')+'</td><td class="n mono"><b>'+eur2(V.total+expertOf(e))+'</b></td><td class="n mono st-mut">'+eur2(A.total+expertOf(e))+(pr.pending?' · '+pr.pending+' en attente':'')+'</td></tr>'; }).join("")+
     '</tbody></table></div></div>';
   // barème
   v.innerHTML+='<div class="panel"><h2>Barème des primes</h2><p class="lead">Montants bruts. Les vendeurs voient ce barème et le détail de leur calcul.</p><div class="obgrid"><div><label class="oblbl">Prime sur la PO (paliers d\'atteinte de l\'objectif)</label><div class="tbl"><table class="bartab"><thead><tr><th>Atteinte ≥</th><th>Prime</th><th></th></tr></thead><tbody>'+
@@ -2350,31 +2351,43 @@ async function renderCpt(){
   $("#cpt-m").onchange=ev=>{ S.cptMonth=ev.target.value; renderCpt(); };
   $("#cpt-reload").onclick=async()=>{ S.allWeeks=null; renderCpt(); };
   $("#cpt-xlsx").onclick=()=>exportPaieXlsx(rows, mName(S.cptMonth));
-  $("#cpt-pdf").onclick=()=>exportPaiePdf(rows, mName(S.cptMonth));
+  $("#cpt-pdf").onclick=()=>exportPaiePdf(rows, mName(S.cptMonth)); bindPrimes(v);
 }
 const dec = m => Math.round(m/60*100)/100;
 /* primes du mois à transmettre au comptable (réalisés validés + palmarès officiel) */
 async function primesForMonth(ym, rows){
   const B=bareme(), RM=reaMonth(ym); let MO=null; try{ MO=await objMonthEmp(ym); }catch(e){}
   rows.forEach(c=>{ const id=c.emp.id; const obj=MO&&MO.res[id]?MO.res[id].po:0; const off=officialFor(S.res,id,ym); const L=withOfficial((S.rea||[]).filter(r=>r.empId===id&&(r.day||"").startsWith(ym)),off);
-    if(!L.length&&!obj){ c.prime=null; return; } const pr=primeCalc(B,obj,L,RM,0); const V=pr.valid;
-    c.prime={obj, po:V.po, pct:V.pct, tier:V.tier, items:V.items, nps:V.nps, total:V.total, lines:V.lines, pending:pr.pending, off:!!off, au:off&&off.au}; });
+    const ex=expertOf(c.emp); if(!L.length&&!obj&&!ex){ c.prime=null; return; } const pr=primeCalc(B,obj,L,RM,0); const V=pr.valid;
+    c.prime={obj, po:V.po, pct:V.pct, tier:V.tier, items:V.items, nps:V.nps, expert:ex, total:V.total+ex, lines:V.lines, pending:pr.pending, off:!!off, au:off&&off.au}; });
 }
-function primesPanel(rows){ const R=rows.filter(c=>c.prime); const tot=R.reduce((t,c)=>t+c.prime.total,0);
-  return '<div class="panel"><h2>Primes à transmettre au comptable</h2><p class="lead">Montants bruts validés du mois : réalisés validés dans l\'onglet Réalisés et, s\'il existe, le dernier palmarès en PO du mois (réalisé officiel). Les saisies encore en attente ne sont pas comptées : validez-les avant d\'envoyer.</p>'+
-    (R.length?'<div class="tbl"><table class="cpt"><thead><tr><th>Collaborateur</th><th>Objectif PO</th><th>PO réalisé</th><th>Atteinte</th><th>Prime objectif</th><th>Prime services</th><th>Prime NPS / Google</th><th>Total brut</th><th>Détail services</th></tr></thead><tbody>'+
-      R.map(c=>{ const p=c.prime; return '<tr><td><b>'+esc(c.emp.name)+'</b>'+(p.pending?'<br><small class="pill warn">'+p.pending+' saisie'+(p.pending>1?'s':'')+' en attente</small>':'')+'</td><td class="n">'+(p.obj?eur(p.obj):'–')+'</td><td class="n">'+eur(p.po)+(p.off?'<br><small class="st-mut">palmarès au '+p.au.slice(8)+'/'+p.au.slice(5,7)+'</small>':'')+'</td><td class="n">'+(p.obj?Math.round(p.pct)+' %':'–')+'</td><td class="n">'+eur2(p.tier)+'</td><td class="n">'+eur2(p.items)+'</td><td class="n">'+eur2(p.nps)+'</td><td class="n"><b>'+eur2(p.total)+'</b></td><td class="st-mut" style="white-space:normal;min-width:220px">'+p.lines.map(l=>esc(l.name)+' '+(l.mode==="pct"?eur(l.q):l.q)+' → '+eur2(l.amt)).join(' · ')+'</td></tr>'; }).join("")+
-      '<tr><td><b>Total équipe</b></td><td></td><td></td><td></td><td class="n"><b>'+eur2(R.reduce((t,c)=>t+c.prime.tier,0))+'</b></td><td class="n"><b>'+eur2(R.reduce((t,c)=>t+c.prime.items,0))+'</b></td><td class="n"><b>'+eur2(R.reduce((t,c)=>t+c.prime.nps,0))+'</b></td><td class="n"><b>'+eur2(tot)+'</b></td><td></td></tr></tbody></table></div><p class="st-mut" style="margin-top:8px">Les primes figurent dans l\'export paie Excel (colonnes et onglet « Primes ») et dans le récapitulatif PDF.</p>':'<p class="st-mut">Aucune prime calculée pour ce mois (pas de réalisé validé ni de palmarès en PO).</p>')+'</div>'; }
+function primesPanel(rows){ const B=bareme(); const its=B.items||[]; const R=rows.filter(c=>c.prime); const all=rows;
+  const ln=(p,id)=>(p.lines||[]).find(l=>l.id===id);
+  const cell=(p,it)=>{ const l=ln(p,it.id); return l?'<td class="n">'+eur2(l.amt)+'<br><small class="st-mut">'+(it.mode==="pct"?eur(l.q)+' × '+String(it.val).replace(".",",")+' %':l.q+' × '+eur2(it.val))+'</small></td>':'<td class="n st-mut">–</td>'; };
+  const sum=f=>R.reduce((t,c)=>t+(f(c.prime)||0),0);
+  return '<div class="panel"><h2>Primes à transmettre au comptable</h2><p class="lead">Montants bruts validés du mois, détaillés par prime : réalisés validés dans l\'onglet Réalisés et, s\'il existe, le dernier palmarès en PO du mois (réalisé officiel). Les saisies encore en attente ne sont pas comptées. La prime expert s\'ajoute chaque mois au collaborateur coché.</p>'+
+    '<div class="tbl"><table class="cpt pdet"><thead><tr><th>Collaborateur</th><th>Objectif PO</th><th>PO réalisé</th><th>Atteinte</th><th>Prime objectif</th>'+its.map(it=>'<th>'+esc(it.name)+'</th>').join("")+'<th>Prime NPS / Google</th><th>Prime expert</th><th>Total brut</th></tr></thead><tbody>'+
+      all.map(c=>{ const p=c.prime||{obj:0,po:0,pct:0,tier:0,lines:[],nps:0,expert:0,total:0,pending:0}; const ex=expertOf(c.emp);
+        return '<tr><td><b>'+esc(c.emp.name)+'</b>'+(p.pending?'<br><small class="pill warn">'+p.pending+' en attente</small>':'')+'</td><td class="n">'+(p.obj?eur(p.obj):'–')+'</td><td class="n">'+(c.prime?eur(p.po):'–')+(p.off?'<br><small class="st-mut">palmarès au '+p.au.slice(8)+'/'+p.au.slice(5,7)+'</small>':'')+'</td><td class="n">'+(p.obj?Math.round(p.pct)+' %':'–')+'</td><td class="n">'+eur2(p.tier)+'</td>'+
+          its.map(it=>cell(p,it)).join("")+'<td class="n">'+eur2(p.nps)+'</td>'+
+          '<td class="n" style="white-space:nowrap"><label class="chk"><input type="checkbox" data-pexp="'+esc(c.emp.id)+'"'+(ex?" checked":"")+'> expert</label>'+(ex?' <input class="mono pexa" data-pexa="'+esc(c.emp.id)+'" inputmode="decimal" value="'+String(ex).replace(".",",")+'" style="width:64px"> €':'')+'</td>'+
+          '<td class="n"><b>'+eur2(p.total)+'</b></td></tr>'; }).join("")+
+      '<tr class="ptot"><td><b>Total équipe</b></td><td></td><td></td><td></td><td class="n"><b>'+eur2(sum(p=>p.tier))+'</b></td>'+its.map(it=>'<td class="n"><b>'+eur2(sum(p=>(ln(p,it.id)||{}).amt))+'</b></td>').join("")+'<td class="n"><b>'+eur2(sum(p=>p.nps))+'</b></td><td class="n"><b>'+eur2(sum(p=>p.expert))+'</b></td><td class="n"><b>'+eur2(sum(p=>p.total))+'</b></td></tr></tbody></table></div>'+
+    '<p class="st-mut" style="margin-top:8px">Détail repris dans l\'export paie Excel (une colonne par prime + onglet « Primes ») et dans le récapitulatif PDF.</p></div>'; }
+function bindPrimes(v){
+  v.querySelectorAll("[data-pexp]").forEach(cb=>cb.onchange=()=>{ const e=S.team.employees.find(x=>x.id===cb.dataset.pexp); if(!e) return; e.primeExpert=cb.checked?(e.primeExpertLast||150):0; if(!cb.checked&&e.primeExpertLast==null) e.primeExpertLast=150; baremeChanged(); renderCpt(); });
+  v.querySelectorAll("[data-pexa]").forEach(inp=>inp.onchange=()=>{ const e=S.team.employees.find(x=>x.id===inp.dataset.pexa); if(!e) return; const n=parseFloat(inp.value.replace(",","."))||0; e.primeExpert=n; e.primeExpertLast=n||150; baremeChanged(); renderCpt(); });
+}
 const r2 = n => Math.round((+n||0)*100)/100;
 function exportPaieXlsx(rows, label){
   if(!window.XLSX){ toast("Le module Excel n'a pas pu se charger. Rechargez la page."); return; }
-  const head=["Salarié","Poste","Contrat (h/sem)","Heures travaillées","HS 25 %","HS 50 %","H. compl. 10 %","H. compl. 25 %","Dimanches (nb)","Dimanches (h)","Fériés travaillés (nb)","Fériés travaillés (h)","Fériés chômés (j)","CP pris (j ouvrables)","CP restants (j)","Maladie (j)","Absences (j)","Formation (h)","Retards (nb)","Retards (min)","Dépassement pauses (min, déduit)","Prime objectif (€)","Prime services (€)","Prime NPS (€)","Total primes brut (€)"];
-  const data=[["SAS ANA – Boulanger Flers F890 · Éléments variables de paie · "+label],[],head, ...rows.map(c=>[c.emp.name,c.emp.role||"",+c.emp.base||0,dec(c.work),dec(c.hs25),dec(c.hs50),dec(c.hc10),dec(c.hc25),c.sunN,dec(c.sunM),c.holN,dec(c.holM),c.fe,c.cp,c.cpLeft==null?"":c.cpLeft,c.m,c.ab,dec(c.fo),c.retN,c.retM,c.pzOver,c.prime?r2(c.prime.tier):0,c.prime?r2(c.prime.items):0,c.prime?r2(c.prime.nps):0,c.prime?r2(c.prime.total):0])];
+  const head=["Salarié","Poste","Contrat (h/sem)","Heures travaillées","HS 25 %","HS 50 %","H. compl. 10 %","H. compl. 25 %","Dimanches (nb)","Dimanches (h)","Fériés travaillés (nb)","Fériés travaillés (h)","Fériés chômés (j)","CP pris (j ouvrables)","CP restants (j)","Maladie (j)","Absences (j)","Formation (h)","Retards (nb)","Retards (min)","Dépassement pauses (min, déduit)","Prime objectif (€)", ...(bareme().items||[]).map(it=>"Prime "+it.name+" (€)"), "Prime NPS (€)","Prime expert (€)","Total primes brut (€)"];
+  const data=[["SAS ANA – Boulanger Flers F890 · Éléments variables de paie · "+label],[],head, ...rows.map(c=>[c.emp.name,c.emp.role||"",+c.emp.base||0,dec(c.work),dec(c.hs25),dec(c.hs50),dec(c.hc10),dec(c.hc25),c.sunN,dec(c.sunM),c.holN,dec(c.holM),c.fe,c.cp,c.cpLeft==null?"":c.cpLeft,c.m,c.ab,dec(c.fo),c.retN,c.retM,c.pzOver,c.prime?r2(c.prime.tier):0, ...(bareme().items||[]).map(it=>{ const l=c.prime&&(c.prime.lines||[]).find(x=>x.id===it.id); return l?r2(l.amt):0; }), c.prime?r2(c.prime.nps):0, c.prime?r2(c.prime.expert):0, c.prime?r2(c.prime.total):0])];
   const ws=XLSX.utils.aoa_to_sheet(data); ws["!cols"]=head.map((h,i)=>({wch:i<2?22:14}));
   const wb=XLSX.utils.book_new(); XLSX.utils.book_append_sheet(wb,ws,"Paie");
-  { const P=[["Primes · "+label+" (montants bruts validés)"],[],["Salarié","Objectif PO (€)","PO réalisé (€)","Atteinte (%)","Prime objectif (€)","Service","Quantité / montant","Prime service (€)","Prime NPS (€)","Total (€)","Saisies en attente"]];
+  { const P=[["Primes · "+label+" (montants bruts validés)"],[],["Salarié","Objectif PO (€)","PO réalisé (€)","Atteinte (%)","Prime objectif (€)","Service","Quantité / montant","Prime service (€)","Prime NPS (€)","Prime expert (€)","Total (€)","Saisies en attente"]];
     rows.filter(c=>c.prime).forEach(c=>{ const p=c.prime; const L=p.lines.length?p.lines:[null];
-      L.forEach((l,k)=>P.push([k?"":c.emp.name, k?"":r2(p.obj), k?"":r2(p.po), k?"":(p.obj?Math.round(p.pct):""), k?"":r2(p.tier), l?l.name:"", l?(l.mode==="pct"?r2(l.q):l.q):"", l?r2(l.amt):"", k?"":r2(p.nps), k?"":r2(p.total), k?"":(p.pending||"")])); });
+      L.forEach((l,k)=>P.push([k?"":c.emp.name, k?"":r2(p.obj), k?"":r2(p.po), k?"":(p.obj?Math.round(p.pct):""), k?"":r2(p.tier), l?l.name:"", l?(l.mode==="pct"?r2(l.q):l.q):"", l?r2(l.amt):"", k?"":r2(p.nps), k?"":r2(p.expert), k?"":r2(p.total), k?"":(p.pending||"")])); });
     const w3=XLSX.utils.aoa_to_sheet(P); w3["!cols"]=[{wch:16},{wch:14},{wch:14},{wch:11},{wch:14},{wch:26},{wch:16},{wch:14},{wch:12},{wch:12},{wch:14}]; XLSX.utils.book_append_sheet(wb,w3,"Primes"); }
   { const ym=S.cptMonth, [Y,M]=ym.split("-").map(Number), f=ym+"-01", l=ym+"-"+pad(new Date(Y,M,0).getDate());
     const L=absList().filter(a=>a.from<=l && (a.to||a.from)>=f).sort((a,b)=>a.from.localeCompare(b.from));
@@ -2401,11 +2414,13 @@ function exportPaiePdf(rows, label){
     vals.forEach((v2,i)=>{ doc.text(String(v2).replace(/–/g,"-"),x+4,y+14); x+=wd[i]; }); y+=22; });
   doc.setDrawColor(C.line); doc.rect(30,74,W-60,y-74,"S");
   { const R=rows.filter(c=>c.prime); if(R.length){ y+=24; if(y>480){ doc.addPage(); y=40; } doc.setFont("helvetica","bold"); doc.setFontSize(11); doc.setTextColor(C.navy); doc.text("PRIMES DU MOIS (brut validé)",30,y); y+=10;
-    const pc=["Salarié","Objectif PO","PO réalisé","Atteinte","Prime objectif","Prime services","Prime NPS","Total"], pw=[130,90,90,60,90,90,80,90]; let px=30;
-    doc.setFillColor(C.navy); doc.rect(30,y,pw.reduce((a,b)=>a+b,0),18,"F"); doc.setTextColor(C.white); doc.setFontSize(8); pc.forEach((h,i)=>{ doc.text(h,px+4,y+12); px+=pw[i]; }); y+=18; doc.setFont("helvetica","normal");
+    const ITS=(bareme().items||[]).filter(it=>R.some(c=>(c.prime.lines||[]).some(l=>l.id===it.id)));
+    const pc=["Salarié","PO réalisé","Prime obj.",...ITS.map(it=>it.name.replace("Infinity Smartphone","Inf. Smart.").replace("Protection Sur Mesure","Protection").replace("CEG (CA garantie)","CEG")),"NPS","Expert","Total"];
+    const fw=[90,62,52]; const rest=(W-60-fw.reduce((a,b)=>a+b,0)-48*3)/Math.max(1,ITS.length); const pw=[...fw,...ITS.map(()=>Math.min(70,rest)),48,48,48]; let px=30;
+    doc.setFillColor(C.navy); doc.rect(30,y,pw.reduce((a,b)=>a+b,0),18,"F"); doc.setTextColor(C.white); doc.setFontSize(8); pc.forEach((h,i)=>{ doc.setFontSize(7); doc.text(h,px+3,y+12,{maxWidth:pw[i]-4}); px+=pw[i]; }); y+=18; doc.setFont("helvetica","normal");
     const e2=n=>(Math.round((n||0)*100)/100).toFixed(2).replace(".",",")+" EUR", e0=n=>Math.round(n||0).toLocaleString("fr-FR").replace(/\u202f|\u00a0/g," ")+" EUR";
     R.forEach((c,ri)=>{ const p=c.prime; px=30; doc.setFillColor(ri%2?"#f6f7f9":C.white); doc.rect(30,y,pw.reduce((a,b)=>a+b,0),18,"F"); doc.setTextColor(C.txt); doc.setFontSize(9);
-      [c.emp.name,p.obj?e0(p.obj):"-",e0(p.po),p.obj?Math.round(p.pct)+" %":"-",e2(p.tier),e2(p.items),e2(p.nps),e2(p.total)].forEach((v2,i)=>{ doc.text(String(v2),px+4,y+12); px+=pw[i]; }); y+=18; });
+      [c.emp.name,e0(p.po),e2(p.tier),...ITS.map(it=>{ const l=(p.lines||[]).find(x=>x.id===it.id); return l?e2(l.amt):"-"; }),e2(p.nps),e2(p.expert),e2(p.total)].forEach((v2,i)=>{ doc.setFontSize(i?7.5:8.5); doc.text(String(v2),px+3,y+12); px+=pw[i]; }); y+=18; });
     doc.setFont("helvetica","bold"); doc.text("Total équipe : "+e2(R.reduce((t,c)=>t+c.prime.total,0)),30,y+14); doc.setFont("helvetica","normal"); y+=20; } }
   doc.setFontSize(7.5); doc.setTextColor(C.muted);
   doc.text("HS : semaines se terminant dans le mois, +25 % de 35h à 43h, +50 % au-delà. HC : temps partiels, +10 % jusqu'à 1/10e du contrat, +25 % au-delà. CP en jours ouvrables.",30,y+18);
@@ -2585,7 +2600,7 @@ function renderHome(){
     '</div>'+
     (curW&&!isClosed(td)?'<div class="today"><div class="today-hd"><b>Aujourd\'hui en magasin</b><button class="lnk" data-go="team" data-today="1">Voir la journée ›</button></div>'+
       (sorted.length?'<div class="today-list">'+sorted.map(e=>{ const x=getE(e.id,td); return '<div class="tp"><span class="av">'+esc((e.name||"?")[0])+'</span><span class="tn"><b>'+esc(e.name)+'</b><small>'+esc(x.tag||({vente:"Vente",caisse:"Caisse",livraison:"Livraison"}[fonctionOf(e)]||""))+'</small></span><span class="tt">'+(hasTimes(x)?(x.m1?x.m1+"–"+x.m2:"")+(x.m1&&x.a1?'<br>':'')+(x.a1?x.a1+"–"+x.a2:""):'<i class="st-mut">à définir</i>')+'</span></div>'; }).join("")+'</div>':'<p class="st-mut" style="margin:6px 0 0">Personne n\'est planifié aujourd\'hui.</p>')+'</div>':'')+
-    '<div class="qa"><button class="qbtn" id="hGen">'+ico("gen")+'<span>Générer la semaine</span></button><button class="qbtn'+(S.week.pub?" on":"")+'" id="hPub">'+ico("pub")+'<span>'+(S.week.pub?"Semaine publiée":"Publier aux collaborateurs")+'</span></button></div><p class="appver">Version du 14/10 13:15</p>';
+    '<div class="qa"><button class="qbtn" id="hGen">'+ico("gen")+'<span>Générer la semaine</span></button><button class="qbtn'+(S.week.pub?" on":"")+'" id="hPub">'+ico("pub")+'<span>'+(S.week.pub?"Semaine publiée":"Publier aux collaborateurs")+'</span></button></div><p class="appver">Version du 14/10 13:30</p>';
   v.querySelectorAll("[data-go]").forEach(b=>b.onclick=()=>{ if(b.dataset.today && curW) S.mDay=td; go(b.dataset.go); });
   $("#hGen").onclick=()=>{ go("team"); generateWeek(); };
   $("#hPub").onclick=()=>togglePub();
