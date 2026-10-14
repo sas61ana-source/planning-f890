@@ -401,6 +401,7 @@ tr.abs-cur td{background:rgba(227,6,19,.04)}
 .resdrop{display:flex;flex-wrap:wrap;gap:10px;align-items:end;margin:6px 0 4px}.resdrop label{display:grid;gap:4px;font-size:12px;font-weight:600;color:var(--muted)}
 .resdrop input[type=date]{padding:7px 9px;border:1px solid var(--line);border-radius:8px;background:var(--surface)}
 .ptab td,.ptab th{white-space:nowrap}.ptab td.cpos{background:var(--ok-soft);color:var(--ok);font-weight:700}.ptab td.cneg{background:var(--bad-soft);color:var(--bad);font-weight:700}.ptab .ptot td{border-top:2px solid var(--line);background:var(--surface-2)}.ptabs{margin:4px 0 12px}
+.roul-all{background:var(--surface-2);border-radius:12px;padding:10px 12px;margin-bottom:12px}
 .resfile{position:relative;overflow:hidden}.resfile input{position:absolute;inset:0;opacity:0;cursor:pointer}
 @media(max-width:900px){.pzgrid{grid-template-columns:1fr}}
 
@@ -2221,6 +2222,8 @@ const ROUL_PRESETS = () => {
   (S.team.templates||[]).forEach((t,i)=>L.push({k:"T:"+i,l:"Type "+(i+1)+" · "+tplTxt(t),t,tag:""}));
   return L;
 };
+const weekOpts = (sel) => { const out=[]; for(let k=-12;k<=12;k++){ const wid=shiftWeek(S.weekId,k); const d=weekDays(wid)[0]; out.push('<option value="'+wid+'"'+(wid===sel?" selected":"")+'>S'+wnum(wid)+' · '+pad(d.getUTCDate())+'/'+pad(d.getUTCMonth()+1)+'/'+String(d.getUTCFullYear()).slice(2)+(wid===S.weekId?' (affichée)':'')+'</option>'); }
+  if(sel && !out.some(o=>o.includes('value="'+sel+'"'))) out.unshift('<option value="'+sel+'" selected>S'+wnum(sel)+' ('+sel.slice(0,4)+')</option>'); return out.join(""); };
 const roulModels = () => { S.team.settings=S.team.settings||{}; return (S.team.settings.roulModels ||= []); };
 function renderRoul(){
   if(S.roulClip===undefined){ try{ S.roulClip=JSON.parse(localStorage.getItem("f890-roulclip")||"null"); }catch(e){ S.roulClip=null; } }
@@ -2234,10 +2237,11 @@ function renderRoul(){
       ['m1','m2','a1','a2'].map(f=>'<td>'+timeSel("r-"+f+"-"+id,f,on?x[f]:"",!on,' data-k="'+f+'"')+'</td>').join("")+
       '<td><input type="checkbox" data-k="p" title="Pause 10 min"'+(on&&x.p?" checked":"")+(on?"":" disabled")+'></td><td class="mono rdur">'+(on?fmt(mins(x)):(x&&x.s==="RH"?"RH":""))+'</td></tr>'; };
   v.innerHTML='<div class="panel"><h2>Roulements</h2><p class="lead">Un collaborateur avec un roulement a sa semaine bloquée : « Générer la semaine » applique exactement ces horaires et ne le replace pas automatiquement. Saisissez les horaires de chaque semaine du cycle et, si besoin, les heures prévues pour cette semaine (sinon la base du contrat). Les jours laissés « Libre » passent en repos. Sans roulement, la génération place le collaborateur sur les créneaux du magasin : vente 9h45-12h/14h-18h, 10h-12h30/14h-18h30 et 2 × 10h30-13h/14h-19h ; caisse 9h45-12h/14h-18h et 10h30-13h/14h-19h15 (journée complète 9h45-13h/14h-19h15 quand l\'autre caissière est en repos). Les jours en continu (samedi, haute période) utilisent des pauses déjeuner décalées (heures d\'ouverture dans Horaires types). Si une caissière est en CP ou maladie, Martin passe en caisse et son repos est déplacé si besoin.</p>'+
+  (list.some(e=>cycleOf(e))?'<div class="roul-row roul-all"><label for="cs-all">Semaine 1 du cycle pour tous</label><select id="cs-all"><option value="">Choisir la semaine…</option>'+weekOpts("")+'</select><span class="st-mut">s\'applique à tous les collaborateurs qui ont un roulement</span></div>':'')+
   '<div class="roul-list">'+list.map(e=>{ const c=cycleOf(e); const len=c?c.len:0; const idx=c?cycleIndex(e,S.weekId):-1;
     return '<div class="roul" data-re="'+esc(e.id)+'"><div class="roul-hd"><b>'+esc(e.name)+'</b><span class="st-mut">'+esc(e.role||"")+' · contrat '+esc(String(e.base||0))+' h</span></div>'+
     '<div class="roul-row"><label for="cl-'+esc(e.id)+'">Roulement</label><select id="cl-'+esc(e.id)+'" data-clen="'+esc(e.id)+'">'+[0,1,2,3,4,5,6].map(n=>'<option value="'+n+'"'+(n===len?" selected":"")+'>'+(n?n+" semaine"+(n>1?"s":""):"Aucun (créneaux automatiques)")+'</option>').join("")+'</select>'+
-    (c?'<span class="st-mut">La S'+wnum(S.weekId)+' est la semaine '+(idx+1)+' du cycle</span>':'')+'</div>'+
+    (c?'<label for="cs-'+esc(e.id)+'" style="margin-left:8px">Semaine 1 du cycle</label><select id="cs-'+esc(e.id)+'" data-cstart="'+esc(e.id)+'">'+weekOpts(c.start||S.weekId)+'</select><span class="st-mut">La S'+wnum(S.weekId)+' est la semaine '+(idx+1)+' du cycle</span>':'')+'</div>'+
     '<div class="roul-row"><label>Roulements mémorisés</label>'+(c?'<button class="btn ghost" data-rm-save="'+esc(e.id)+'">💾 Mémoriser ce roulement</button>':'')+
       (roulModels().length?'<select data-rm-apply="'+esc(e.id)+'"><option value="">Appliquer un roulement mémorisé…</option>'+roulModels().map((m,k)=>'<option value="'+k+'">'+esc(m.name)+' ('+m.len+' sem.)</option>').join("")+'</select>':'<span class="st-mut">aucun pour l\'instant</span>')+'</div>'+
     (!c && !["vente","caisse"].includes(fonctionOf(e)) ? (()=>{ const h=DEF_HORAIRE(e)||{}; const x={s:"T",...h}; const on=!!(h.m1||h.a1);
@@ -2260,6 +2264,8 @@ function renderRoul(){
     const name=e.name+" · "+c.len+" sem. · "+new Date().toLocaleDateString("fr-FR"); roulModels().push({name, len:c.len, weeks:clone(c.weeks.slice(0,c.len)), bases:clone((c.bases||[]).slice(0,c.len)), at:new Date().toISOString()}); teamChanged(); toast("Roulement mémorisé : "+name); });
   v.querySelectorAll("[data-rm-apply]").forEach(sel=>sel.onchange=()=>{ if(sel.value==="") return; const m=roulModels()[+sel.value]; const e=S.team.employees.find(x=>x.id===sel.dataset.rmApply); if(!m||!e) return;
     e.cycle={start:S.weekId, len:m.len, weeks:clone(m.weeks), bases:clone(m.bases||[])}; teamChanged(); toast("« "+m.name+" » appliqué à "+e.name+" (semaine 1 = S"+wnum(S.weekId)+")"); });
+  v.querySelectorAll("[data-cstart]").forEach(sel=>sel.onchange=()=>{ const e=S.team.employees.find(x=>x.id===sel.dataset.cstart); if(!e||!e.cycle) return; e.cycle.start=sel.value; teamChanged(); toast(e.name+" : semaine 1 du cycle = S"+wnum(sel.value)); });
+  $("#cs-all")&&($("#cs-all").onchange=ev=>{ const w=ev.target.value; if(!w) return; let n=0; S.team.employees.forEach(e=>{ if(cycleOf(e)){ e.cycle.start=w; n++; } }); teamChanged(); toast("Semaine 1 du cycle = S"+wnum(w)+" pour "+n+" collaborateur"+(n>1?"s":"")); });
   v.querySelectorAll("[data-clen]").forEach(s=>s.onchange=()=>{ const e=S.team.employees.find(x=>x.id===s.dataset.clen); const n=+s.value;
     if(!n){ delete e.cycle; } else { const c=e.cycle||{start:S.weekId,weeks:[]}; c.len=n; while(c.weeks.length<n) c.weeks.push(null); if(!c.start) c.start=S.weekId; e.cycle=c; }
     teamChanged(); });
@@ -2543,7 +2549,7 @@ function renderHome(){
     '</div>'+
     (curW&&!isClosed(td)?'<div class="today"><div class="today-hd"><b>Aujourd\'hui en magasin</b><button class="lnk" data-go="team" data-today="1">Voir la journée ›</button></div>'+
       (sorted.length?'<div class="today-list">'+sorted.map(e=>{ const x=getE(e.id,td); return '<div class="tp"><span class="av">'+esc((e.name||"?")[0])+'</span><span class="tn"><b>'+esc(e.name)+'</b><small>'+esc(x.tag||({vente:"Vente",caisse:"Caisse",livraison:"Livraison"}[fonctionOf(e)]||""))+'</small></span><span class="tt">'+(hasTimes(x)?(x.m1?x.m1+"–"+x.m2:"")+(x.m1&&x.a1?'<br>':'')+(x.a1?x.a1+"–"+x.a2:""):'<i class="st-mut">à définir</i>')+'</span></div>'; }).join("")+'</div>':'<p class="st-mut" style="margin:6px 0 0">Personne n\'est planifié aujourd\'hui.</p>')+'</div>':'')+
-    '<div class="qa"><button class="qbtn" id="hGen">'+ico("gen")+'<span>Générer la semaine</span></button><button class="qbtn'+(S.week.pub?" on":"")+'" id="hPub">'+ico("pub")+'<span>'+(S.week.pub?"Semaine publiée":"Publier aux collaborateurs")+'</span></button></div><p class="appver">Version du 14/10 12:05</p>';
+    '<div class="qa"><button class="qbtn" id="hGen">'+ico("gen")+'<span>Générer la semaine</span></button><button class="qbtn'+(S.week.pub?" on":"")+'" id="hPub">'+ico("pub")+'<span>'+(S.week.pub?"Semaine publiée":"Publier aux collaborateurs")+'</span></button></div><p class="appver">Version du 14/10 12:20</p>';
   v.querySelectorAll("[data-go]").forEach(b=>b.onclick=()=>{ if(b.dataset.today && curW) S.mDay=td; go(b.dataset.go); });
   $("#hGen").onclick=()=>{ go("team"); generateWeek(); };
   $("#hPub").onclick=()=>togglePub();
