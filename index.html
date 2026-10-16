@@ -5,7 +5,7 @@
 <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js" defer></script>
 <title>Planning F890</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
-<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Barlow:wght@400;500;600;700&family=Barlow+Condensed:wght@600;700&family=IBM+Plex+Mono:wght@400;500;600&display=swap">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,500;600;700;800&family=Hanken+Grotesk:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500;600&display=swap">
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js" defer></script>
@@ -464,6 +464,104 @@ tr.abs-cur td{background:rgba(227,6,19,.04)}
 @media(max-width:800px){.rhfiche{grid-template-columns:1fr}.rhchks{grid-template-columns:1fr}.rhrep{grid-template-columns:1fr 1fr}.pmotif{width:100%}}
 .msrow{display:flex;flex-wrap:wrap;gap:6px 14px;align-items:center;margin-top:6px}.msrow .tf label{min-width:auto}.msrow .tf{gap:4px}.msk{display:inline-block;width:8px;height:8px;border-radius:2px;margin-right:4px}</style>
 
+<style id="skin">
+/* ===== Habillage 2026 : encre + orange signal. Aucun changement de comportement. ===== */
+:root{
+  --bg:#eef0f5; --surface:#ffffff; --surface-2:#f2f4f8; --line:#e1e5ed; --fg:#0f1b2d; --muted:#64718a;
+  --navy:#0c1c33; --accent:#ff5a1a; --accent-soft:#ffe9df; --sel:#2563eb; --sel-soft:#e6eefe;
+  --ok:#12804a; --ok-soft:#dff5e9; --warn:#b4540a; --warn-soft:#fff0d6; --bad:#d02b2b; --bad-soft:#fde8e8;
+  --font-ui:"Hanken Grotesk",system-ui,-apple-system,"Segoe UI",sans-serif;
+  --font-display:"Bricolage Grotesque","Hanken Grotesk",system-ui,sans-serif;
+  --font-mono:"IBM Plex Mono",ui-monospace,Menlo,monospace;
+  --sh:0 1px 2px rgba(12,28,51,.05),0 14px 30px -20px rgba(12,28,51,.30);
+  --sh-lg:0 2px 4px rgba(12,28,51,.06),0 22px 44px -22px rgba(12,28,51,.40);
+  --side:#0a1830; --side-fg:#a9b6cc;
+}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]){
+  --bg:#080e19; --surface:#101a2a; --surface-2:#172235; --line:#233047; --fg:#e8edf6; --muted:#8d9bb2;
+  --navy:#0e2342; --accent:#ff6a30; --accent-soft:#3b2216; --sel:#7aa8ff; --sel-soft:#1a2c4e;
+  --sh:0 1px 2px rgba(0,0,0,.4),0 14px 30px -20px rgba(0,0,0,.7); --sh-lg:0 22px 44px -22px rgba(0,0,0,.8); --side:#060b14}}
+:root[data-theme="dark"]{
+  --bg:#080e19; --surface:#101a2a; --surface-2:#172235; --line:#233047; --fg:#e8edf6; --muted:#8d9bb2;
+  --navy:#0e2342; --accent:#ff6a30; --accent-soft:#3b2216; --sel:#7aa8ff; --sel-soft:#1a2c4e;
+  --sh:0 1px 2px rgba(0,0,0,.4),0 14px 30px -20px rgba(0,0,0,.7); --sh-lg:0 22px 44px -22px rgba(0,0,0,.8); --side:#060b14}
+body{font-feature-settings:"tnum" 1,"cv11" 1;-webkit-font-smoothing:antialiased;letter-spacing:-.003em}
+.brand h1{font-family:var(--font-display);font-weight:800;text-transform:none;letter-spacing:-.025em;color:var(--fg);font-size:26px}
+.brand h1::first-letter{color:var(--accent)}
+.panel,.alerts,.gridbox,.weeknav{border-color:transparent;box-shadow:var(--sh)}
+.panel{border-radius:18px;padding:20px 22px}
+.panel h2{font-family:var(--font-display);font-weight:700;text-transform:none;letter-spacing:-.02em;font-size:21px}
+.gridbox{border-radius:18px}
+.alerts{border-radius:16px}
+.weeknav{border-radius:14px;padding:4px}
+.weeknav button{border-radius:10px}
+.weeknav .lbl{font-family:var(--font-display);font-weight:700;letter-spacing:-.01em}
+.btn{border-radius:12px;padding:8px 14px;border-color:var(--line);box-shadow:0 1px 1px rgba(12,28,51,.04);transition:border-color .15s,box-shadow .15s,transform .1s,background .15s}
+.btn:hover{border-color:color-mix(in srgb,var(--fg) 30%,var(--line));box-shadow:0 4px 10px -6px rgba(12,28,51,.25)}
+.btn:active{transform:translateY(1px)}
+.btn.primary{background:linear-gradient(180deg,#ff6b2e,#ff5a1a);border-color:#f0500f;box-shadow:0 6px 14px -8px rgba(255,90,26,.8)}
+.btn.primary:hover{filter:none;box-shadow:0 8px 18px -8px rgba(255,90,26,.95)}
+.btn.ghost{box-shadow:none}
+.pill{padding:2px 9px;font-weight:700}
+.field label{text-transform:none;letter-spacing:0;font-size:12.5px;color:var(--muted)}
+.field input,.field textarea,.field select,.tbl input,.tbl select{border-radius:11px;border-color:var(--line);background:var(--surface)}
+input:focus,select:focus,textarea:focus{outline:0;border-color:var(--accent)!important;box-shadow:0 0 0 3px color-mix(in srgb,var(--accent) 22%,transparent)}
+.tbl th{text-transform:none;letter-spacing:0;font-size:12.5px;font-weight:700;color:var(--muted);border-bottom:1px solid var(--line)}
+.tbl td{border-bottom:1px solid color-mix(in srgb,var(--line) 70%,transparent)}
+.tbl tbody tr:hover td{background:var(--surface-2)}
+/* grille planning */
+.grid thead th{background:linear-gradient(180deg,#0f2342,#0a1830);padding:10px 10px}
+.grid thead th .d{font-family:var(--font-display);font-weight:700;letter-spacing:-.01em}
+.grid thead th .f{text-transform:none;letter-spacing:0;font-weight:600;opacity:.95}
+.grid th,.grid td{border-right-color:color-mix(in srgb,var(--line) 70%,transparent);border-bottom-color:color-mix(in srgb,var(--line) 70%,transparent)}
+.emp .nm{font-family:var(--font-display);font-weight:700;letter-spacing:-.01em}
+.openb{border-radius:999px}
+/* accueil collaborateur / tuiles */
+.hero{border-radius:26px;background:radial-gradient(120% 140% at 100% 0%,#1d4a85 0%,rgba(29,74,133,0) 55%),linear-gradient(160deg,#0a1830,#10294d);padding:24px 22px 22px;box-shadow:var(--sh-lg)}
+.hero::after{right:-40px;top:-70px;width:230px;height:230px;background:radial-gradient(circle,rgba(255,90,26,.65),rgba(255,90,26,0) 68%)}
+.hero h2{font-family:var(--font-display);font-weight:800;letter-spacing:-.03em;font-size:34px}
+.hero-w{font-family:var(--font-display);border-radius:14px;box-shadow:0 8px 18px -8px rgba(255,90,26,.9)}
+.tiles{gap:14px}
+.tile{border-radius:22px;border-color:transparent;box-shadow:var(--sh);transition:transform .15s,box-shadow .2s}
+.tile:hover{transform:translateY(-3px);box-shadow:var(--sh-lg)}
+.tile b{font-family:var(--font-display);font-weight:700;letter-spacing:-.015em}
+.tile .ti{border-radius:15px;box-shadow:none}
+.t-or .ti{background:#ffe9df;color:#ff5a1a} .t-bl .ti{background:#e3ecfe;color:#2563eb} .t-rd .ti{background:#fde6e6;color:#d02b2b}
+.t-nv .ti{background:#e1e7f1;color:#0c1c33} .t-vi .ti{background:#ece5fb;color:#6d3fd1} .t-gr .ti{background:#dcf4e6;color:#12804a} .t-gy .ti{background:#eceff4;color:#5b6a82}
+:root[data-theme="dark"] .t-or .ti,:root[data-theme="dark"] .t-bl .ti,:root[data-theme="dark"] .t-rd .ti,:root[data-theme="dark"] .t-nv .ti,:root[data-theme="dark"] .t-vi .ti,:root[data-theme="dark"] .t-gr .ti,:root[data-theme="dark"] .t-gy .ti{filter:brightness(.9)}
+.qbtn{border-radius:18px;background:linear-gradient(160deg,#0a1830,#10294d);box-shadow:var(--sh)}
+.tbadge{background:var(--accent);box-shadow:0 4px 10px -4px rgba(255,90,26,.9)}
+.av{background:linear-gradient(135deg,#ff5a1a,#ff9a55)}
+.tp{border-radius:14px}
+/* barre latérale (ordinateur) */
+@media (min-width:761px){
+  .wrap{max-width:none;margin:0;padding-left:calc(248px + 28px);padding-right:28px;padding-top:22px}
+  header.top{position:fixed;left:0;top:0;bottom:0;width:248px;margin:0;padding:18px 14px 12px;gap:0;flex-direction:column;flex-wrap:nowrap;align-items:stretch;background:linear-gradient(180deg,var(--side),#0d2140);z-index:40;overflow-y:auto}
+  header.top .brand{order:0;padding:2px 10px 18px;flex-direction:column;gap:2px;align-items:flex-start}
+  header.top .brand h1{color:#fff;font-size:25px}
+  header.top .brand .sub{color:var(--side-fg);font-size:12.5px}
+  .tabs{order:1;flex:1;flex-direction:column;flex-wrap:nowrap;background:transparent;padding:0;margin:0;gap:2px}
+  .tabs button{position:relative;text-align:left;padding:6px 12px 6px 14px;border-radius:10px;color:var(--side-fg);font-weight:600;font-size:13.5px;transition:background .15s,color .15s}
+  .tabs button:hover{background:rgba(255,255,255,.07);color:#fff}
+  .tabs button[aria-selected="true"]{background:rgba(255,255,255,.1);color:#fff;box-shadow:none}
+  .tabs button[aria-selected="true"]::after{content:"";position:absolute;left:0;top:7px;bottom:7px;width:3px;border-radius:3px;background:var(--accent)}
+  .tabs button[data-v="home"]::before,.tabs button[data-v="team"]::before,.tabs button[data-v="staff"]::before,.tabs button[data-v="res"]::before,.tabs button[data-v="apv"]::before{position:absolute;left:14px;top:-22px;font-size:11.5px;font-weight:700;color:#6f7f9a;white-space:nowrap}
+  .tabs button[data-v="home"]::before{content:"Pilotage"} .tabs button[data-v="team"]::before{content:"Planning"} .tabs button[data-v="staff"]::before{content:"Équipe et RH"} .tabs button[data-v="res"]::before{content:"Performance"} .tabs button[data-v="apv"]::before{content:"Outils"}
+  .tabs button[data-v="team"],.tabs button[data-v="staff"],.tabs button[data-v="res"],.tabs button[data-v="apv"]{margin-top:24px}
+  .tabs button[data-v="home"]{margin-top:20px}
+  header.top .save{order:2;color:var(--side-fg);padding:10px 12px 4px;margin-top:8px;border-top:1px solid rgba(255,255,255,.09)}
+  header.top #logoutB{order:3;color:var(--side-fg);text-align:left;margin:0 2px}
+  header.top #logoutB:hover{color:#fff;background:rgba(255,255,255,.07)}
+  .bar{margin-bottom:16px}
+}
+@media (min-width:761px){
+  #tabs button[data-v="home"]{order:1} #tabs button[data-v="dem"]{order:2} #tabs button[data-v="rea"]{order:3}
+  #tabs button[data-v="team"]{order:4} #tabs button[data-v="indiv"]{order:5} #tabs button[data-v="tpl"]{order:6} #tabs button[data-v="roul"]{order:7} #tabs button[data-v="pz"]{order:8}
+  #tabs button[data-v="staff"]{order:9} #tabs button[data-v="rh"]{order:10} #tabs button[data-v="abs"]{order:11} #tabs button[data-v="cpt"]{order:12}
+  #tabs button[data-v="res"]{order:13} #tabs button[data-v="obj"]{order:14}
+  #tabs button[data-v="apv"]{order:15} #tabs button[data-v="send"]{order:16}
+}
+</style>
 </head><body>
 <div class="wrap" id="app">
   <header class="top">
@@ -2723,6 +2821,22 @@ const echUrgent = () => { try{ return echeances().filter(x=>x.days<=30).length; 
 const ENT_T={annuel:"annuel",pro:"professionnel",bilan:"bilan à 6 ans"};
 const CHK_IN=["DPAE effectuée","Contrat signé et remis","Mutuelle : adhésion ou dispense","Visite d'information et de prévention planifiée","Accès espace collaborateur créé et envoyé","Formation caisse et procédures","Règlement intérieur et règlement des primes remis","Parrain désigné"];
 const CHK_OUT=["Dernier planning et solde des heures","Solde de tout compte","Certificat de travail","Attestation France Travail","Reçu pour solde de tout compte signé","Accès espace collaborateur supprimé","Clés, badge et tenue restitués","Dossier archivé"];
+const FICHE_SEED={
+ alexia:{contrat:"CDI",entree:"2026-05-07",qualif:"Caissière polycompétente SAV et gestion administrative",visite:"2026-09-15",drive:"https://drive.google.com/drive/folders/1egxW0gOToOarR1zIVMO_8iWAr4J1MIHQ"},
+ angelique:{contrat:"CDI",entree:"2026-07-08",qualif:"Vendeuse polyvalente et polycompétente",drive:"https://drive.google.com/drive/folders/17fGIxGfnA88V_bfw5Jsx7E9vHfeI3734"},
+ alan:{contrat:"CDI",qualif:"Aide livreur réceptionnaire",visite:"2026-07-27",drive:"https://drive.google.com/drive/folders/1xVhViGRSCRSlgVUchmprqZ5Vms7J1VD1"},
+ maeva:{contrat:"CDI",qualif:"Caissière polycompétente SAV et gestion administrative",drive:"https://drive.google.com/drive/folders/1eBMIiWuSeVgvUNqMXTWd8kN0ab2gFP3-"},
+ mateo:{contrat:"CDI",qualif:"Vendeur polyvalent et polycompétent",drive:"https://drive.google.com/drive/folders/1zm56d58AhADEzoHoN4m_hERH3C1aBdr8"},
+ martin:{contrat:"CDI",qualif:"Vendeur polyvalent et polycompétent",drive:"https://drive.google.com/drive/folders/1aCqGrd10bwADECFV7ZXlCD5hOt2YfPEL"},
+ pauliana:{contrat:"CDI",qualif:"Vendeuse polyvalente et polycompétente",drive:"https://drive.google.com/drive/folders/1FWKyCOOzYBrm-PVSYeSxSARodMAoqcOH"},
+ christopher:{contrat:"CDI",qualif:"Livreur réceptionnaire installateur",drive:"https://drive.google.com/drive/folders/1PIXeBtubJVoTlllun9P5H_39LqOD-bUK"},
+ emilie:{contrat:"CDI",qualif:"Vendeuse expert, spécialiste PAM",drive:"https://drive.google.com/drive/folders/1sBsZvF1Stqd2IH9nb3vEIz0Lq1pSw2gg"}};
+const seedKey=e=>String(e.name||"").normalize("NFD").replace(/[\u0300-\u036f]/g,"").toLowerCase().split(/[\s-]+/)[0];
+function ficheImport(){ let n=0, ppl=0;
+  emps().forEach(e=>{ const sd=FICHE_SEED[seedKey(e)]; if(!sd) return; const f=fiche(e); const added=[];
+    Object.keys(sd).forEach(k=>{ if(!f[k]){ f[k]=sd[k]; added.push((FICHE_F.find(x=>x[0]===k)||[k,k])[1]); } });
+    if(added.length){ n+=added.length; ppl++; jlog("fiche", e.name+" : import depuis les dossiers Drive et mails ("+added.join(", ")+")", e.id); } });
+  if(n){ teamChanged(); scheduleRH(); } return {n,ppl}; }
 const FICHE_F=[["contrat","Type de contrat","sel",["","CDI","CDD","Apprentissage","Professionnalisation","Stage"]],["entree","Date d'entrée","date"],["finEssai","Fin de période d'essai","date"],["finCdd","Fin de CDD","date"],["qualif","Qualification / emploi","text"],["coef","Niveau / coefficient","text"],["visite","Dernière visite médicale","date"],["visiteProch","Prochaine visite médicale","date"],["entAnn","Dernier entretien annuel","date"],["entPro","Dernier entretien professionnel","date"],["drive","Lien du dossier documents (Drive)","text"],["sortie","Date de sortie","date"]];
 
 /* rendu de l'onglet */
@@ -2754,7 +2868,7 @@ function rhFicheHTML(){ const L=emps(); if(!L.length) return '<div class="panel 
   const anc=f.entree?Math.max(0,Math.floor((Date.parse(td)-Date.parse(f.entree))/(365.25*864e5))):null;
   return '<div class="panel"><div class="rhfiche"><div class="plist">'+L.map(x=>{ const ff=fiche(x); const miss=!ff.contrat||!ff.entree; return '<button data-fe="'+esc(x.id)+'" aria-pressed="'+(x.id===e.id)+'"><span><b>'+esc(x.name)+'</b><br><small style="color:var(--muted)">'+esc(ff.contrat||"contrat ?")+(ff.entree?' · depuis '+fdShort(ff.entree):'')+'</small></span>'+(miss?'<span class="pill warn">!</span>':'')+'</button>'; }).join("")+'</div>'+
     '<div><h2>'+esc(e.name)+'</h2><p class="st-mut" style="margin-top:-6px">'+esc(e.role||"")+' · base '+fmtH(+e.base||0)+' h'+(matOf(e)?' · matricule '+esc(matOf(e)):'')+(anc!=null?' · ancienneté '+anc+' an'+(anc>1?'s':''):'')+'</p>'+
-    '<div class="rhgrid">'+FICHE_F.map(fld).join("")+'</div>'+
+    '<div class="rhgrid">'+FICHE_F.map(fld).join("")+'</div>'+'<p><button class="btn ghost" id="ficheImp">Importer depuis les dossiers Drive et mails</button> <small class="st-mut">Ne remplit que les champs vides.</small></p>'+
     '<p class="st-mut">La fiche alimente l\'échéancier. Le type de contrat, la date d\'entrée, la qualification et le lien du dossier sont visibles par le collaborateur dans « Mon espace RH ». Toute modification est tracée dans le journal.</p>'+
     '<div class="rhchks">'+chk(CHK_IN,"chkIn","Arrivée")+chk(CHK_OUT,"chkOut","Départ")+'</div></div></div></div>'; }
 
@@ -2822,6 +2936,7 @@ function rhJrHTML(){ const J=S.journal||[]; const fk=S.jrKind||"", fe=S.jrEmp||"
 function bindRH(v, t){
   v.querySelectorAll("[data-of]").forEach(b=>b.onclick=()=>{ S.rhEmp=b.dataset.of; S.rhTab="fiche"; renderRH(); });
   if(t==="fiche"){ const e=emps().find(x=>x.id===S.rhEmp); if(!e) return; const f=fiche(e);
+    const fi=v.querySelector("#ficheImp"); if(fi) fi.onclick=()=>{ const r=ficheImport(); toast(r.n?r.n+" champs importés pour "+r.ppl+" collaborateurs":"Rien à importer : les champs sont déjà remplis"); renderRH(); };
     v.querySelectorAll("[data-fe]").forEach(b=>b.onclick=()=>{ S.rhEmp=b.dataset.fe; renderRH(); });
     v.querySelectorAll("[data-ff]").forEach(inp=>inp.onchange=()=>{ const k=inp.dataset.ff; const val=inp.value.trim(); if((f[k]||"")===val) return; if(k==="drive"&&val&&!/^https:\/\//.test(val)){ toast("Le lien doit commencer par https://"); return; }
       f[k]=val; const lab=(FICHE_F.find(x=>x[0]===k)||[k,k])[1]; jlog("fiche", e.name+" : "+lab+" → "+(val?(inp.type==="date"?fdShort(val):val):"effacé"), e.id); teamChanged(); scheduleRH(); });
@@ -2923,7 +3038,7 @@ function renderHome(){
     '</div>'+
     (curW&&!isClosed(td)?'<div class="today"><div class="today-hd"><b>Aujourd\'hui en magasin</b><button class="lnk" data-go="team" data-today="1">Voir la journée ›</button></div>'+
       (sorted.length?'<div class="today-list">'+sorted.map(e=>{ const x=getE(e.id,td); return '<div class="tp"><span class="av">'+esc((e.name||"?")[0])+'</span><span class="tn"><b>'+esc(e.name)+'</b><small>'+esc(x.tag||({vente:"Vente",caisse:"Caisse",livraison:"Livraison"}[fonctionOf(e)]||""))+'</small></span><span class="tt">'+(hasTimes(x)?(x.m1?x.m1+"–"+x.m2:"")+(x.m1&&x.a1?'<br>':'')+(x.a1?x.a1+"–"+x.a2:""):'<i class="st-mut">à définir</i>')+'</span></div>'; }).join("")+'</div>':'<p class="st-mut" style="margin:6px 0 0">Personne n\'est planifié aujourd\'hui.</p>')+'</div>':'')+
-    '<div class="qa"><button class="qbtn" id="hGen">'+ico("gen")+'<span>Générer la semaine</span></button><button class="qbtn'+(S.week.pub?" on":"")+'" id="hPub">'+ico("pub")+'<span>'+(S.week.pub?"Semaine publiée":"Publier aux collaborateurs")+'</span></button></div><p class="appver">Version du 14/10 19:30</p>';
+    '<div class="qa"><button class="qbtn" id="hGen">'+ico("gen")+'<span>Générer la semaine</span></button><button class="qbtn'+(S.week.pub?" on":"")+'" id="hPub">'+ico("pub")+'<span>'+(S.week.pub?"Semaine publiée":"Publier aux collaborateurs")+'</span></button></div><p class="appver">Version du 16/10 refonte visuelle</p>';
   v.querySelectorAll("[data-go]").forEach(b=>b.onclick=()=>{ if(b.dataset.today && curW) S.mDay=td; go(b.dataset.go); });
   $("#hGen").onclick=()=>{ go("team"); generateWeek(); };
   $("#hPub").onclick=()=>togglePub();
