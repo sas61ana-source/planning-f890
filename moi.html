@@ -283,6 +283,7 @@ input:focus,select:focus,textarea:focus{outline:0;border-color:var(--accent)!imp
         <button class="btn primary" type="submit" style="width:100%">Envoyer la demande</button>
       </form>
     </div>
+    <div id="echIn"></div>
     <div class="card"><h3>Mes demandes</h3><div id="reqs"><p class="empty">Aucune demande pour l'instant.</p></div></div>
    </div>
   </section>
@@ -333,7 +334,8 @@ onAuthStateChanged(auth, async u=>{
     const cw=isoWeekId(new Date()); if(!st.cur || !st.weeks.find(w=>w.weekId===st.cur)) st.cur=(st.weeks.find(w=>w.weekId>=cw)||st.weeks[st.weeks.length-1]||{}).weekId; renderWeeks(); renderHome(); },
     ()=>{ $("#week").innerHTML='<p class="card empty">Planning indisponible pour le moment.</p>'; });
 
-  onSnapshot(query(collection(db,"demandes"),where("empId","==",st.emp)), q=>{ renderReqs(q.docs.map(x=>({id:x.id,...x.data()})).sort((a,b)=>(b.createdAt||"").localeCompare(a.createdAt||""))); }, ()=>{});
+  onSnapshot(query(collection(db,"demandes"),where("empId","==",st.emp)), q=>{ st.reqs=q.docs.map(x=>({id:x.id,...x.data()})).sort((a,b)=>(b.createdAt||"").localeCompare(a.createdAt||"")); renderReqs(st.reqs); renderTodo(); }, e=>{ console.warn("demandes", e); $("#reqs").innerHTML='<p class="empty">Demandes indisponibles pour le moment.</p>'; });
+  onSnapshot(query(collection(db,"demandes"),where("avec","==",st.emp)), q=>{ st.echIn=q.docs.map(x=>({id:x.id,...x.data()})).filter(r=>r.type==="ECHANGE"&&r.status==="attente"); renderEchIn(); renderTodo(); }, e=>{ console.warn("échanges proposés", e); });
   try{ const n=await getDoc(doc(db,"annuaire","equipe")); st.names=(n.exists()?n.data().list:[])||[]; }catch(e){ st.names=[]; }
   $("#r-avec").innerHTML=st.names.filter(x=>x.id!==st.emp).map(x=>'<option value="'+esc(x.id)+'">'+esc(x.name)+'</option>').join("");
   const me=st.names.find(x=>x.id===st.emp); st.me=me?me.name:st.emp; $("#who").textContent=st.me+" · Boulanger Flers F890";
@@ -374,9 +376,17 @@ function prevWeek(id){ const [y,w]=id.split("-W").map(Number); const j4=new Date
 const TYP={CP:"Congés payés",ECHANGE:"Échange de journée",ERREUR:"Erreur signalée",ABSENCE:"Absence déclarée"};
 const ABM={maladie:"Arrêt maladie",enfant:"Enfant malade",at:"Accident du travail",famille:"Événement familial",autre:"Autre absence"};
 const nameOf = id => (st.names.find(x=>x.id===id)||{}).name||id;
+// échanges proposés par un collègue : chacun donne son accord avant la décision de la direction
+function renderEchIn(){ const el=$("#echIn"); if(!el) return; const L=(st.echIn||[]);
+  el.innerHTML=L.length?'<div class="card"><h3>Échanges proposés par un collègue</h3>'+L.map(r=>'<div class="req"><div><b>'+esc(nameOf(r.empId))+'</b> te propose d\'échanger le '+frD(r.date||"")+'</div>'+(r.note?'<div class="mut">« '+esc(r.note)+' »</div>':'')+
+    (r.accord===true?'<div><span class="pill acceptée">Tu as accepté</span> · la direction décide</div>':r.accord===false?'<div><span class="pill refusée">Tu as refusé</span></div>':'<div style="display:flex;gap:8px;margin-top:8px"><button class="btn primary" data-eok="'+esc(r.id)+'">J\'accepte</button><button class="btn ghost" data-eko="'+esc(r.id)+'">Je refuse</button></div>')+'</div>').join("")+'</div>':'';
+  el.querySelectorAll("[data-eok],[data-eko]").forEach(b=>b.onclick=async()=>{ if(st.preview){ toast("Aperçu : action désactivée"); return; } const ok=!!b.dataset.eok, id=b.dataset.eok||b.dataset.eko; b.disabled=true;
+    try{ await updateDoc(doc(db,"demandes",id),{accord:ok, accordAt:new Date().toISOString()}); toast(ok?"Accord envoyé à la direction":"Refus envoyé"); }catch(e){ b.disabled=false; console.warn("accord échange", e); toast("Envoi impossible : "+(e&&e.code||"réessayez")); } }); }
+const seenDem = () => { try{ const v=localStorage.getItem("f890-dem-vu-"+st.emp); if(v) return v; const n=new Date().toISOString(); localStorage.setItem("f890-dem-vu-"+st.emp, n); return n; }catch(e){ return new Date().toISOString(); } };
+function markDemSeen(){ try{ localStorage.setItem("f890-dem-vu-"+st.emp, new Date().toISOString()); }catch(e){} }
 function renderReqs(list){
   $("#reqs").innerHTML = list.length ? list.map(r=>'<div class="req"><div><b>'+TYP[r.type]+'</b> <span class="pill '+esc(r.status)+'">'+(r.status==="attente"?"En attente":esc(r.status))+'</span></div><div class="mut">'+
-    (r.type==="CP"||r.type==="ABSENCE"?"Du "+frD(r.from)+(r.to&&r.to!==r.from?" au "+frD(r.to):"")+(r.type==="ABSENCE"?" · "+(ABM[r.motif]||"")+(r.img?" · justificatif joint":""):""):r.type==="ECHANGE"?frD(r.date)+" avec "+esc(nameOf(r.avec)):"Semaine "+(+String(r.weekId||"").split("-W")[1]||""))+(r.note?" · « "+esc(r.note)+" »":"")+'</div>'+(r.reponse?'<div><b>Réponse :</b> '+esc(r.reponse)+'</div>':'')+'</div>').join("") : '<p class="empty">Aucune demande pour l\'instant.</p>';
+    (r.type==="CP"||r.type==="ABSENCE"?"Du "+frD(r.from)+(r.to&&r.to!==r.from?" au "+frD(r.to):"")+(r.type==="ABSENCE"?" · "+(ABM[r.motif]||"")+(r.img?" · justificatif joint":""):""):r.type==="ECHANGE"?frD(r.date)+" avec "+esc(nameOf(r.avec)):"Semaine "+(+String(r.weekId||"").split("-W")[1]||""))+(r.note?" · « "+esc(r.note)+" »":"")+'</div>'+(r.type==="ECHANGE"?'<div class="mut">'+(r.accord===true?"Accord de "+esc(nameOf(r.avec))+" donné":r.accord===false?esc(nameOf(r.avec))+" a refusé":"En attente de l'accord de "+esc(nameOf(r.avec)))+'</div>':'')+(r.reponse?'<div><b>Réponse :</b> '+esc(r.reponse)+'</div>':'')+'</div>').join("") : '<p class="empty">Aucune demande pour l\'instant.</p>';
 }
 $("#rtype").querySelectorAll("button").forEach(b=>b.onclick=()=>{ st.type=b.dataset.t; $("#rtype").querySelectorAll("button").forEach(x=>x.setAttribute("aria-pressed",x===b));
   $("#f-cp").hidden=st.type!=="CP"; $("#f-ech").hidden=st.type!=="ECHANGE"; $("#f-err").hidden=st.type!=="ERREUR"; $("#f-abs").hidden=st.type!=="ABSENCE"; });
@@ -410,6 +420,8 @@ function todoItems(){ const out=[]; const cw=isoWeekId(new Date());
   (st.ann||[]).forEach(a=>{ if(!sv("ann_"+a.id)) out.push({t:"Annonce : "+a.titre, go:"rhV", sec:"ann"}); });
   const R=st.bar&&st.bar.reglement; if(R&&R.v&&(sv("reg")||{}).v!==R.v) out.push({t:"Règlement des primes (version "+R.v+") à lire et accepter", go:"rhV", sec:"reg"});
   ((st.rh&&st.rh.entretiens)||[]).forEach(x=>{ const s=sv("ent_"+x.id)||{}; if(x.statut!=="réalisé"&&!s.prep) out.push({t:"Préparer mon entretien "+(ENT_T[x.type]||x.type)+" du "+fdS(x.date), go:"rhV", sec:"ent"}); if(x.shared&&!s.crLu) out.push({t:"Compte rendu d'entretien à lire", go:"rhV", sec:"ent", hot:true}); });
+  const sd=seenDem(); (st.reqs||[]).filter(r=>r.status!=="attente"&&r.decidedAt&&r.decidedAt>sd).forEach(r=>out.push({t:"Réponse à ta demande ("+(TYP[r.type]||r.type).toLowerCase()+") : "+r.status, go:"reqV", hot:r.status==="refusée"}));
+  (st.echIn||[]).filter(r=>r.accord===undefined).forEach(r=>out.push({t:nameOf(r.empId)+" te propose un échange le "+frD(r.date||"")+" : accepter ou refuser", go:"reqV", hot:true}));
   return out; }
 const ENT_T={annuel:"annuel",pro:"professionnel",bilan:"bilan à 6 ans"};
 function renderTodo(){ const el=$("#todo"); if(!el||!st.emp) return; const L=todoItems(); const c=$("#cRh"); if(c){ const old=c.querySelector(".cb"); old&&old.remove(); const n=L.filter(x=>x.go==="rhV").length; if(n){ const b=document.createElement("span"); b.className="cb"; b.textContent=n; c.appendChild(b); } }
@@ -464,7 +476,7 @@ function fileToJustif(f){ return new Promise((res,rej)=>{ if(!f) return res(null
 
 /* ---------- navigation ---------- */
 const FREE_V=["homeV","planV","reqV","rhV"];
-const go = v => { if(!FREE_V.includes(v) && !isOpen()){ lockToast(); v="homeV"; } ["homeV","planV","reqV","objV","reaV","resV","rhV"].forEach(k=>$("#"+k).hidden=(k!==v)); st.view=v; if(v==="rhV") renderRH(); if(v==="objV") renderObj(); if(v==="reaV") renderRea(true); if(v==="resV") renderRes(); window.scrollTo({top:0}); };
+const go = v => { if(!FREE_V.includes(v) && !isOpen()){ lockToast(); v="homeV"; } ["homeV","planV","reqV","objV","reaV","resV","rhV"].forEach(k=>$("#"+k).hidden=(k!==v)); st.view=v; if(v==="rhV") renderRH(); if(v==="objV") renderObj(); if(v==="reaV") renderRea(true); if(v==="resV") renderRes(); if(v==="reqV"){ markDemSeen(); setTimeout(renderTodo,0); } window.scrollTo({top:0}); };
 document.querySelectorAll("[data-go]").forEach(b=>b.onclick=()=>go(b.dataset.go));
 
 /* ---------- accueil ---------- */

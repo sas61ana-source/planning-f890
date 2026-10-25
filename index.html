@@ -776,32 +776,91 @@ function pushUndo(){ S.undo.push(clone(S.week.entries)); if(S.undo.length>60) S.
 function undo(){ if(!S.undo.length) return; S.week.entries=S.undo.pop(); $("#undoB").disabled=!S.undo.length; changed(); toast("Modification annulée"); }
 
 /* ---------- contrôles légaux ---------- */
+/* ---------- règles légales paramétrables ---------- */
+const LEGAL_DEF = {hcFrac:0.1, contingent:220, soli:{}, justifMois:24};
+const legal = () => { const L=(S.team.settings||{}).legal||{}; return {...LEGAL_DEF, ...L, soli:{...(L.soli||{})}}; };
+// journée de solidarité : date choisie pour l'année, « aucune » si accomplie autrement, lundi de Pentecôte par défaut
+function soliDate(y){ const v=legal().soli[y]; if(v==="aucune") return ""; if(v) return v; const H=holidays(y); return Object.keys(H).find(k=>H[k]==="Lundi de Pentecôte")||""; }
+const soliMin = base => Math.round(420*Math.min(+base||0,35)/35);
+function ageOn(e, day){ const n=((e&&e.fiche)||{}).naissance; if(!n||!day) return null; const [y,m,d]=n.split("-").map(Number), [Y,M,D]=day.split("-").map(Number); return Y-y-((M<m||(M===m&&D<d))?1:0); }
+const isMinor = (e, day) => { const a=ageOn(e,day); return a!=null && a<18; };
+
+/* ---------- semaines voisines : repos entre deux semaines, moyenne sur 12 semaines ---------- */
+async function loadCtx(id){
+  const ids=[]; for(let k=-11;k<=1;k++) if(k) ids.push(shiftWeek(id,k));
+  const o={}; let err="";
+  if(S.db){ await Promise.all(ids.map(async w=>{ try{ o[w]=snapData(await S.db.doc("weeks/"+w).get()); }catch(e){ err=(e&&e.message)||String(e); console.warn("Semaine voisine illisible", w, err); } })); }
+  else ids.forEach(w=>{ o[w]=S.cache&&S.cache[w]?clone(S.cache[w]):null; });
+  if(S.weekId!==id) return;
+  S.ctx={id, weeks:o, err};
+  if(S.view==="team"){ renderGrid(); renderAlerts(); }
+}
+// undefined : pas encore chargée ; null : semaine sans planning
+const ctxWeek = wid => wid===S.weekId ? S.week : (S.ctx&&S.ctx.id===S.weekId ? (S.ctx.weeks[wid]||null) : undefined);
+function spansAround(emp){
+  const spans=[]; const known={prev:true,next:true};
+  [[-1,shiftWeek(S.weekId,-1)],[0,S.weekId],[1,shiftWeek(S.weekId,1)]].forEach(([k,wid])=>{
+    const w=ctxWeek(wid); if(w===undefined){ if(k<0) known.prev=false; if(k>0) known.next=false; return; }
+    const r=((w||{}).entries||{})[emp.id]||[];
+    for(let d=0; d<7; d++) for(const [a,b] of intervals(r[d])) spans.push([(k*7+d)*1440+a,(k*7+d)*1440+b]); });
+  spans.sort((x,y)=>x[0]-y[0]); return {spans, known};
+}
+function avg12(emp){ let tot=0, n=0;
+  for(let k=-11;k<=0;k++){ const w=ctxWeek(shiftWeek(S.weekId,k)); if(w===undefined) return null; const r=((w||{}).entries||{})[emp.id]; if(!r||!r.some(Boolean)) continue; tot+=r.reduce((a,x)=>a+mins(x),0); n++; }
+  return n>=4 ? {avg:Math.round(tot/n), n} : null; }
+
 function checks(emp){
   const out=[]; const r=S.week.entries[emp.id]||[]; let total=0, rest=0;
-  const days=weekDays(S.weekId);
+  const days=weekDays(S.weekId); const minor=isMinor(emp, ymd(days[0]))||isMinor(emp, ymd(days[6]));
+  const a0=ageOn(emp, ymd(days[0])), u16=a0!=null&&a0<16;
+  const base=baseOf(emp), partiel=base>0&&base<35;
   for(let d=0; d<7; d++){
     const e=r[d]; const m=mins(e); total+=m;
-    if(!e || e.s==="RH" || e.s==="CP" || e.s==="FE" || (e.s==="T"&&!hasTimes(e)&&false)) { if(!e||e.s==="RH"||e.s==="FE") rest++; }
+    if(!e || e.s==="RH" || e.s==="FE") rest++;
     if(e && TIMED(e.s)){
       if(!hasTimes(e)) out.push({lvl:"warn",d,t:"horaires à définir"});
-      if(m>600) out.push({lvl:"bad",d,t:"journée de "+fmt(m)+" (max 10h)"});
+      if(m>(minor?480:600)) out.push({lvl:"bad",d,t:"journée de "+fmt(m)+" (max "+(minor?"8h pour un mineur":"10h")+")"});
       for(const [a,b] of [[e.m1,e.m2],[e.a1,e.a2]]){
-        const s=seg(a,b); if(s>360 && !e.p) out.push({lvl:"warn",d,t:"plage de "+fmt(s)+" sans pause (20 min dès 6h)"});
+        const s=seg(a,b);
+        if(minor){ if(s>270) out.push({lvl:"bad",d,t:"plage de "+fmt(s)+" : pause de 30 min obligatoire dès 4h30 pour un mineur"}); }
+        else if(s>360 && !e.p) out.push({lvl:"warn",d,t:"plage de "+fmt(s)+" sans pause (20 min dès 6h)"});
         if(a&&b&&toMin(b)<=toMin(a)) out.push({lvl:"bad",d,t:"heure de fin avant l'heure de début"});
       }
       if(e.m2&&e.a1&&toMin(e.a1)<toMin(e.m2)) out.push({lvl:"bad",d,t:"l'après-midi commence avant la fin du matin"});
-      const nx=r[d+1];
-      if(d<6 && nx && TIMED(nx.s) && hasTimes(nx)){
-        const end=toMin(e.a2||e.m2), start=toMin(nx.m1||nx.a1);
-        if(end!=null&&start!=null){ const gap=24*60-end+start; if(gap<660) out.push({lvl:"bad",d,t:"repos de "+fmt(gap)+" avant le "+DAYN[d+1]+" (min 11h)"}); }
-      }
+      if(partiel&&e.m2&&e.a1){ const c=toMin(e.a1)-toMin(e.m2); if(c>120) out.push({lvl:"warn",d,t:"coupure de "+fmt(c)+" (2h maximum pour un temps partiel, sauf accord collectif)"}); }
+      if(minor){ if(intervals(e).some(([a,b])=>a<360||b>(u16?1200:1320))) out.push({lvl:"bad",d,t:"travail de nuit interdit pour un mineur (avant 6h ou après "+(u16?"20h, moins de 16 ans":"22h")+")"});
+        if(d===6) out.push({lvl:"bad",d,t:"repos du dimanche obligatoire pour un mineur"});
+        else if(holName(days[d])) out.push({lvl:"bad",d,t:"jour férié : travail interdit pour un mineur, sauf dérogation"}); }
       if(isClosed(d)) out.push({lvl:"bad",d,t:"magasin fermé ce jour : déclarez l'ouverture dans l'en-tête du jour"});
     }
   }
-  if(total>2880) out.push({lvl:"bad",d:null,t:"semaine de "+fmt(total)+" (max 48h)"});
-  else if(total>2640) out.push({lvl:"warn",d:null,t:"semaine de "+fmt(total)+" (au-delà de 44h)"});
+  // repos quotidien, y compris entre le dimanche et le lundi des semaines voisines
+  const {spans, known}=spansAround(emp); const byDay={};
+  spans.forEach(([a,b])=>{ const k=Math.floor(a/1440); const o=(byDay[k] ||= {s:a,e:b}); o.s=Math.min(o.s,a); o.e=Math.max(o.e,b); });
+  const minRest=u16?840:minor?720:660;
+  for(let D=-1; D<=6; D++){ const A=byDay[D], B=byDay[D+1]; if(!A||!B) continue; const gap=B.s-A.e; if(gap>=minRest) continue;
+    const lim=" (min "+(u16?"14h avant 16 ans":minor?"12h pour un mineur":"11h")+")";
+    if(D<0) out.push({lvl:"bad",d:0,t:"repos de "+fmt(gap)+" depuis le dimanche de la semaine précédente"+lim});
+    else if(D===6) out.push({lvl:"bad",d:6,t:"repos de "+fmt(gap)+" avant le lundi de la semaine suivante"+lim});
+    else out.push({lvl:"bad",d:D,t:"repos de "+fmt(gap)+" avant le "+DAYN[D+1]+lim}); }
+  // repos hebdomadaire : un jour de repos par semaine civile (12 jours d'affilée possibles avec un repos en début et en fin), 35h d'affilée
   const planned=r.some(Boolean);
-  if(planned && rest===0) out.push({lvl:"bad",d:null,t:"aucun jour de repos dans la semaine"});
+  if(planned && rest===0) out.push({lvl:"bad",d:null,t:"aucun jour de repos dans la semaine du lundi au dimanche (12 jours d'affilée au plus : repos en début de 1re semaine et en fin de 2e)"});
+  else if(planned && minor){ const restAt=d=>{ if(d>=0&&d<7){ const x=r[d]; return !x||x.s==="RH"||x.s==="FE"; } return !byDay[d]; };
+    let ok=false; for(let d=0; d<7; d++) if(restAt(d)&&(restAt(d-1)||restAt(d+1))) ok=true;
+    if(!ok) out.push({lvl:"bad",d:null,t:"mineur : 2 jours de repos consécutifs obligatoires chaque semaine"}); }
+  else if(planned){ let best=0;
+    for(let d=0; d<7; d++){ const x=r[d]; if(x&&!(x.s==="RH"||x.s==="FE")) continue;
+      const p=spans.filter(s=>s[1]<=d*1440).reduce((m,s)=>Math.max(m,s[1]),-Infinity), n=spans.filter(s=>s[0]>=(d+1)*1440).reduce((m,s)=>Math.min(m,s[0]),Infinity);
+      const g=(p===-Infinity||n===Infinity) ? Infinity : n-p; best=Math.max(best,g); }
+    if(best<2100) out.push({lvl:"bad",d:null,t:"repos hebdomadaire de "+fmt(best)+" d'affilée (minimum 35h : 24h + 11h)"}); }
+  if(total>(minor?2100:2880)) out.push({lvl:"bad",d:null,t:"semaine de "+fmt(total)+" (max "+(minor?"35h pour un mineur":"48h")+")"});
+  else if(!minor && total>2640) out.push({lvl:"warn",d:null,t:"semaine de "+fmt(total)+" (au-delà de 44h)"});
+  if(!minor){ const A=avg12(emp); if(A&&A.avg>2640) out.push({lvl:"bad",d:null,t:"moyenne de "+fmt(A.avg)+" sur les "+A.n+" dernières semaines (max 44h sur 12 semaines)"}); }
+  if(partiel && planned){
+    if(total>=2100) out.push({lvl:"bad",d:null,t:"temps partiel : semaine de "+fmt(total)+", la durée légale de 35h est atteinte (risque de requalification en temps plein)"});
+    else { const fr=+legal().hcFrac||0.1, hc=total-Math.round(base*60), lim=Math.round(base*60*fr);
+      if(hc>lim) out.push({lvl:"bad",d:null,t:"heures complémentaires : "+fmt(hc)+", au-delà du plafond de "+fmt(lim)+" ("+(fr>0.2?"1/3":"1/10e")+" du contrat)"}); } }
   return out;
 }
 const fmtH = n => String(Math.round(n*100)/100).replace(".",",");
@@ -914,6 +973,8 @@ function renderAlerts(){
     if(d===6 && !holName(ds[d])){ const r=sundayRank(); notes.push({lvl:"info",t:"Ouverture du dimanche "+dShort(ds[6])+" : "+n+" collaborateur"+(n>1?"s":"")+" planifié"+(n>1?"s":"")+". Dimanche d'ouverture n°"+r.n+" en "+r.y+" (12 au maximum sur arrêté du maire). Volontariat écrit, salaire au moins doublé et repos compensateur."}); }
     else { const hn=holName(ds[d]); notes.push({lvl:"info",t:"Ouverture le "+DAYN[d]+" "+dShort(ds[d])+" ("+hn+") : "+n+" collaborateur"+(n>1?"s":"")+" planifié"+(n>1?"s":"")+". "+(hn==="Fête du Travail"?"Le 1er mai travaillé est payé double.":"Majoration selon la convention collective ; vérifier l'ancienneté et le volontariat.")}); }
   }
+  for(let d=0; d<7; d++){ const ds0=ymd(ds[d]); if(ds0===soliDate(ds[d].getUTCFullYear())) notes.push({lvl:"info",t:"Journée de solidarité le "+DAYN[d]+" "+dShort(ds[d])+" : heures non payées dans la limite de 7h (au prorata pour un temps partiel), ni majorées ni comptées en heures sup."}); }
+  if(S.ctx&&S.ctx.id===S.weekId&&S.ctx.err) notes.push({lvl:"info",t:"Semaines voisines illisibles ("+S.ctx.err+") : repos entre deux semaines et moyenne sur 12 semaines non contrôlés."});
   for(const emp of emps()) for(const a of checks(emp)) items.push({...a,emp});
   for(let d=0; d<7; d++) for(const c of coverage(d)) items.push({lvl:'bad',d,t:c.t,emp:{name:'Présences'}});
   const bad=items.filter(i=>i.lvl==="bad").length;
@@ -921,7 +982,7 @@ function renderAlerts(){
   if(notes.length && !items.length){ box.querySelector("summary").innerHTML='<span class="pill info">'+notes.length+'</span> Ouverture exceptionnelle cette semaine · contrôles légaux : rien à signaler'; }
   else box.querySelector("summary").innerHTML = items.length
     ? '<span class="pill '+(bad?"bad":"warn")+'">'+items.length+'</span> Contrôles légaux et points à vérifier'
-    : '<span class="pill ok">✓</span> Contrôles légaux : rien à signaler (durées, repos 11h, 48h, jour de repos, pauses)';
+    : '<span class="pill ok">✓</span> Contrôles légaux : rien à signaler (durées, repos 11h et 35h, 48h et 44h sur 12 semaines, temps partiels, pauses)';
   box.querySelector("ul").innerHTML = notes.map(i=>'<li><span class="pill info">i</span> '+esc(i.t)+'</li>').join("") + items.map(i=>'<li><span class="pill '+i.lvl+'">'+(i.lvl==="bad"?"!":"?")+'</span> <b>'+esc(i.emp.name)+'</b>'+(i.d!=null?' · '+DAYN[i.d]:'')+' : '+esc(i.t)+'</li>').join("");
 }
 function anchorEmp(){ if(!S.anchor) return null; const id=S.anchor.split("|")[0]; return S.team.employees.find(e=>e.id===id)||null; }
@@ -1172,6 +1233,30 @@ async function flush(){
   finally{ S.writing=false; }
 }
 let teamTimer=null, teamWriting=false;
+// copies quotidiennes de la fiche équipe : on garde les 30 derniers jours
+async function purgeDailyBackups(day){ try{ const lim=addDaysS(day,-30); const q=await S.db.collection("config").get(); const old=q.docs.map(x=>x.id).filter(id=>/^sauvegarde-\d{4}-\d\d-\d\d$/.test(id)&&id.slice(11)<lim);
+    for(const id of old) await S.db.doc("config/"+id).delete(); if(old.length) jlog("sauvegarde", old.length+" copie(s) quotidienne(s) de plus de 30 jours supprimée(s)"); }
+  catch(e){ console.warn("Rotation des sauvegardes impossible", e); } }
+// sauvegarde complète téléchargée sur l'ordinateur (hors Firebase)
+const FULL_COLS=["config","weeks","demandes","realises","pauses","suivi","annonces","journal","palmares","resultats","access","annuaire"];
+// la sauvegarde exclut les justificatifs médicaux et les codes d'accès (régénérables)
+function bkClean(c, id, d){ if(!d) return d; d=clone(d);
+  if(c==="demandes"&&d.img){ d.img=""; d.justificatifPresent=true; }
+  if(c==="config"&&(id==="team"||id.startsWith("sauvegarde-"))&&Array.isArray(d.employees)) d.employees.forEach(e=>{ delete e.code; });
+  return d; }
+const fullBkDate = () => { try{ return localStorage.getItem("pf890-fullbk")||""; }catch(e){ return ""; } };
+async function fullBackup(btn){ if(!S.db){ $("#expData").click(); return; } if(btn){ btn.disabled=true; btn.textContent="Sauvegarde en cours…"; }
+  try{ const out={app:"Planning F890", at:new Date().toISOString(), collections:{}, manquantes:[]};
+    for(const c of FULL_COLS){ try{ const q=await S.db.collection(c).get(); out.collections[c]={}; q.docs.forEach(x=>{ out.collections[c][x.id]=bkClean(c, x.id, snapData(x)); });
+        if(c==="resultats") for(const x of q.docs){ const pq=await S.db.collection("resultats/"+x.id+"/parts").get(); pq.docs.forEach(y=>{ out.collections["resultats/"+x.id+"/parts"] ||= {}; out.collections["resultats/"+x.id+"/parts"][y.id]=snapData(y); }); } }
+      catch(e){ console.warn("Sauvegarde : collection "+c, e); out.manquantes.push(c+" ("+((e&&e.code)||e)+")"); } }
+    if(out.manquantes.length) toast("Collections non sauvegardées : "+out.manquantes.join(", "));
+    const n=Object.values(out.collections).reduce((t,o)=>t+Object.keys(o).length,0);
+    await save("Sauvegarde_complete_F890_"+todayStr()+".json", new Blob([JSON.stringify(out)],{type:"application/json"}));
+    try{ localStorage.setItem("pf890-fullbk", todayStr()); }catch(e){}
+    jlog("sauvegarde","Sauvegarde complète téléchargée ("+n+" documents)"); toast("Sauvegarde complète téléchargée : "+n+" documents"); if(S.view==="home") renderHome(); }
+  catch(e){ console.warn("Sauvegarde complète", e); toast("Sauvegarde complète impossible : "+((e&&(e.code||e.message))||e)); }
+  finally{ if(btn){ btn.disabled=false; btn.textContent="Sauvegarde complète"; } } }
 async function flushTeam(){
   clearTimeout(teamTimer); if(!S.teamDirty) return;
   if(!S.db){ S.teamDirty=false; const ok=localSave(); setSave(ok?"ok":"off",ok?"Enregistré sur cet ordinateur · "+nowHM():"Non enregistré : exportez vos données"); return; }
@@ -1180,7 +1265,8 @@ async function flushTeam(){
   const body=clone(S.team);
   if(S.fb && S.srvCount>=3 && (body.employees||[]).length < S.srvCount){ S.teamDirty=false; setSave("off","Enregistrement bloqué"); toast("Enregistrement bloqué : l'équipe affichée est incomplète. Rechargez la page (Ctrl+F5)."); return; }
   teamWriting=true; S.teamDirty=false;
-  try{ const day=todayStr(); if(S.fb && S.srvTeam && S.backupDay!==day){ S.backupDay=day; await S.db.doc("config/sauvegarde-"+day).set({...S.srvTeam, savedAt:new Date().toISOString()}); } }catch(e){}
+  try{ const day=todayStr(); if(S.fb && S.srvTeam && S.backupDay!==day){ S.backupDay=day; await S.db.doc("config/sauvegarde-"+day).set({...S.srvTeam, savedAt:new Date().toISOString()}); purgeDailyBackups(day); } }
+  catch(e){ console.warn("Sauvegarde quotidienne impossible", e); toast("Sauvegarde quotidienne de l'équipe impossible : "+((e&&e.code)||"connexion")); }
   try{ await S.db.doc("config/team").set(body); if(!S.dirty && !S.teamDirty) setSave("ok","Enregistré · "+nowHM()); if(S.fb) publishAnnuaire(); }
   catch(e){ S.teamDirty=true; setSave("off","Échec d'enregistrement, nouvel essai…"); teamTimer=setTimeout(flushTeam,3000); }
   finally{ teamWriting=false; }
@@ -1200,7 +1286,8 @@ async function loadWeek(id){
   try{ const snap=await S.db.doc("weeks/"+id).get(); return snapData(snap); }catch(e){ return null; }
 }
 function subscribeWeek(){
-  S.unsubWeek&&S.unsubWeek(); if(!S.db) return;
+  S.unsubWeek&&S.unsubWeek(); S.ctx=null; loadCtx(S.weekId);
+  if(!S.db) return;
   const id=S.weekId;
   S.unsubWeek=S.db.doc("weeks/"+id).onSnapshot(snap=>{
     if(id!==S.weekId || S.dirty || S.writing) return;
@@ -1879,6 +1966,20 @@ function bindHours(v){ const H=storeHours(); const save=()=>{ S.team.settings=S.
     r.querySelectorAll("[data-hi]").forEach(sel=>sel.onchange=()=>{ H[per][day][+sel.dataset.hi][+sel.dataset.hj]=sel.value; save(); }); });
   v.querySelectorAll("[data-hmo]").forEach(c=>c.onchange=()=>{ const m=+c.dataset.hmo; const L=new Set(H.high.months||[]); c.checked?L.add(m):L.delete(m); H.high.months=[...L].sort((a,b)=>a-b); save(); }); }
 
+function legalPanel(){ const L=legal(); const y=new Date().getFullYear();
+  const sol=yy=>{ const v=L.soli[yy]; return '<label class="rhf"><span>Journée de solidarité '+yy+'</span><span style="display:flex;gap:8px;align-items:center;flex-wrap:wrap"><input type="date" data-soli="'+yy+'" value="'+esc(v&&v!=="aucune"?v:"")+'"'+(v==="aucune"?" disabled":"")+'><label class="chk"><input type="checkbox" data-soln="'+yy+'"'+(v==="aucune"?" checked":"")+'> accomplie autrement</label><small class="st-mut">vide = lundi de Pentecôte ('+fdShort(holKey(yy,"Lundi de Pentecôte"))+')</small></span></label>'; };
+  return '<div class="panel"><h2>Règles légales</h2><p class="lead">Utilisées par les contrôles du planning et les compteurs. À ajuster selon votre convention collective et vos accords.</p>'+
+    '<label class="rhf"><span>Plafond des heures complémentaires (temps partiels)</span><select id="lg-hc"><option value="0.1"'+(L.hcFrac<=0.1?" selected":"")+'>1/10e du contrat (loi)</option><option value="0.3333"'+(L.hcFrac>0.1?" selected":"")+'>1/3 du contrat (accord collectif)</option></select></label>'+
+    '<label class="rhf"><span>Contingent annuel d\'heures supplémentaires (h)</span><input id="lg-ct" type="number" min="0" step="1" value="'+(+L.contingent||220)+'"></label>'+
+    sol(y)+sol(y+1)+
+    '<label class="rhf"><span>Conservation des justificatifs d\'absence (mois)</span><input id="lg-jm" type="number" min="1" step="1" value="'+(+L.justifMois||24)+'"></label><p class="st-mut" style="font-size:12px">Durée à valider avec votre cabinet comptable. Passé ce délai, l\'onglet Demandes propose de supprimer les photos et PDF d\'arrêts ; la trace de l\'absence reste.</p></div>'; }
+const holKey = (y,name) => { const H=holidays(y); return Object.keys(H).find(k=>H[k]===name)||""; };
+function bindLegal(v){ const save=patch=>{ const st=settings(); st.legal={...(st.legal||{}), ...patch}; jlog("regles","Règles légales modifiées : "+JSON.stringify(patch)); teamChanged(); };
+  const hc=v.querySelector("#lg-hc"); if(hc) hc.onchange=()=>save({hcFrac:+hc.value});
+  const jm=v.querySelector("#lg-jm"); if(jm) jm.onchange=()=>{ const n=Math.round(+jm.value); if(!(n>=1)){ toast("Durée invalide"); return; } save({justifMois:n}); };
+  const ct=v.querySelector("#lg-ct"); if(ct) ct.onchange=()=>{ const n=Math.round(+ct.value); if(!(n>=0)){ toast("Contingent invalide"); return; } save({contingent:n}); };
+  v.querySelectorAll("[data-soli]").forEach(i=>i.onchange=()=>{ const y=i.dataset.soli; if(i.value&&!i.value.startsWith(y)){ toast("Choisissez une date de "+y); return; } const o={...legal().soli}; if(i.value) o[y]=i.value; else delete o[y]; save({soli:o}); });
+  v.querySelectorAll("[data-soln]").forEach(c=>c.onchange=()=>{ const y=c.dataset.soln; const o={...legal().soli}; if(c.checked) o[y]="aucune"; else delete o[y]; save({soli:o}); }); }
 function renderTpl(){
   const v=$("#v-tpl"); const T=S.team.templates;
   const KL={day:"Journée",am:"Matin",pm:"Après-midi"};
@@ -1888,7 +1989,7 @@ function renderTpl(){
     '<td><div class="tkind">'+["day","am","pm"].map(x=>'<button type="button" data-k="'+x+'" aria-pressed="'+(x===k)+'">'+KL[x]+'</button>').join("")+'</div></td>'+
     ["m1","m2","a1","a2"].map(f=>{ const off=(k==="am"&&f[0]==="a")||(k==="pm"&&f[0]==="m"); return '<td>'+(off?'<span class="st-mut">—</span>':timeSel("t-"+f+"-"+i,f,t[f],false,' data-f="'+f+'"'))+'</td>'; }).join("")+
     '<td><input type="checkbox" id="t-p-'+i+'" data-f="p"'+(t.p?" checked":"")+'></td><td style="font-family:var(--font-mono);font-weight:600">'+fmt(tplMin(t))+'</td><td style="white-space:nowrap"><button class="btn ghost" data-a="up">↑</button><button class="btn ghost" data-a="down">↓</button><button class="btn ghost danger" data-a="del">Supprimer</button></td></tr>'; }).join("")+
-  '</tbody></table></div><div class="tadd"><button class="btn primary" data-add="day">+ Journée</button><button class="btn" data-add="am">+ Matin</button><button class="btn" data-add="pm">+ Après-midi</button></div></div>'+hoursPanel();
+  '</tbody></table></div><div class="tadd"><button class="btn primary" data-add="day">+ Journée</button><button class="btn" data-add="am">+ Matin</button><button class="btn" data-add="pm">+ Après-midi</button></div></div>'+hoursPanel()+legalPanel();
   v.querySelectorAll("tr[data-i]").forEach(tr=>{ const i=+tr.dataset.i; const t=T[i];
     tr.querySelectorAll("[data-f]").forEach(inp=>inp.onchange=()=>{ const f=inp.dataset.f;
       if(f==="p") t.p=inp.checked; else t[f]=inp.value;
@@ -1903,7 +2004,7 @@ function renderTpl(){
     tr.querySelectorAll("[data-a]").forEach(b=>b.onclick=()=>{ const a=b.dataset.a;
       if(a==="up"&&i>0) [T[i-1],T[i]]=[T[i],T[i-1]]; if(a==="down"&&i<T.length-1) [T[i+1],T[i]]=[T[i],T[i+1]]; if(a==="del") T.splice(i,1); teamChanged(); });
   });
-  bindHours(v);
+  bindHours(v); bindLegal(v);
   v.querySelectorAll("[data-add]").forEach(b=>b.onclick=()=>{ const k=b.dataset.add;
     T.push(k==="am"?{m1:"09:45",m2:"13:00",a1:"",a2:"",p:false}:k==="pm"?{m1:"",m2:"",a1:"14:00",a2:"19:00",p:false}:{m1:"09:45",m2:"13:00",a1:"14:00",a2:"18:00",p:true}); teamChanged(); });
 }
@@ -2464,30 +2565,80 @@ function monthCounters(ym){
   const W=S.allWeeks||{}; const res=[];
   for(const e of emps()){
     const rets=absList().filter(a=>a.empId===e.id&&a.type==="RET"&&a.from.startsWith(ym));
-    const c={workD:0, reelW:0, retN:rets.length, retM:rets.reduce((t,a)=>t+(+a.min||0),0), emp:e, work:0, cp:0, m:0, ab:0, fo:0, fe:0, sunN:0, sunM:0, holN:0, holM:0, hs25:0, hs50:0, hc10:0, hc25:0, weeks:0, cpSince:0};
+    const c={workD:0, reelW:0, retN:rets.length, retM:rets.reduce((t,a)=>t+(+a.min||0),0), emp:e, work:0, cp:0, m:0, ab:0, fo:0, fe:0, sunN:0, sunM:0, holN:0, holM:0, hs25:0, hs50:0, hc10:0, hc25:0, weeks:0, cpSince:0, soli:0, cpAcq:0};
     for(let t=first.getTime(); t<=last.getTime(); t+=864e5){
       const dt=new Date(t), wid=isoWeekId(new Date(dt.getUTCFullYear(),dt.getUTCMonth(),dt.getUTCDate())), d=(dt.getUTCDay()+6)%7;
       const x=((W[wid]||{}).entries||{})[e.id]?.[d]; if(!x) continue; const m=reelM(W[wid],e.id,d,x);
-      if(x.s==="T"){ c.work+=m; if(m) c.workD++; if(d===6&&m){ c.sunN++; c.sunM+=m; } if(holName(dt)&&m){ c.holN++; c.holM+=m; } }
+      const isSoli=ymd(dt)===soliDate(dt.getUTCFullYear());
+      if(x.s==="T"){ c.work+=m; if(m) c.workD++; if(d===6&&m){ c.sunN++; c.sunM+=m; } if(holName(dt)&&m&&!isSoli){ c.holN++; c.holM+=m; } }
       if(x.s==="FO"){ c.fo+=m; c.work+=m; }
       if(x.s==="CP"&&d<6) c.cp++; if(x.s==="M") c.m++; if(x.s==="AB") c.ab++; if(x.s==="FE") c.fe++;
     }
     // heures sup : semaines se terminant dans le mois
     for(const wid of Object.keys(W)){ const sun=weekDays(wid)[6]; if(sun<first||sun>last) continue;
-      const r=(W[wid].entries||{})[e.id]||[]; const t=r.reduce((a,x,dd)=>a+reelM(W[wid],e.id,dd,x),0); if(!r.some(Boolean)) continue; c.weeks++; if(W[wid].reelOk) c.reelW++;
+      const r=(W[wid].entries||{})[e.id]||[]; let t=r.reduce((a,x,dd)=>a+reelM(W[wid],e.id,dd,x),0); if(!r.some(Boolean)) continue; c.weeks++; if(W[wid].reelOk) c.reelW++;
       const b=W[wid].bases&&W[wid].bases[e.id]!=null?+W[wid].bases[e.id]:(+e.base||0);
+      const sl=soliOfWeek(W[wid], wid, e.id, b); c.soli+=sl; t-=sl;
       if(b>=35){ c.hs25+=Math.min(Math.max(0,t-2100),480); c.hs50+=Math.max(0,t-2580); }
       else { const hc=Math.max(0,t-Math.round(b*60)); const lim=Math.round(b*6); c.hc10+=Math.min(hc,lim); c.hc25+=Math.max(0,hc-lim); }
     }
     // CP restants depuis la date de référence
     if(e.cpDate){ for(const wid of Object.keys(W)){ const ds=weekDays(wid); const r=(W[wid].entries||{})[e.id]||[]; for(let d=0; d<6; d++){ const day=ymd(ds[d]); if(r[d]&&r[d].s==="CP"&&day>=e.cpDate&&day<=ymd(last)) c.cpSince++; } } }
-    c.cpLeft = e.cpSolde!=null&&e.cpSolde!=="" ? (+e.cpSolde - c.cpSince) : null;
+    if(e.cpDate){ const td=todayStr(), end=ymd(last)<td?ymd(last):td; c.cpAcq=end>e.cpDate?Math.round(cpAcquis(e, e.cpDate, end)*100)/100:0; }
+    c.cpLeft = e.cpSolde!=null&&e.cpSolde!=="" ? Math.round((+e.cpSolde + c.cpAcq - c.cpSince)*100)/100 : null;
     c.pzOver=pzOverMonth(e.id, ym); c.work=Math.max(0,c.work-c.pzOver);
     res.push(c);
   }
   return res;
 }
 const hh = m => m ? fmt(m) : "–";
+// minutes de la journée de solidarité travaillées dans une semaine (7h max, au prorata d'un temps partiel)
+function avg12At(e, lw){ const W=S.allWeeks||{}; let tot=0, n=0;
+  for(let k=-11;k<=0;k++){ const wid=shiftWeek(lw,k), w=W[wid]; const r=w&&(w.entries||{})[e.id]; if(!r||!r.some(Boolean)) continue; tot+=r.reduce((a,x,dd)=>a+reelM(w,e.id,dd,x),0); n++; }
+  return n>=4 ? Math.round(tot/n) : null; }
+function legalCells(c){ const ct=Math.round((+legal().contingent||220)*60);
+  return '<td class="n">'+(c.avg12==null?"–":c.avg12>2640?'<b class="bad">'+fmt(c.avg12)+'</b>':fmt(c.avg12))+'</td><td class="n">'+(c.hsY==null||(+c.emp.base||0)<35?"–":(c.hsY>=ct?'<b class="bad">':c.hsY>=ct*0.8?'<b class="warn">':'<span>')+fmt(c.hsY)+' / '+fmt(ct)+(c.hsY>=ct*0.8?'</b>':'</span>'))+'</td>'; }
+function cpPanelHTML(rows, Y){ const L=rows.filter(c=>c.emp&&c.emp.id&&!c.emp.archived); if(!L.length) return "";
+  return '<div class="panel"><h2>Congés payés · '+Y+'</h2><p class="lead">Congé principal : au moins 12 jours ouvrables continus entre le 1er mai et le 31 octobre. Fractionnement : jours de congé principal pris du 1er novembre au 30 avril (hors 5e semaine), 3 à 5 jours = 1 jour en plus, 6 jours et plus = 2 jours, sauf renonciation écrite du salarié. Période de prise à communiquer au moins 2 mois avant le 1er mai, ordre des départs au moins 1 mois avant chaque départ.</p>'+
+  '<div class="tbl"><table class="cpt"><thead><tr><th>Collaborateur</th><th>Solde de référence</th><th>CP acquis depuis</th><th>CP pris depuis</th><th>CP restants</th><th>Congé principal '+Y+'</th><th>Pris nov. '+Y+' → avr. '+(Y+1)+' (hors 5e sem.)</th><th>Fractionnement</th></tr></thead><tbody>'+
+  L.map(c=>{ const e=c.emp, b=cpBlocks(e, Y); return '<tr><td><b>'+esc(e.name)+'</b></td><td class="n">'+(e.cpSolde!=null&&e.cpSolde!==""?fmtH(+e.cpSolde)+' j au '+fdShort(e.cpDate||""):'<span class="st-mut">à saisir</span>')+'</td><td class="n">'+(c.cpAcq?fmtH(c.cpAcq):"–")+'</td><td class="n">'+(c.cpSince||"–")+'</td><td class="n"><b>'+(c.cpLeft==null?"–":fmtH(c.cpLeft))+'</b></td><td class="n">'+(b.principal>=12?'<span class="pill ok">'+b.principal+' j continus</span>':'<span class="pill warn">'+(b.principal?b.principal+' j au plus':'aucun')+'</span>')+'</td><td class="n">'+(b.hors||"–")+'</td><td class="n">'+(b.fract?'+'+b.fract+' j':'–')+'</td></tr>'; }).join("")+'</tbody></table></div></div>'; }
+function soliOfWeek(w, wid, empId, base){ const ds=weekDays(wid); for(let d=0; d<7; d++){ if(ymd(ds[d])!==soliDate(ds[d].getUTCFullYear())) continue;
+  const x=((w&&w.entries)||{})[empId]?.[d]; if(!x||x.s!=="T") return 0; return Math.min(reelM(w,empId,d,x), soliMin(base)); } return 0; }
+// heures supplémentaires de l'année (temps pleins), pour le contingent annuel
+function hsYear(e, y){ const W=S.allWeeks||{}; let hs=0;
+  for(const wid of Object.keys(W)){ if(weekDays(wid)[6].getUTCFullYear()!==y) continue; const w=W[wid]; const r=(w.entries||{})[e.id]||[]; if(!r.some(Boolean)) continue;
+    const b=w.bases&&w.bases[e.id]!=null?+w.bases[e.id]:(+e.base||0); if(b<35) continue;
+    const t=r.reduce((a,x,dd)=>a+reelM(w,e.id,dd,x),0)-soliOfWeek(w,wid,e.id,b); hs+=Math.max(0,t-2100); }
+  return hs; }
+// CP acquis entre deux dates (jours ouvrables) : 2,5 j par mois de travail effectif, 2 j par mois d'arrêt maladie non professionnel
+const CP_FULL = ["AT","MAT","EVF","FO"];
+const CP_ZERO = ["AI","AA","CSS"];
+function cpAcquis(e, from, to){ const W=S.allWeeks||{}; const f=fiche(e); const A={}; absList().forEach(a=>{ A[a.id]=a.type; });
+  const absOn=day=>absList().find(a=>a.empId===e.id&&a.type!=="RET"&&absOverlap(a,day));
+  const per={}; // par période de référence (1er juin → 31 mai) : travail effectif, maladie non professionnelle
+  let [y,m,d]=addDaysS(from,1).split("-").map(Number); let t=Date.UTC(y,m-1,d); const [ty,tm,td2]=to.split("-").map(Number); const tEnd=Date.UTC(ty,tm-1,td2);
+  for(; t<=tEnd; t+=864e5){ const dt=new Date(t), day=ymd(dt);
+    if(f.sortie&&day>f.sortie) break; if(f.entree&&day<f.entree) continue;
+    const Y=dt.getUTCFullYear(), M=dt.getUTCMonth()+1, dim=new Date(Date.UTC(Y,M,0)).getUTCDate(); const pk=M>=6?Y:Y-1; const P=(per[pk] ||= {w:0,mal:0});
+    const a=absOn(day); const x=((W[weekOfDate(day)]||{}).entries||{})[e.id]?.[dayIdxOfDate(day)];
+    const typ=a?a.type:(x&&x.abs?A[x.abs]:null);
+    if(typ==="MAL"||(!typ&&x&&x.s==="M")) P.mal+=2/dim;
+    else if(typ&&CP_ZERO.includes(typ)) {}
+    else if(!typ&&x&&x.s==="AB") {}
+    else P.w+=2.5/dim; }
+  return Object.values(per).reduce((s,P)=>s+Math.min(30, P.w+Math.min(24,P.mal)),0); }
+// congé principal (bloc continu de CP entre le 1er mai et le 31 octobre) et jours de fractionnement
+function cpBlocks(e, y){ const W=S.allWeeks||{}; const st=day=>{ const x=((W[weekOfDate(day)]||{}).entries||{})[e.id]?.[dayIdxOfDate(day)]; return x?x.s:""; };
+  let best=0, cur=0, ete=0;
+  for(const day of datesBetween(y+"-05-01", y+"-10-31")){ const s0=st(day), d=dayIdxOfDate(day), [Y,M,D]=day.split("-").map(Number);
+    const fer=!!holName(new Date(Date.UTC(Y,M-1,D)));
+    if(d<6&&!fer&&(s0==="CP"||(s0==="RH"&&cur>0))) { cur++; best=Math.max(best,cur); if(s0==="CP") ete++; }
+    else if(d===6||fer||s0==="FE"||s0==="RH") {}
+    else cur=0; }
+  // fractionnement : part des 4 premières semaines (24 j) prise du 1er novembre au 30 avril suivant, 5e semaine exclue
+  let hiver=0; for(const day of datesBetween(y+"-11-01", (y+1)+"-04-30")){ if(st(day)==="CP"&&dayIdxOfDate(day)<6) hiver++; }
+  const hors=Math.min(hiver, Math.max(0, 24-ete));
+  return {principal:best, ete, hors, fract: hors>=6?2:hors>=3?1:0}; }
 async function renderCpt(){
   const v=$("#v-cpt"); if(!S.cptMonth){ const n=new Date(); S.cptMonth=n.getFullYear()+"-"+pad(n.getMonth()+1); }
   if(!S.allWeeks){ v.innerHTML='<div class="panel">Chargement des semaines…</div>'; await loadAllWeeks(); }
@@ -2495,6 +2646,7 @@ async function renderCpt(){
   const CL=(RHT().closed||{})[S.cptMonth]; let rows; const [Y,M]=S.cptMonth.split("-").map(Number);
   if(CL) rows=CL.rows.map(r=>({...r, emp:S.team.employees.find(e=>e.id===r.empId)||{id:r.empId,name:r.name,base:r.base}}));
   else { rows=monthCounters(S.cptMonth); await primesForMonth(S.cptMonth, rows); } if(S.view!=="cpt") return;
+  if(!CL) rows.forEach(c=>{ if(!c.emp||!c.emp.id||c.avg12!==undefined) return; const lw=isoWeekId(new Date(Y,M,0)); c.avg12=avg12At(c.emp, lw); c.hsY=hsYear(c.emp, Y); });
   const months=[]; for(let i=-6;i<=2;i++){ const d=new Date(Y,M-1+i,1); months.push(d.getFullYear()+"-"+pad(d.getMonth()+1)); }
   const mName = ym => { const [y,m]=ym.split("-").map(Number); return ["janvier","février","mars","avril","mai","juin","juillet","août","septembre","octobre","novembre","décembre"][m-1]+" "+y; };
   v.innerHTML='<div class="panel"><div style="display:flex;gap:10px;flex-wrap:wrap;align-items:center;justify-content:space-between"><h2>Compteurs · '+mName(S.cptMonth)+'</h2>'+
@@ -2502,9 +2654,9 @@ async function renderCpt(){
   '<button class="btn" id="cpt-reload">Actualiser</button><button class="btn primary" id="cpt-xlsx">Export paie Excel</button><button class="btn primary" id="cpt-pdf">Récapitulatif PDF</button>'+(CL?'':'<button class="btn" id="cpt-close" title="Fige heures, absences et primes du mois avant transmission au comptable">Clôturer la paie</button>')+'</div></div>'+
   (CL?'<div class="notice cl"><b>Paie de '+mName(S.cptMonth)+' clôturée le '+when(CL.at)+'.</b> Les chiffres ci-dessous sont figés ; une correction se fait en régularisation le mois suivant. <span class="clr"><input id="cpt-motif" placeholder="Motif de réouverture"><button class="btn ghost" id="cpt-reopen">Rouvrir</button></span></div>':'')+
   '<p class="lead">Heures supplémentaires et complémentaires calculées sur les semaines qui se terminent dans le mois (+25 % de 35h à 43h, +50 % au-delà ; temps partiels : +10 % jusqu\'à 1/10e du contrat, +25 % au-delà). CP en jours ouvrables. Les dépassements de pause (au-delà de 10 min par jour) sont déduits des heures travaillées.</p>'+
-  '<div class="tbl"><table class="cpt"><thead><tr><th>Collaborateur</th><th>Contrat</th><th>Heures travaillées</th><th>HS 25 %</th><th>HS 50 %</th><th>HC 10 %</th><th>HC 25 %</th><th>Dimanches</th><th>Fériés travaillés</th><th>Fériés chômés</th><th>CP pris</th><th>CP restants</th><th>Maladie (j)</th><th>Absences (j)</th><th>Formation</th><th>Retards</th><th>Dépassement pauses</th><th>Primes</th></tr></thead><tbody>'+
-  rows.map(c=>'<tr><td><b>'+esc(c.emp.name)+'</b></td><td>'+fmtH(+c.emp.base||0)+'h</td><td class="n">'+hh(c.work)+'</td><td class="n">'+hh(c.hs25)+'</td><td class="n">'+hh(c.hs50)+'</td><td class="n">'+hh(c.hc10)+'</td><td class="n">'+hh(c.hc25)+'</td><td class="n">'+(c.sunN?c.sunN+" · "+fmt(c.sunM):"–")+'</td><td class="n">'+(c.holN?c.holN+" · "+fmt(c.holM):"–")+'</td><td class="n">'+(c.fe||"–")+'</td><td class="n">'+(c.cp||"–")+'</td><td class="n">'+(c.cpLeft==null?'<span class="st-mut">à saisir</span>':fmtH(c.cpLeft))+'</td><td class="n">'+(c.m||"–")+'</td><td class="n">'+(c.ab||"–")+'</td><td class="n">'+hh(c.fo)+'</td><td class="n">'+(c.retN?c.retN+" · "+c.retM+" min":"–")+'</td><td class="n">'+(c.pzOver?'<b class="bad">'+fmt(c.pzOver)+'</b>':'–')+'</td><td class="n"><b>'+(c.prime?eur2(c.prime.total):'–')+'</b>'+(c.prime&&c.prime.pending?'<br><small class="st-mut">'+c.prime.pending+' j en attente</small>':'')+'</td></tr>').join("")+
-  '</tbody></table></div><p class="st-mut" style="margin-top:8px">Les soldes CP se saisissent dans l\'onglet Collaborateurs (solde et date de référence). '+(rows.some(c=>c.reelW)?'Heures réelles validées prises en compte.':'Heures du planning (aucune semaine validée en heures réelles).')+'</p></div>'+primesPanel(rows)+reelPanelHTML();
+  '<div class="tbl"><table class="cpt"><thead><tr><th>Collaborateur</th><th>Contrat</th><th>Heures travaillées</th><th>HS 25 %</th><th>HS 50 %</th><th>HC 10 %</th><th>HC 25 %</th><th>Dimanches</th><th>Fériés travaillés</th><th>Fériés chômés</th><th>CP pris</th><th>CP acquis</th><th>CP restants</th><th>Solidarité</th><th>Moy. 12 sem.</th><th>HS de l\'année</th><th>Maladie (j)</th><th>Absences (j)</th><th>Formation</th><th>Retards</th><th>Dépassement pauses</th><th>Primes</th></tr></thead><tbody>'+
+  rows.map(c=>'<tr><td><b>'+esc(c.emp.name)+'</b></td><td>'+fmtH(+c.emp.base||0)+'h</td><td class="n">'+hh(c.work)+'</td><td class="n">'+hh(c.hs25)+'</td><td class="n">'+hh(c.hs50)+'</td><td class="n">'+hh(c.hc10)+'</td><td class="n">'+hh(c.hc25)+'</td><td class="n">'+(c.sunN?c.sunN+" · "+fmt(c.sunM):"–")+'</td><td class="n">'+(c.holN?c.holN+" · "+fmt(c.holM):"–")+'</td><td class="n">'+(c.fe||"–")+'</td><td class="n">'+(c.cp||"–")+'</td><td class="n">'+(c.cpAcq?fmtH(c.cpAcq):"–")+'</td><td class="n">'+(c.cpLeft==null?'<span class="st-mut">à saisir</span>':fmtH(c.cpLeft))+'</td><td class="n">'+hh(c.soli)+'</td>'+legalCells(c)+'<td class="n">'+(c.m||"–")+'</td><td class="n">'+(c.ab||"–")+'</td><td class="n">'+hh(c.fo)+'</td><td class="n">'+(c.retN?c.retN+" · "+c.retM+" min":"–")+'</td><td class="n">'+(c.pzOver?'<b class="bad">'+fmt(c.pzOver)+'</b>':'–')+'</td><td class="n"><b>'+(c.prime?eur2(c.prime.total):'–')+'</b>'+(c.prime&&c.prime.pending?'<br><small class="st-mut">'+c.prime.pending+' j en attente</small>':'')+'</td></tr>').join("")+
+  '</tbody></table></div><p class="st-mut" style="margin-top:8px">Les soldes CP se saisissent dans l\'onglet Collaborateurs : solde total du bulletin (N-1 + N) à la date de référence ; les CP acquis ensuite sont calculés (2,5 j par mois, 2 j par mois d\'arrêt maladie, accident du travail compris en totalité). Estimation : le bulletin de paie fait foi. '+(rows.some(c=>c.reelW)?'Heures réelles validées prises en compte.':'Heures du planning (aucune semaine validée en heures réelles).')+'</p></div>'+cpPanelHTML(rows, Y)+primesPanel(rows)+reelPanelHTML();
   $("#cpt-m").onchange=ev=>{ S.cptMonth=ev.target.value; renderCpt(); };
   $("#cpt-reload").onclick=async()=>{ S.allWeeks=null; renderCpt(); };
   $("#cpt-xlsx").onclick=()=>exportPaieXlsx(rows, mName(S.cptMonth));
@@ -2543,8 +2695,8 @@ function bindPrimes(v){
 const r2 = n => Math.round((+n||0)*100)/100;
 function exportPaieXlsx(rows, label){
   if(!window.XLSX){ toast("Le module Excel n'a pas pu se charger. Rechargez la page."); return; }
-  const head=["Salarié","Poste","Contrat (h/sem)","Heures travaillées","HS 25 %","HS 50 %","H. compl. 10 %","H. compl. 25 %","Dimanches (nb)","Dimanches (h)","Fériés travaillés (nb)","Fériés travaillés (h)","Fériés chômés (j)","CP pris (j ouvrables)","CP restants (j)","Maladie (j)","Absences (j)","Formation (h)","Retards (nb)","Retards (min)","Dépassement pauses (min, déduit)","Prime objectif (€)", ...(bareme().items||[]).map(it=>"Prime "+it.name+" (€)"), "Prime NPS (€)","Prime expert (€)","Total primes brut (€)"];
-  const data=[["SAS ANA – Boulanger Flers F890 · Éléments variables de paie · "+label],[],head, ...rows.map(c=>[c.emp.name,c.emp.role||"",+c.emp.base||0,dec(c.work),dec(c.hs25),dec(c.hs50),dec(c.hc10),dec(c.hc25),c.sunN,dec(c.sunM),c.holN,dec(c.holM),c.fe,c.cp,c.cpLeft==null?"":c.cpLeft,c.m,c.ab,dec(c.fo),c.retN,c.retM,c.pzOver,c.prime?r2(c.prime.tier):0, ...(bareme().items||[]).map(it=>{ const l=c.prime&&(c.prime.lines||[]).find(x=>x.id===it.id); return l?r2(l.amt):0; }), c.prime?r2(c.prime.nps):0, c.prime?r2(c.prime.expert):0, c.prime?r2(c.prime.total):0])];
+  const head=["Salarié","Poste","Contrat (h/sem)","Heures travaillées","HS 25 %","HS 50 %","H. compl. 10 %","H. compl. 25 %","Dimanches (nb)","Dimanches (h)","Fériés travaillés (nb)","Fériés travaillés (h)","Fériés chômés (j)","CP pris (j ouvrables)","CP acquis depuis la référence (j)","CP restants (j)","Journée de solidarité (h, non payée)","Maladie (j)","Absences (j)","Formation (h)","Retards (nb)","Retards (min)","Dépassement pauses (min, déduit)","Prime objectif (€)", ...(bareme().items||[]).map(it=>"Prime "+it.name+" (€)"), "Prime NPS (€)","Prime expert (€)","Total primes brut (€)"];
+  const data=[["SAS ANA – Boulanger Flers F890 · Éléments variables de paie · "+label],[],head, ...rows.map(c=>[c.emp.name,c.emp.role||"",+c.emp.base||0,dec(c.work),dec(c.hs25),dec(c.hs50),dec(c.hc10),dec(c.hc25),c.sunN,dec(c.sunM),c.holN,dec(c.holM),c.fe,c.cp,c.cpAcq||0,c.cpLeft==null?"":c.cpLeft,dec(c.soli||0),c.m,c.ab,dec(c.fo),c.retN,c.retM,c.pzOver,c.prime?r2(c.prime.tier):0, ...(bareme().items||[]).map(it=>{ const l=c.prime&&(c.prime.lines||[]).find(x=>x.id===it.id); return l?r2(l.amt):0; }), c.prime?r2(c.prime.nps):0, c.prime?r2(c.prime.expert):0, c.prime?r2(c.prime.total):0])];
   const ws=XLSX.utils.aoa_to_sheet(data); ws["!cols"]=head.map((h,i)=>({wch:i<2?22:14}));
   const wb=XLSX.utils.book_new(); XLSX.utils.book_append_sheet(wb,ws,"Paie");
   { const P=[["Primes · "+label+" (montants bruts validés)"],[],["Salarié","Objectif PO (€)","PO réalisé (€)","Atteinte (%)","Prime objectif (€)","Service","Quantité / montant","Prime service (€)","Prime NPS (€)","Prime expert (€)","Total (€)","Saisies en attente"]];
@@ -2585,7 +2737,7 @@ function exportPaiePdf(rows, label){
       [c.emp.name,e0(p.po),e2(p.tier),...ITS.map(it=>{ const l=(p.lines||[]).find(x=>x.id===it.id); return l?e2(l.amt):"-"; }),e2(p.nps),e2(p.expert),e2(p.total)].forEach((v2,i)=>{ doc.setFontSize(i?7.5:8.5); doc.text(String(v2),px+3,y+12); px+=pw[i]; }); y+=18; });
     doc.setFont("helvetica","bold"); doc.text("Total équipe : "+e2(R.reduce((t,c)=>t+c.prime.total,0)),30,y+14); doc.setFont("helvetica","normal"); y+=20; } }
   doc.setFontSize(7.5); doc.setTextColor(C.muted);
-  doc.text("HS : semaines se terminant dans le mois, +25 % de 35h à 43h, +50 % au-delà. HC : temps partiels, +10 % jusqu'à 1/10e du contrat, +25 % au-delà. CP en jours ouvrables.",30,y+18);
+  doc.text("HS : semaines se terminant dans le mois, +25 % de 35h à 43h, +50 % au-delà. HC : temps partiels, +10 % jusqu'à 1/10e du contrat, +25 % au-delà. CP en jours ouvrables. Journée de solidarité exclue des heures sup.",30,y+18);
   doc.text("Édité le "+new Date().toLocaleDateString("fr-FR")+" - Éric TABARAND, Président - SAS ANA",30,y+30);
   save("Recap_paie_F890_"+fileSafe(label)+".pdf", doc.output("blob"));
 }
@@ -2611,14 +2763,20 @@ function renderDem(){
   v.innerHTML='<div class="panel"><div style="display:flex;justify-content:space-between;flex-wrap:wrap;gap:10px;align-items:center"><h2>Demandes</h2><div class="seg"><button data-df="attente" aria-pressed="'+(f==="attente")+'">En attente ('+all.filter(r=>r.status==="attente").length+')</button><button data-df="faites" aria-pressed="'+(f!=="attente")+'">Traitées</button></div></div>'+
   (S.db?'':'<div class="notice">Les demandes des collaborateurs arrivent ici dans la version en ligne.</div>')+
   (list.length?'<div class="dem-list">'+list.map(r=>'<div class="dem"><div class="dem-hd"><b>'+esc(empName(r.empId))+'</b><span class="pill '+(r.status==="attente"?"warn":(r.status==="acceptée"||r.status==="enregistrée"||r.status==="traitée")?"ok":"bad")+'">'+esc(r.status==="attente"?"En attente":r.status)+'</span></div>'+
-    '<div><b>'+esc(DTYPE[r.type]||r.type)+'</b> · '+esc(demText(r))+'</div>'+(r.note?'<div class="st-mut">« '+esc(r.note)+' »</div>':'')+(r.img?'<details class="just"><summary>📎 Voir le justificatif</summary>'+(/^data:image\//.test(r.img)?'<img src="'+esc(r.img)+'" alt="Justificatif">':'<a href="'+esc(r.img)+'" download="justificatif-'+esc(r.empId)+'.pdf">Télécharger le PDF</a>')+'</details>':(r.type==="ABSENCE"?'<div class="st-mut" style="font-size:12px">Justificatif non joint</div>':''))+(r.type==="ECHANGE"&&r.status==="attente"?echCheck(r):'')+
+    '<div><b>'+esc(DTYPE[r.type]||r.type)+'</b> · '+esc(demText(r))+'</div>'+(r.note?'<div class="st-mut">« '+esc(r.note)+' »</div>':'')+(r.img?'<details class="just"><summary>📎 Voir le justificatif</summary>'+(/^data:image\//.test(r.img)?'<img src="'+esc(r.img)+'" alt="Justificatif">':'<a href="'+esc(r.img)+'" download="justificatif-'+esc(r.empId)+'.pdf">Télécharger le PDF</a>')+'</details>':(r.imgPurge?'<div class="st-mut" style="font-size:12px">Justificatif supprimé le '+when(r.imgPurge)+' (fin de conservation)</div>':r.type==="ABSENCE"?'<div class="st-mut" style="font-size:12px">Justificatif non joint</div>':''))+(r.type==="ECHANGE"?echAccordHTML(r):'')+(r.type==="ECHANGE"&&r.status==="attente"?echCheck(r):'')+
     '<div class="st-mut" style="font-size:12px">Envoyée le '+(r.createdAt?when(r.createdAt):"")+(r.decidedAt?' · traitée le '+when(r.decidedAt):'')+(r.reponse?' · réponse : '+esc(r.reponse):'')+'</div>'+
     (r.status==="attente"?'<div class="dem-act"><input id="rep-'+esc(r.id)+'" placeholder="Réponse (facultatif)"><button class="btn primary" data-dok="'+esc(r.id)+'">'+(r.type==="ERREUR"?"Marquer traité":r.type==="ABSENCE"?"Enregistrer l'absence":"Accepter")+'</button>'+(r.type!=="ERREUR"&&r.type!=="ABSENCE"?'<button class="btn danger" data-dko="'+esc(r.id)+'">Refuser</button>':'')+'</div>':'')+'</div>').join("")+'</div>'
-   :'<div class="emptystate">'+(f==="attente"?"Aucune demande en attente.":"Aucune demande traitée.")+'</div>')+'</div>';
+   :'<div class="emptystate">'+(f==="attente"?"Aucune demande en attente.":"Aucune demande traitée.")+'</div>')+
+  (()=>{ const n=oldJustifs().length; return n?'<div class="notice">'+n+' justificatif'+(n>1?'s':'')+' d\'absence de plus de '+legal().justifMois+' mois. <button class="btn" id="purgeJ">Supprimer ces justificatifs</button></div>':''; })()+'</div>';
+  const pj=$("#purgeJ"); if(pj) pj.onclick=async()=>{ if(pj.dataset.sure!=="1"){ pj.dataset.sure="1"; pj.textContent="Confirmer la suppression définitive ?"; return; } pj.disabled=true; await purgeJustifs(); renderDem(); };
   v.querySelectorAll("[data-df]").forEach(b=>b.onclick=()=>{ S.demFilter=b.dataset.df; renderDem(); });
   v.querySelectorAll("[data-dok]").forEach(b=>b.onclick=()=>decide(b.dataset.dok,true));
   v.querySelectorAll("[data-dko]").forEach(b=>b.onclick=()=>decide(b.dataset.dko,false));
 }
+function oldJustifs(){ const lim=addDaysS(todayStr(), -Math.round((+legal().justifMois||24)*30.44)); return (S.demandes||[]).filter(r=>r.img&&r.status!=="attente"&&((r.to||r.from||(r.createdAt||"").slice(0,10))<lim)); }
+async function purgeJustifs(){ const L=oldJustifs(); let k=0;
+  for(const r of L){ try{ await S.db.doc("demandes/"+r.id).update({img:"", imgPurge:new Date().toISOString()}); k++; }catch(e){ console.warn("Suppression justificatif", r.id, e); toast("Suppression impossible pour la demande de "+empName(r.empId)+" : "+((e&&e.code)||e)); } }
+  if(k){ jlog("rgpd", k+" justificatif(s) d'absence supprimé(s) après "+legal().justifMois+" mois de conservation"); toast(k+" justificatif"+(k>1?"s":"")+" supprimé"+(k>1?"s":"")); } }
 async function editWeekDoc(wid, fn){
   if(wid===S.weekId){ pushUndo(); fn(S.week); changed(); return; }
   const w=(await loadWeek(wid))||{entries:{},open:{},sent:{},sentStore:null,bases:{}}; w.entries=w.entries||{}; fn(w); w.updatedAt=new Date().toISOString();
@@ -2626,6 +2784,7 @@ async function editWeekDoc(wid, fn){
 }
 async function decide(id, ok){
   const r=(S.demandes||[]).find(x=>x.id===id); if(!r) return; const rep=($("#rep-"+id)||{}).value||"";
+  if(ok && r.type==="ECHANGE" && r.accord!==true){ S.echForce=S.echForce||{}; if(!(S.echForce[id]>Date.now()-10000)){ S.echForce[id]=Date.now(); toast(empName(r.avec)+(r.accord===false?" a REFUSÉ l'échange":" n'a pas encore donné son accord")+" : cliquez de nouveau sur Accepter dans les 10 secondes pour passer outre"); return; } delete S.echForce[id]; }
   try{
     if(ok) S.pubReason={t:(DTYPE[r.type]||r.type)+" acceptée", at:Date.now()};
     if(ok && r.type==="CP"){ const byW={}; datesBetween(r.from, r.to||r.from).forEach(day=>{ const d=dayIdxOfDate(day); if(d===6) return; (byW[weekOfDate(day)] ||= []).push(d); });
@@ -2635,7 +2794,7 @@ async function decide(id, ok){
     if(ok && r.type==="ABSENCE"){ const M=ABS_MOTIF[r.motif]||["Absence","AA"]; const rec={id:"a"+Date.now().toString(36), empId:r.empId, type:M[1], from:r.from, to:r.to||r.from, min:null, note:"Déclarée par le collaborateur · "+M[0]+(r.note?" : "+r.note:""), justif:!!r.img, createdAt:new Date().toISOString(), dem:r.id};
       absList().push(rec); teamChanged(true); await applyAbs(rec,false); S.allWeeks=null; teamChanged(); jlog("absence", empName(r.empId)+" : "+M[0]+" "+demText(r)+" enregistrée"+(r.img?" (justificatif joint)":" (sans justificatif)"), r.empId); }
     await S.db.doc("demandes/"+id).update({status: ok?(r.type==="ERREUR"?"traitée":r.type==="ABSENCE"?"enregistrée":"acceptée"):"refusée", reponse:rep, decidedAt:new Date().toISOString()});
-    jlog("demande", (DTYPE[r.type]||r.type)+" de "+empName(r.empId)+" ("+demText(r)+") "+(ok?(r.type==="ERREUR"?"traitée":r.type==="ABSENCE"?"enregistrée":"acceptée"):"refusée")+(rep?" · réponse : "+rep:""), r.empId);
+    jlog("demande", (DTYPE[r.type]||r.type)+" de "+empName(r.empId)+" ("+demText(r)+")"+(r.type==="ECHANGE"?(r.accord===true?" · accord du collègue donné":" · sans accord du collègue"):"")+" "+(ok?(r.type==="ERREUR"?"traitée":r.type==="ABSENCE"?"enregistrée":"acceptée"):"refusée")+(rep?" · réponse : "+rep:""), r.empId);
     toast(ok?"Demande acceptée"+(r.type==="CP"?" · CP posés dans le planning":r.type==="ECHANGE"?" · journées échangées":""):"Demande refusée");
     const emp=S.team.employees.find(e=>e.id===r.empId);
     if(emp&&okMail(emp.email)&&G.token&&Date.now()<G.exp){ const st=ok?(r.type==="ERREUR"?"a été prise en compte":"a été acceptée"):"a été refusée";
@@ -2695,7 +2854,7 @@ async function publishAnnuaire(){ if(!S.db) return; try{ await S.db.doc("annuair
 
 /* ---------- accès collaborateurs ---------- */
 const staffLink = e => location.origin + location.pathname.replace(/[^/]*$/,"") + "moi.html#" + e.id;
-const newCode = () => String(Math.floor(100000+Math.random()*900000));
+const newCode = () => { const a=new Uint32Array(1); crypto.getRandomValues(a); return String(10000000+(a[0]%90000000)); };
 async function createAccess(e){
   if(!S.db||!window.FB){ toast("Les accès se créent dans la version en ligne"); return; }
   const code=newCode(); let n=(e.authN||0)+1, uid=null, email="";
@@ -2815,6 +2974,11 @@ function echeances(){ const td=todayStr(); const out=[]; const push=(e,date,txt,
       const yrs=+td.slice(0,4)-+f.entree.slice(0,4); [yrs,yrs+1].forEach(k=>{ if(k>0) push(e,addY(f.entree,k),"Anniversaire d'ancienneté : "+k+" an"+(k>1?"s":""),"anc"); }); }
     if(f.entAnn) push(e,addY(f.entAnn,1),"Entretien annuel","entann");
   });
+  const MAG={id:"",name:"Magasin"}; const Y=+td.slice(0,4);
+  [Y,Y+1].forEach(y=>{ if(y+"-04-01"<td) return; if(y+"-03-01">=td) push(MAG,y+"-03-01","Congés : communiquer la période de prise des congés (au moins 2 mois avant le 1er mai)","cpper"); push(MAG,y+"-04-01","Congés : communiquer l'ordre des départs (au moins 1 mois avant chaque départ)","cpord"); });
+  if(S.allWeeks){ emps().forEach(e=>{ const f=fiche(e); if(f.sortie&&f.sortie<td) return;
+      if(td>=Y+"-09-01"&&td<=Y+"-10-31"){ const b=cpBlocks(e,Y); if(b.principal<12) push(e,Y+"-10-31","Congé principal : 12 jours ouvrables continus non posés entre le 1er mai et le 31 octobre","cpprinc"); }
+      if((+e.base||0)>=35){ const ct=Math.round((+legal().contingent||220)*60), hs=hsYear(e,Y); if(hs>=ct*0.8) push(e,td,"Heures supplémentaires de l'année : "+fmt(hs)+" pour un contingent de "+fmt(ct)+(hs>=ct?" : contingent dépassé (contrepartie obligatoire en repos)":""),"contingent"); } }); }
   (RHT().entretiens||[]).filter(x=>x.statut!=="réalisé"&&x.date).forEach(x=>{ const e=emps().find(y=>y.id===x.empId); if(e) push(e,x.date,"Entretien "+(ENT_T[x.type]||x.type)+" planifié","entplan"); });
   return out.filter(x=>x.kind==="fiche"||(x.kind==="anc"?x.days>=0&&x.days<=30:x.days<=60)).sort((a,b)=>a.days-b.days); }
 const echUrgent = () => { try{ return echeances().filter(x=>x.days<=30).length; }catch(e){ return 0; } };
@@ -2837,7 +3001,7 @@ function ficheImport(){ let n=0, ppl=0;
     Object.keys(sd).forEach(k=>{ if(!f[k]){ f[k]=sd[k]; added.push((FICHE_F.find(x=>x[0]===k)||[k,k])[1]); } });
     if(added.length){ n+=added.length; ppl++; jlog("fiche", e.name+" : import depuis les dossiers Drive et mails ("+added.join(", ")+")", e.id); } });
   if(n){ teamChanged(); scheduleRH(); } return {n,ppl}; }
-const FICHE_F=[["contrat","Type de contrat","sel",["","CDI","CDD","Apprentissage","Professionnalisation","Stage"]],["entree","Date d'entrée","date"],["finEssai","Fin de période d'essai","date"],["finCdd","Fin de CDD","date"],["qualif","Qualification / emploi","text"],["coef","Niveau / coefficient","text"],["visite","Dernière visite médicale","date"],["visiteProch","Prochaine visite médicale","date"],["entAnn","Dernier entretien annuel","date"],["entPro","Dernier entretien professionnel","date"],["drive","Lien du dossier documents (Drive)","text"],["sortie","Date de sortie","date"]];
+const FICHE_F=[["contrat","Type de contrat","sel",["","CDI","CDD","Apprentissage","Professionnalisation","Stage"]],["entree","Date d'entrée","date"],["naissance","Date de naissance (règles des mineurs)","date"],["finEssai","Fin de période d'essai","date"],["finCdd","Fin de CDD","date"],["qualif","Qualification / emploi","text"],["coef","Niveau / coefficient","text"],["visite","Dernière visite médicale","date"],["visiteProch","Prochaine visite médicale","date"],["entAnn","Dernier entretien annuel","date"],["entPro","Dernier entretien professionnel","date"],["drive","Lien du dossier documents (Drive)","text"],["sortie","Date de sortie","date"]];
 
 /* rendu de l'onglet */
 const okPill = (ok, t) => '<span class="pill '+(ok?"ok":"warn")+'">'+t+'</span>';
@@ -2845,7 +3009,7 @@ async function renderRH(){ const v=$("#v-rh"); if(!v) return; const t=S.rhTab||"
   const T=[["ech","Échéancier"],["fiche","Fiches salariés"],["suivi","Lectures et accords"],["ent","Entretiens"],["ann","Annonces"],["reg","Règlement des primes"],["ind","Indicateurs"],["jr","Journal"]];
   const head='<div class="panel"><h2>Suivi RH</h2><p class="lead">Échéances légales, dossiers des salariés, preuves de lecture et historique des décisions.</p><div class="seg rhseg">'+T.map(([k,l])=>'<button data-rt2="'+k+'" aria-pressed="'+(k===t)+'">'+l+(k==="ech"&&echUrgent()?' <span class="badge">'+echUrgent()+'</span>':'')+'</button>').join("")+'</div></div>';
   let body="";
-  if(t==="ech") body=rhEchHTML();
+  if(t==="ech"){ if(!S.allWeeks){ v.innerHTML=head+'<div class="panel">Calcul de l\'échéancier…</div>'; await loadAllWeeks(); if(S.view!=="rh") return; } body=rhEchHTML(); }
   if(t==="fiche") body=rhFicheHTML();
   if(t==="suivi"){ if(!S.rhWk){ S.rhWk={}; const cw=isoWeekId(new Date()); for(const wid of [cw, shiftWeek(cw,1)]) S.rhWk[wid]= wid===S.weekId ? S.week : await loadWeek(wid); if(S.view!=="rh") return; } body=rhSuiviHTML(); }
   if(t==="ent") body=rhEntHTML();
@@ -2858,8 +3022,8 @@ async function renderRH(){ const v=$("#v-rh"); if(!v) return; const t=S.rhTab||"
   bindRH(v, t); }
 
 function rhEchHTML(){ const L=echeances();
-  return '<div class="panel"><h2>Échéancier</h2><p class="lead">Échéances des 60 prochains jours et retards, calculées à partir des fiches salariés : période d\'essai, CDD, visites médicales, entretiens, ancienneté.</p>'+
-    (L.length?'<div class="tbl"><table class="rhtab"><thead><tr><th>Échéance</th><th>Collaborateur</th><th>À faire</th><th>Délai</th><th></th></tr></thead><tbody>'+L.map(x=>'<tr class="'+(x.days<0?"late":x.days<=30?"soon":"")+'"><td>'+(x.date?fdShort(x.date):"–")+'</td><td><b>'+esc(x.e.name)+'</b></td><td>'+esc(x.txt)+'</td><td>'+(x.kind==="fiche"?'<span class="pill warn">à compléter</span>':x.days<0?'<span class="pill bad">en retard de '+(-x.days)+' j</span>':x.days===0?'<span class="pill bad">aujourd\'hui</span>':'<span class="pill '+(x.days<=30?"warn":"ok")+'">dans '+x.days+' j</span>')+'</td><td><button class="btn ghost" data-of="'+esc(x.e.id)+'">Fiche</button></td></tr>').join("")+'</tbody></table></div>':'<div class="emptystate">Aucune échéance dans les 60 prochains jours.</div>')+'</div>'; }
+  return '<div class="panel"><h2>Échéancier</h2><p class="lead">Échéances des 60 prochains jours et retards, calculées à partir des fiches salariés et des plannings : période d\'essai, CDD, visites médicales, entretiens, ancienneté, congés payés, contingent d\'heures supplémentaires.</p>'+
+    (L.length?'<div class="tbl"><table class="rhtab"><thead><tr><th>Échéance</th><th>Collaborateur</th><th>À faire</th><th>Délai</th><th></th></tr></thead><tbody>'+L.map(x=>'<tr class="'+(x.days<0?"late":x.days<=30?"soon":"")+'"><td>'+(x.date?fdShort(x.date):"–")+'</td><td><b>'+esc(x.e.name)+'</b></td><td>'+esc(x.txt)+'</td><td>'+(x.kind==="fiche"?'<span class="pill warn">à compléter</span>':x.days<0?'<span class="pill bad">en retard de '+(-x.days)+' j</span>':x.days===0?'<span class="pill bad">aujourd\'hui</span>':'<span class="pill '+(x.days<=30?"warn":"ok")+'">dans '+x.days+' j</span>')+'</td><td>'+(x.e.id?'<button class="btn ghost" data-of="'+esc(x.e.id)+'">Fiche</button>':'')+'</td></tr>').join("")+'</tbody></table></div>':'<div class="emptystate">Aucune échéance dans les 60 prochains jours.</div>')+'</div>'; }
 
 function rhFicheHTML(){ const L=emps(); if(!L.length) return '<div class="panel emptystate">Aucun collaborateur.</div>';
   if(!S.rhEmp||!L.find(e=>e.id===S.rhEmp)) S.rhEmp=L[0].id; const e=L.find(x=>x.id===S.rhEmp); const f=fiche(e); const td=todayStr();
@@ -2971,6 +3135,7 @@ function bindRH(v, t){
 }
 
 /* contrôle légal d'un échange de journée (semaine affichée) */
+function echAccordHTML(r){ const n=esc(empName(r.avec)); return r.accord===true?'<div><span class="pill ok">Accord de '+n+' donné</span></div>':r.accord===false?'<div><span class="pill bad">'+n+' a refusé l\'échange</span></div>':'<div><span class="pill warn">En attente de l\'accord de '+n+'</span></div>'; }
 function echCheck(r){ try{ const wid=weekOfDate(r.date); if(wid!==S.weekId) return '<div class="st-mut" style="font-size:12px">Contrôle légal : ouvrez la semaine '+wnum(wid)+' dans le planning pour le voir.</div>';
   const d=dayIdxOfDate(r.date); const saved=S.week; const w=clone(S.week); const a=(w.entries[r.empId] ||= [null,null,null,null,null,null,null]), b=(w.entries[r.avec] ||= [null,null,null,null,null,null,null]); const t=a[d]; a[d]=b[d]; b[d]=t;
   let pb=[]; try{ S.week=w; pb=[r.empId,r.avec].map(id=>{ const e=emps().find(x=>x.id===id); return e?checks(e).filter(c=>c.lvl==="bad").map(c=>e.name+" : "+c.t):[]; }).flat(); } finally { S.week=saved; }
@@ -3014,6 +3179,7 @@ function renderHome(){
     '<button class="kpi'+(nAl?" warn":"")+'" data-go="team"><b>'+nAl+'</b><span>points à<br>vérifier</span></button>'+
     '<button class="kpi'+(pend?" hot":"")+'" data-go="dem"><b>'+pend+'</b><span>demandes<br>en attente</span></button>'+
     '<button class="kpi" data-go="abs"><b>'+absent.length+'</b><span>absences<br>en cours</span></button></div></div>'+
+    (S.db?(()=>{ const d=fullBkDate(); const age=d?Math.round((Date.parse(todayStr())-Date.parse(d))/864e5):null; return age===null||age>7?'<div class="notice">'+(d?'Dernière sauvegarde complète sur cet ordinateur il y a '+age+' jours.':'Aucune sauvegarde complète sur cet ordinateur.')+' Téléchargez-la chaque semaine et rangez-la dans votre Drive : elle protège les plannings, demandes, heures et primes si la base est perdue (sans les justificatifs médicaux ni les codes d\'accès ; restauration par Claude sur demande). Supprimez les fichiers de plus de '+legal().justifMois+' mois. <button class="btn primary" id="fullBk">Sauvegarde complète</button></div>':''; })():'')+
     (()=>{ let day=null, st=null; for(let k=0;k<10&&!st;k++){ const dt=new Date(now.getFullYear(),now.getMonth(),now.getDate()+k); day=dt.getFullYear()+"-"+pad(dt.getMonth()+1)+"-"+pad(dt.getDate()); st=objStoreDay(day); }
       if(!st) return '<button class="hobjm empty" data-go="obj"><b>Objectifs du mois</b><small>Non saisis : touchez pour définir la PO et les services</small></button>';
       const isT=day===todayKey; const [yy,mm,dd]=day.split("-").map(Number); const dn=["dimanche","lundi","mardi","mercredi","jeudi","vendredi","samedi"][new Date(yy,mm-1,dd).getDay()];
@@ -3041,6 +3207,7 @@ function renderHome(){
     '<div class="qa"><button class="qbtn" id="hGen">'+ico("gen")+'<span>Générer la semaine</span></button><button class="qbtn'+(S.week.pub?" on":"")+'" id="hPub">'+ico("pub")+'<span>'+(S.week.pub?"Semaine publiée":"Publier aux collaborateurs")+'</span></button></div><p class="appver">Version du 16/10 refonte visuelle</p>';
   v.querySelectorAll("[data-go]").forEach(b=>b.onclick=()=>{ if(b.dataset.today && curW) S.mDay=td; go(b.dataset.go); });
   $("#hGen").onclick=()=>{ go("team"); generateWeek(); };
+  const fbk=$("#fullBk"); if(fbk) fbk.onclick=()=>fullBackup(fbk);
   $("#hPub").onclick=()=>togglePub();
 }
 
