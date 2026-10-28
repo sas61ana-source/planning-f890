@@ -558,9 +558,19 @@ input:focus,select:focus,textarea:focus{outline:0;border-color:var(--accent)!imp
   #tabs button[data-v="home"]{order:1} #tabs button[data-v="dem"]{order:2} #tabs button[data-v="rea"]{order:3}
   #tabs button[data-v="team"]{order:4} #tabs button[data-v="indiv"]{order:5} #tabs button[data-v="tpl"]{order:6} #tabs button[data-v="roul"]{order:7} #tabs button[data-v="pz"]{order:8}
   #tabs button[data-v="staff"]{order:9} #tabs button[data-v="rh"]{order:10} #tabs button[data-v="abs"]{order:11} #tabs button[data-v="cpt"]{order:12}
-  #tabs button[data-v="res"]{order:13} #tabs button[data-v="obj"]{order:14}
+  #tabs button[data-v="res"]{order:13} #tabs button[data-v="obj"]{order:14} #tabs button[data-v="ana"]{order:14}
   #tabs button[data-v="apv"]{order:15} #tabs button[data-v="send"]{order:16}
 }
+.vimp{display:flex;gap:12px;align-items:center;flex-wrap:wrap;margin:6px 0 12px}
+.vpod{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px;margin:6px 0 14px}
+.vp{border:1px solid var(--line);border-radius:14px;padding:12px;display:grid;gap:4px;text-align:center;background:var(--surface)}
+.vp1{border-color:var(--accent);box-shadow:0 6px 18px -10px var(--accent)} .vp small{color:var(--muted)} .vm{font-size:26px;line-height:1}
+.vup{color:#15803d;font-size:12px;font-weight:600} .vdn{color:#b42318;font-size:12px;font-weight:600}
+.vtab td.n{white-space:nowrap} tr.vtot td{font-weight:700;border-top:2px solid var(--line)} tr.vsub td{color:var(--muted)} tr.vsat td{background:rgba(234,88,12,.05)}
+.vcard{border:1px solid var(--line);border-radius:12px;padding:10px 12px;margin:8px 0;background:var(--surface)} .vcard summary{cursor:pointer} .vcard ul{margin:4px 0 10px 18px}
+.vchips{display:flex;flex-wrap:wrap;gap:6px} .vmat{margin-top:12px} .vmat summary{cursor:pointer;font-weight:600}
+#v-ana .btn{white-space:normal;text-align:left}
+@media (max-width:760px){.vpod{grid-template-columns:1fr} #v-ana .obk3{grid-template-columns:1fr}}
 </style>
 </head><body>
 <div class="wrap" id="app">
@@ -577,6 +587,7 @@ input:focus,select:focus,textarea:focus{outline:0;border-color:var(--accent)!imp
       <button role="tab" data-v="pz" aria-selected="false">Pauses</button>
       <button role="tab" data-v="res" aria-selected="false">Résultats</button>
       <button role="tab" data-v="obj" aria-selected="false">Objectifs</button>
+      <button role="tab" data-v="ana" aria-selected="false">Ventes et effectifs</button>
       <button role="tab" data-v="rea" aria-selected="false">Réalisés</button>
       <button role="tab" data-v="apv" aria-selected="false">Vue collaborateur</button>
       <button role="tab" data-v="tpl" aria-selected="false">Horaires types</button>
@@ -633,6 +644,7 @@ input:focus,select:focus,textarea:focus{outline:0;border-color:var(--accent)!imp
   <section id="v-pz" hidden></section>
   <section id="v-res" hidden></section>
   <section id="v-obj" hidden></section>
+  <section id="v-ana" hidden></section>
   <section id="v-rea" hidden></section>
   <section id="v-apv" hidden></section>
   <section id="v-tpl" hidden></section>
@@ -886,6 +898,7 @@ function render(){
   if(S.view==="pz") renderPz();
   if(S.view==="res") renderRes();
   if(S.view==="obj") renderObj();
+  if(S.view==="ana") renderAna();
   if(S.view==="rea") renderRea();
   if(S.view==="apv") renderApv();
   if(S.view==="tpl") renderTpl();
@@ -1315,10 +1328,10 @@ $("#impData").onchange=ev=>{ const f=ev.target.files[0]; if(!f) return; const r=
   localStorage.setItem(LKEY,JSON.stringify(d)); startLocal("import"); toast("Données importées"); }catch(e){ toast("Fichier non reconnu : choisissez une sauvegarde du planning (.json)"); } }; r.readAsText(f); ev.target.value=""; };
 
 /* ---------- onglets ---------- */
-const VIEW_TITLES={home:"Accueil",team:"Planning équipe",indiv:"Plannings individuels",staff:"Collaborateurs",abs:"Absences",pz:"Pauses",res:"Résultats du jour",obj:"Objectifs",rea:"Réalisés et primes",apv:"Vue collaborateur",tpl:"Horaires types",send:"Transmettre",roul:"Roulements",dem:"Demandes",cpt:"Compteurs et paie",rh:"Suivi RH"};
+const VIEW_TITLES={home:"Accueil",team:"Planning équipe",indiv:"Plannings individuels",staff:"Collaborateurs",abs:"Absences",pz:"Pauses",res:"Résultats du jour",obj:"Objectifs",ana:"Ventes et effectifs",rea:"Réalisés et primes",apv:"Vue collaborateur",tpl:"Horaires types",send:"Transmettre",roul:"Roulements",dem:"Demandes",cpt:"Compteurs et paie",rh:"Suivi RH"};
 function go(v){ S.view=v;
   document.querySelectorAll("#tabs button").forEach(x=>x.setAttribute("aria-selected",x.dataset.v===v));
-  for(const k of ["home","team","indiv","staff","abs","pz","res","obj","rea","apv","tpl","send","roul","dem","cpt","rh"]) $("#v-"+k).hidden=(k!==v);
+  for(const k of ["home","team","indiv","staff","abs","pz","res","obj","ana","rea","apv","tpl","send","roul","dem","cpt","rh"]) $("#v-"+k).hidden=(k!==v);
   document.body.dataset.view=v; $("#mTitle").textContent=VIEW_TITLES[v]||""; $("#mBack").hidden=(v==="home");
   try{localStorage.setItem("pf890-view",v)}catch(e){}
   render(); if(isPhone()) window.scrollTo({top:0}); }
@@ -2895,6 +2908,214 @@ const ICO = {
   pub:'<path d="M12 16V4M7 9l5-5 5 5"/><path d="M4 16v4h16v-4"/>'
 };
 const ico = (k,c) => '<svg viewBox="0 0 24 24" width="26" height="26" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">'+ICO[k]+'</svg>';
+/* ====================== Ventes : palmarès PO, podium, comparaison, objectifs et effectifs (direction) ====================== */
+const VT = () => { const s=settings(); const v=(s.ventes ||= {}); v.imports ||= {}; if(!Array.isArray(v.extra)) v.extra=[{mat:"FC1309",name:"Éric"}]; v.plan ||= {}; return v; };
+const vNorm = s => String(s??"").toLowerCase().normalize("NFD").replace(/[̀-ͯ]/g,"").replace(/\s+/g," ").trim();
+const vNum = x => typeof x==="number"&&isFinite(x) ? x : (typeof x==="string"&&/^-?\d+([.,]\d+)?$/.test(x.trim()) ? parseFloat(x.trim().replace(",",".")) : null);
+const V_MAIN = [["nombre de factures","fact"],["activite nette","po",1],["marge €","marge"],["tx marge","txm"],["pvm","pvm",1],["pdm accessoires","pdmAcc",1],["tx attach","attach",1],["nb d'accessoires","nbAcc"],["po services","poSvc"],["marge services","margeSvc"],["pdm marge services","pdmSvc"],["ceg (qte)","ceg"],["ceg (tx)","cegTx"],["nb protection sur mesure","psm"]];
+const V_NB = ["club","bplus","clubp","inf","infMob"];
+const V_SUM = ["po","fact","marge","nbAcc","poSvc","margeSvc","ceg","psm","club","bplus","clubp","inf","infMob","svc","infM","infMobE","assur","cegCA"];
+function vLabelMap(row){ const m={}; let nb=0;
+  row.forEach((c,j)=>{ if(typeof c!=="string") return; const t=vNorm(c);
+    if(t==="nb"){ if(nb<V_NB.length) m[j]=V_NB[nb]; nb++; return; }
+    for(const [l,k,pre] of V_MAIN){ if(pre ? t.startsWith(l) : t===l){ m[j]=k; break; } } });
+  return m; }
+const vMatIn = (r,n) => { const head=(r||[]).slice(0,n).map(c=>String(c??"").trim()); const i=head.findIndex(c=>/^(FC|MS)\d+$/i.test(c)); return {head,i}; };
+// lecture du palmarès vendeurs en PO (export Boulanger .xlsx)
+function vParse(wb){
+  const XL=window.XLSX; const sh=n=>XL.utils.sheet_to_json(wb.Sheets[n],{header:1,defval:null,raw:true}); const names=wb.SheetNames;
+  const main=sh(names[0]); let from=null, to=null;
+  for(const r of main.slice(0,8)) for(const c of (r||[])){ const m=/du (\d\d)\/(\d\d)\/(\d\d(?:\d\d)?) au (\d\d)\/(\d\d)\/(\d\d(?:\d\d)?)/i.exec(String(c||"")); if(m){ const y=s=>s.length===2?"20"+s:s; from=y(m[3])+"-"+m[2]+"-"+m[1]; to=y(m[6])+"-"+m[5]+"-"+m[4]; } }
+  if(!from) throw new Error("période introuvable dans le titre (« Période du jj/mm/aa au jj/mm/aa »)");
+  let map=null; const rows={}; let total=null;
+  for(const r of main){ if(!r) continue;
+    if(r.some(c=>vNorm(c)==="nombre de factures")){ map=vLabelMap(r); continue; } if(!map) continue;
+    const {head,i}=vMatIn(r,4); const isT=head.includes("TOTAL"); if(i<0&&!isT) continue;
+    const o={}; for(const [j,k] of Object.entries(map)){ const v=vNum(r[+j]); if(v!=null) o[k]=v; }
+    if(isT) total=o; else { const mat=head[i].toUpperCase(); rows[mat]={mat, nom:String(r[i+1]??""), prenom:String(r[i+2]??""), ...o}; } }
+  if(!total||total.po==null) throw new Error("ligne TOTAL du magasin introuvable dans l'onglet « "+names[0]+" »");
+  if(!Object.keys(rows).length) throw new Error("aucun vendeur (matricule FC…) trouvé dans l'onglet « "+names[0]+" »");
+  const svc={}; const sn=names.find(n=>/services/i.test(n));
+  if(sn){ let sm=null;
+    for(const r of sh(sn)){ if(!r) continue;
+      if(r.some(c=>vNorm(c)==="po services")){ sm={}; let ceg=false; r.forEach((c,j)=>{ const t=vNorm(c); if(t==="po services") sm[j]="svc"; else if(t.startsWith("infinity maison")) sm[j]="infM"; else if(t.startsWith("infinity mobile")) sm[j]="infMobE"; else if(t.startsWith("assurances")) sm[j]="assur"; else if(t==="ceg"&&!ceg){ sm[j]="cegCA"; ceg=true; } }); continue; }
+      if(!sm) continue; const {head,i}=vMatIn(r,5); if(i<0) continue;
+      const o={}; for(const [j,k] of Object.entries(sm)){ const v=vNum(r[+j]); if(v!=null) o[k]=(o[k]||0)+v; } svc[head[i].toUpperCase()]=o; } }
+  return {from, to, rows, total, svc, hasSvc:!!sn}; }
+// collaborateurs présents : matricule de la fiche (ou connu) + vendeurs hors planning (Éric)
+function vPresent(){ const L=[];
+  emps().forEach(e=>{ const m=matOf(e); if(m&&/^FC/i.test(m)) L.push({mat:m.toUpperCase(), name:e.name, id:e.id, fonction:fonctionOf(e)}); });
+  (VT().extra||[]).forEach(x=>{ const m=String(x.mat||"").trim().toUpperCase(); if(m&&!L.some(y=>y.mat===m)) L.push({mat:m, name:x.name||m, id:null, fonction:"vente"}); });
+  return L; }
+function vBuild(P, file){ const pres=vPresent(); const keep={}; const add=(a,o)=>{ V_SUM.forEach(k=>{ if(o[k]!=null) a[k]=(a[k]||0)+o[k]; }); };
+  const svcTot={}; Object.values(P.svc).forEach(o=>add(svcTot,o));
+  const sum={}; pres.forEach(p=>{ const r=P.rows[p.mat]; if(!r) return; const o={...r, ...(P.svc[p.mat]||{}), name:p.name}; delete o.nom; delete o.prenom; keep[p.mat]=o; add(sum,o); });
+  const store={...P.total, ...svcTot}; const autres={}; V_SUM.forEach(k=>{ if(store[k]!=null) autres[k]=Math.round(((store[k]||0)-(sum[k]||0))*100)/100; });
+  const ref={}; let accPO=0, attW=0, attF=0, cegW=0, cegP=0;
+  Object.values(P.rows).filter(r=>/^FC/i.test(r.mat)).forEach(r=>{ add(ref,{...r, ...(P.svc[r.mat]||{})}); const po=r.po||0;
+    if(r.pdmAcc!=null) accPO+=r.pdmAcc*po; if(r.attach!=null&&r.fact){ attW+=r.attach*r.fact; attF+=r.fact; } if(r.cegTx!=null&&po>0){ cegW+=r.cegTx*po; cegP+=po; } });
+  if(ref.po){ ref.txm=(ref.marge||0)/ref.po; ref.pdmAcc=accPO/ref.po; } if(attF) ref.attach=attW/attF; if(ref.marge) ref.pdmSvc=(ref.margeSvc||0)/ref.marge; if(cegP) ref.cegTx=cegW/cegP;
+  const exclus=Object.values(P.rows).filter(r=>!keep[r.mat]&&Math.abs(r.po||0)>=1000).sort((a,b)=>(b.po||0)-(a.po||0)).map(r=>({mat:r.mat, nom:(r.prenom?r.prenom+" ":"")+r.nom, po:Math.round(r.po||0)}));
+  return {id:P.from+"_"+P.to, from:P.from, to:P.to, file:String(file||"").slice(0,120), at:new Date().toISOString(), store, autres, ref, rows:keep, exclus, hasSvc:P.hasSvc}; }
+
+/* calculs */
+function vOpenDays(from,to){ let n=0; let [y,m,d]=from.split("-").map(Number); let t=Date.UTC(y,m-1,d); const [a,b,c]=to.split("-").map(Number); const e=Date.UTC(a,b-1,c);
+  for(;t<=e;t+=864e5){ const dt=new Date(t); if(dt.getUTCDay()!==0&&!holName(dt)) n++; } return n||1; }
+const vShiftY = (s,n) => (+s.slice(0,4)+n)+s.slice(4);
+const vDiffD = (a,b) => Math.abs(Date.parse(a)-Date.parse(b))/864e5;
+const vImports = () => Object.values(VT().imports).sort((a,b)=>a.to.localeCompare(b.to)||a.from.localeCompare(b.from));
+function vPickN(){ const L=vImports(); const id=VT().selN; return L.find(x=>x.id===id) || L.filter(x=>x.to.slice(0,4)===String(new Date().getFullYear())).pop() || L[L.length-1] || null; }
+function vPickN1(N){ if(!N) return null; const L=vImports().filter(x=>x.id!==N.id); const id=VT().selN1; const f=L.find(x=>x.id===id); if(f) return f;
+  const same=L.find(x=>vDiffD(x.from,vShiftY(N.from,-1))<=4&&vDiffD(x.to,vShiftY(N.to,-1))<=4); if(same) return same;
+  return L.filter(x=>x.to<N.from).sort((a,b)=>(b.to.localeCompare(a.to)))[0] || null; }
+const V_KPI=[ // clé, libellé, format, calcul, qualité (sert aux points à travailler)
+  ["poJ","PO HT par jour d'ouverture","e",(o,I)=>o.po!=null?o.po/I.days:null,0],
+  ["po","PO HT de la période","e",o=>o.po,0],
+  ["factJ","Factures par jour d'ouverture","n",(o,I)=>o.fact!=null?o.fact/I.days:null,0],
+  ["panier","Panier moyen HT","e",o=>o.fact?o.po/o.fact:null,1],
+  ["txm","Taux de marge","p",o=>o.txm,1],
+  ["pdmAcc","Part des accessoires dans la PO","p",o=>o.pdmAcc,1],
+  ["attach","Taux d'attachement accessoires","p",o=>o.attach,1],
+  ["poSvc","PO services HT","e",o=>o.poSvc,0],
+  ["pdmSvc","Part de la marge services","p",o=>o.pdmSvc,1],
+  ["cegTx","Taux de CEG (extensions de garantie)","p",o=>o.cegTx,1],
+  ["infE","Infinity HT (Maison + Mobile)","e",o=>(o.infM!=null||o.infMobE!=null)?(o.infM||0)+(o.infMobE||0):null,0],
+  ["assur","Assurances HT","e",o=>o.assur,0],
+  ["clubp","Club+ pour 100 k€ de PO","n",o=>o.po>0?(o.clubp||0)/o.po*1e5:null,1],
+  ["inf","Infinity pour 100 k€ de PO","n",o=>o.po>0?((o.inf||0)+(o.infMob||0))/o.po*1e5:null,1],
+  ["psm","Protection sur mesure pour 100 k€","n",o=>o.po>0?(o.psm||0)/o.po*1e5:null,1]];
+const vInfo = I => ({days:vOpenDays(I.from,I.to)});
+const vF = (t,v) => v==null||!isFinite(v) ? "–" : t==="e" ? eur(v) : t==="p" ? (Math.round(v*1000)/10).toString().replace(".",",")+" %" : (Math.round(v*10)/10).toString().replace(".",",");
+function vEvol(t,a,b){ if(a==null||b==null||!isFinite(a)||!isFinite(b)) return {txt:"–",v:null};
+  if(t==="p"){ const d=(a-b)*100; return {txt:(d>=0?"+":"")+d.toFixed(1).replace(".",",")+" pt", v:d}; }
+  if(!b) return {txt:"–",v:null}; const d=(a/b-1)*100; return {txt:(d>=0?"+":"")+d.toFixed(1).replace(".",",")+" %", v:d}; }
+const vEvHTML = e => e.v==null ? '<span class="st-mut">–</span>' : '<span class="'+(e.v>=0?"vup":"vdn")+'">'+e.txt+'</span>';
+// montants de N-1 ramenés au même nombre de jours que N quand les périodes diffèrent
+function vScale(o, f){ if(f===1) return o; const r={...o}; ["po","fact","marge","nbAcc","poSvc","margeSvc","ceg","psm","club","bplus","clubp","inf","infMob","svc","infM","infMobE","assur","cegCA"].forEach(k=>{ if(r[k]!=null) r[k]*=f; }); return r; }
+function vPoints(o, I, st, prev, Ip){ const out=[], fort=[];
+  V_KPI.filter(k=>k[4]).forEach(([k,l,t,fn])=>{ const a=fn(o,I), s=fn(st,I); if(a==null||s==null||!s) return;
+    const g=(a-s)/Math.abs(s); if(g<=-0.1) out.push({l, a, s, t, g, txt:l+" : "+vF(t,a)+" contre "+vF(t,s)+" en moyenne pour les vendeurs"}); else if(g>=0.1) fort.push({g, txt:l+" : "+vF(t,a)+" (moyenne vendeurs "+vF(t,s)+")"});
+    if(prev){ const b=fn(prev,Ip); const e=vEvol(t,a,b); if(e.v!=null && (t==="p"?e.v<=-1:e.v<=-10)) out.push({g:t==="p"?e.v/10:e.v/100, txt:l+" en baisse : "+vF(t,a)+" contre "+vF(t,b)+" l'an dernier ("+e.txt+")"}); } });
+  if(prev){ const a=o.po/I.days, b=prev.po/Ip.days, e=vEvol("e",a,b); if(e.v!=null&&e.v<=-5) out.push({g:e.v/100, txt:"PO par jour en baisse : "+eur(a)+" contre "+eur(b)+" ("+e.txt+")"}); }
+  out.sort((x,y)=>x.g-y.g); fort.sort((x,y)=>y.g-x.g);
+  return {out:out.slice(0,5), fort:fort.slice(0,3)}; }
+
+/* présence planifiée : vendeurs et caisse par jour */
+function vStaffOn(day){ const W=S.allWeeks||{}; const w=W[weekOfDate(day)]; if(!w||!w.entries) return null; const d=dayIdxOfDate(day); let v=0, c=0, any=false;
+  for(const e of S.team.employees){ const x=(w.entries[e.id]||[])[d]; if(x) any=true; if(!x||x.s!=="T"||!mins(x)) continue; const f=fonctionOf(e); if(f==="vente") v++; else if(f==="caisse") c++; }
+  return any?{v,c}:null; }
+function vStaffAvg(N){ let n=0, v=0, c=0; let [y,m,d]=N.from.split("-").map(Number); let t=Date.UTC(y,m-1,d); const [a,b,cc]=N.to.split("-").map(Number); const e=Date.UTC(a,b-1,cc);
+  for(;t<=e;t+=864e5){ const dt=new Date(t); if(dt.getUTCDay()===0||holName(dt)) continue; const s=vStaffOn(ymd(dt)); if(!s) continue; n++; v+=s.v; c+=s.c; }
+  return {n, v:n?v/n:null, c:n?c/n:null}; }
+// PO N-1 d'un mois : palmarès importé sur ce mois de l'année précédente, sinon calendrier N-1 des objectifs
+function vN1Month(ym){ const [Y,M]=ym.split("-").map(Number); const y1=Y-1, f=y1+"-"+pad(M)+"-01", l=y1+"-"+pad(M)+"-"+pad(new Date(Date.UTC(y1,M,0)).getUTCDate());
+  const imp=vImports().filter(x=>x.from>=f&&x.to<=l).sort((a,b)=>vOpenDays(b.from,b.to)-vOpenDays(a.from,a.to))[0];
+  if(imp && vOpenDays(imp.from,imp.to)>=0.8*vOpenDays(f,l)) return {po:imp.store.po, fact:imp.store.fact, src:"palmarès du "+fdShort(imp.from)+" au "+fdShort(imp.to)};
+  const Mo=objMonth(ym,false); if(Mo&&Mo.mode==="n1"){ const s=monthWorkDays(ym).reduce((t,x)=>t+(+((Mo.n1||{})[x.day]||0)),0); if(s>0) return {po:s, fact:null, src:"calendrier N-1 de l'onglet Objectifs"}; }
+  return null; }
+function vDayShares(ym){ const WD=monthWorkDays(ym); const Mo=objMonth(ym,false);
+  if(Mo&&Mo.mode==="n1"){ const v=WD.map(x=>+((Mo.n1||{})[x.day]||0)); const s=v.reduce((a,b)=>a+b,0); if(s>0) return WD.map((x,i)=>({...x, k:v[i]/s})); }
+  const W=objW(); const tw=WD.reduce((t,x)=>t+(+W[x.d]||0),0)||1; return WD.map(x=>({...x, k:(+W[x.d]||0)/tw})); }
+
+/* écran */
+const MOIS=["janvier","février","mars","avril","mai","juin","juillet","août","septembre","octobre","novembre","décembre"];
+const ymName = ym => { const [y,m]=ym.split("-").map(Number); return MOIS[m-1]+" "+y; };
+async function renderAna(){ const v=$("#v-ana"); if(!v) return;
+  if(!S.allWeeks){ v.innerHTML='<div class="panel">Chargement des plannings…</div>'; await loadAllWeeks(); if(S.view!=="ana") return; }
+  else S.allWeeks[S.weekId]=clone(S.week);
+  const T=VT(), L=vImports(), N=vPickN(), N1=vPickN1(N), pres=vPresent();
+  let h='<div class="panel"><h2>Ventes et effectifs</h2><p class="lead">Importez les palmarès vendeurs en PO (.xlsx Boulanger). Seuls les collaborateurs présents sont gardés ; le total du magasin reste celui du palmarès (ventes des collaborateurs partis et comptes MS comprises). <b>Écran réservé à la direction : rien n\'est publié aux collaborateurs.</b></p>'+
+    '<div class="vimp"><label class="btn primary" for="va-file">Importer un palmarès (.xlsx)</label><input id="va-file" type="file" accept=".xlsx,.xls" multiple hidden><span class="st-mut">Pour les objectifs : un palmarès par mois de l\'an dernier (ex. du 01/11/25 au 30/11/25). Pour la comparaison : la même période sur les deux années.</span></div>'+
+    (L.length?'<div class="tbl"><table><thead><tr><th>Période</th><th>Jours d\'ouverture</th><th>PO HT magasin</th><th>Présents</th><th>Fichier</th><th></th></tr></thead><tbody>'+L.slice().reverse().map(x=>'<tr><td><b>'+fdShort(x.from)+' → '+fdShort(x.to)+'</b></td><td class="n">'+vOpenDays(x.from,x.to)+'</td><td class="n">'+eur(x.store.po)+'</td><td class="n">'+Object.keys(x.rows).length+'</td><td class="st-mut">'+esc(x.file)+'</td><td><button class="btn ghost danger" data-vdel="'+esc(x.id)+'">Retirer</button></td></tr>').join("")+'</tbody></table></div>':'<div class="emptystate">Aucun palmarès importé.</div>')+
+    '<details class="vmat"><summary>Matricules des collaborateurs présents ('+pres.length+')</summary><p class="st-mut">Repris des fiches collaborateurs. Ajoutez ici les vendeurs hors planning (ex. vous-même). Un matricule ajouté après un import demande de réimporter le fichier.</p><div class="vchips">'+pres.map(p=>'<span class="pill info">'+esc(p.name)+' · '+esc(p.mat)+'</span>').join(" ")+'</div>'+
+    '<div class="tbl"><table><thead><tr><th>Matricule</th><th>Prénom</th><th></th></tr></thead><tbody>'+T.extra.map((x,i)=>'<tr><td><input data-vx="'+i+'" data-k="mat" value="'+esc(x.mat)+'"></td><td><input data-vx="'+i+'" data-k="name" value="'+esc(x.name)+'"></td><td><button class="btn ghost danger" data-vxd="'+i+'">Retirer</button></td></tr>').join("")+'</tbody></table></div><button class="btn" id="va-xadd">+ Vendeur hors planning</button></details></div>';
+  if(!N){ v.innerHTML=h; vBind(v); return; }
+  const I=vInfo(N), Ip=N1?vInfo(N1):null; const same=N1&&vDiffD(N1.from,vShiftY(N.from,-1))<=4&&vDiffD(N1.to,vShiftY(N.to,-1))<=4; const f=N1?(same?1:I.days/Ip.days):1;
+  const sel=(id,cur,opt)=>'<select class="btn" id="'+id+'">'+opt.map(x=>'<option value="'+esc(x.id)+'"'+(cur&&x.id===cur.id?" selected":"")+'>'+fdShort(x.from)+' → '+fdShort(x.to)+'</option>').join("")+'</select>';
+  h+='<div class="panel"><div style="display:flex;gap:10px;flex-wrap:wrap;align-items:center"><h2 style="margin-right:auto">Comparaison</h2><span class="st-mut">Période analysée</span>'+sel("va-n",N,L)+'<span class="st-mut">comparée à</span>'+(L.length>1?sel("va-n1",N1,L.filter(x=>x.id!==N.id)):'<span class="st-mut">importez une période N-1</span>')+'</div>'+
+    (N1&&!same?'<div class="notice">Périodes différentes ('+I.days+' et '+Ip.days+' jours d\'ouverture) : les montants N-1 sont ramenés au même nombre de jours. Pour une comparaison exacte, importez la même période sur l\'année précédente.</div>':'');
+  // podium
+  const R=Object.values(N.rows).filter(o=>(o.po||0)>0).sort((a,b)=>b.po-a.po);
+  const med=["🥇","🥈","🥉"];
+  h+='<h3 class="obh">Podium · PO HT du '+fdShort(N.from)+' au '+fdShort(N.to)+'</h3><div class="vpod">'+R.slice(0,3).map((o,i)=>'<div class="vp vp'+(i+1)+'"><span class="vm">'+med[i]+'</span><b>'+esc(o.name)+'</b><span class="mono">'+eur(o.po)+'</span><small>'+vF("p",o.po/N.store.po)+' du magasin · panier '+vF("e",o.fact?o.po/o.fact:null)+'</small></div>').join("")+'</div>';
+  // tableau de synthèse
+  const cols=[["poJ","PO / jour"],["panier","Panier"],["txm","Tx marge"],["pdmAcc","Part access."],["pdmSvc","Part marge services"],["cegTx","Tx CEG"],["clubp","Club+ / 100 k€"],["inf","Infinity / 100 k€"]];
+  const K=k=>V_KPI.find(x=>x[0]===k);
+  const line=(lbl,o,p,cls)=>'<tr'+(cls?' class="'+cls+'"':'')+'><td><b>'+lbl+'</b></td><td class="n">'+eur(o.po||0)+'</td><td class="n">'+vF("p",(o.po||0)/N.store.po)+'</td>'+cols.map(([k])=>{ const [,,t,fn]=K(k); const a=fn(o,I), b=p?fn(p,I):null; return '<td class="n">'+vF(t,a)+(p?'<br>'+vEvHTML(vEvol(t,a,b)):'')+'</td>'; }).join("")+'</tr>';
+  h+='<h3 class="obh">Synthèse'+(N1?' (évolution sur un an sous chaque valeur)':'')+'</h3><div class="tbl"><table class="vtab"><thead><tr><th>Collaborateur</th><th>PO HT</th><th>Part</th>'+cols.map(c=>'<th>'+c[1]+'</th>').join("")+'</tr></thead><tbody>'+
+    R.map((o,i)=>{ const p=N1&&N1.rows[o.mat]?vScale(N1.rows[o.mat],f):null; return line((i<3?med[i]+" ":"")+esc(o.name),o,p); }).join("")+
+    line("Autres (partis, comptes MS)",N.autres,N1?vScale(N1.autres,f):null,"vsub")+line("Total magasin",N.store,N1?vScale(N1.store,f):null,"vtot")+'</tbody></table></div>';
+  // détail et points à travailler
+  h+='<h3 class="obh">Détail et points à travailler</h3><div class="vdet">'+R.map(o=>{ const p=N1&&N1.rows[o.mat]?vScale(N1.rows[o.mat],f):null; const RF=N.ref||N.store; const P=vPoints(o,I,RF,p,I);
+    return '<details class="vcard"><summary><b>'+esc(o.name)+'</b> · '+eur(o.po)+(P.out.length?' <span class="pill warn">'+P.out.length+' point'+(P.out.length>1?'s':'')+' à travailler</span>':' <span class="pill ok">au niveau des vendeurs</span>')+'</summary>'+
+      (P.out.length?'<p class="oblbl">À travailler</p><ul>'+P.out.map(x=>'<li>'+esc(x.txt)+'</li>').join("")+'</ul>':'')+(P.fort.length?'<p class="oblbl">Points forts</p><ul>'+P.fort.map(x=>'<li>'+esc(x.txt)+'</li>').join("")+'</ul>':'')+
+      '<div class="tbl"><table><thead><tr><th>Indicateur</th><th>'+N.from.slice(0,4)+'</th>'+(p?'<th>'+N1.from.slice(0,4)+(same?'':' (même nb de jours)')+'</th><th>Évolution</th>':'')+'<th>Moyenne vendeurs</th><th>Magasin</th></tr></thead><tbody>'+
+      V_KPI.map(([k,l,t,fn])=>{ const a=fn(o,I); const b=p?fn(p,I):null; return '<tr><td>'+l+'</td><td class="n">'+vF(t,a)+'</td>'+(p?'<td class="n">'+vF(t,b)+'</td><td class="n">'+vEvHTML(vEvol(t,a,b))+'</td>':'')+'<td class="n st-mut">'+(/^(po|factJ|poJ|poSvc|infE|assur)$/.test(k)?"–":vF(t,fn(RF,I)))+'</td><td class="n st-mut">'+vF(t,fn(N.store,I))+'</td></tr>'; }).join("")+'</tbody></table></div></details>'; }).join("")+'</div>'+
+    (N.exclus&&N.exclus.length?'<p class="st-mut" style="margin-top:10px">Non retenus (partis, comptes MS ou matricule à saisir) : '+N.exclus.slice(0,8).map(x=>esc(x.mat)+' '+esc(x.nom)+' '+eur(x.po)).join(" · ")+'. Leur PO reste dans le total magasin.</p>':'')+'</div>';
+  // objectifs et effectifs
+  h+=vPlanHTML(N, I);
+  v.innerHTML=h; vBind(v); }
+
+function vPlanHTML(N, I){ const T=VT(), Pl=T.plan; const now=new Date(); const months=[]; for(let i=0;i<=3;i++){ const d=new Date(now.getFullYear(),now.getMonth()+i,1); months.push(d.getFullYear()+"-"+pad(d.getMonth()+1)); }
+  if(!Pl.months||!Pl.months.length) Pl.months=months.filter(m=>/-(11|12)$/.test(m)).slice(0,2); if(!Pl.months.length) Pl.months=[months[1]];
+  const gMin=Pl.gMin??15, gMax=Pl.gMax??20, gObj=Pl.gObj??gMin;
+  const A=vStaffAvg(N); const vendJ=Pl.vendJ??(A.n>=10&&A.v?Math.round(A.v*10)/10:Math.max(1,Math.round(emps().filter(e=>fonctionOf(e)==="vente").length*5/6*10)/10));
+  const caisJ=Pl.caisJ??(A.n>=10&&A.c?Math.round(A.c*10)/10:2);
+  const poDay=N.store.po/I.days, factDay=(N.store.fact||0)/I.days, panier=N.store.fact?N.store.po/N.store.fact:null;
+  const prodV=poDay/(vendJ||1), capC=factDay/(caisJ||1);
+  let h='<div class="panel"><h2>Objectifs et plan d\'effectif</h2><p class="lead">Objectif du mois = PO N-1 du magasin + taux retenu ; il s\'applique dans l\'onglet Objectifs, qui le répartit par jour puis entre les vendeurs présents selon leurs heures. Le plan d\'effectif chiffre les vendeurs et caissières nécessaires pour +'+gMin+' à +'+gMax+' %, à productivité constante.</p>'+
+    '<div class="vplan"><label class="rhf"><span>Mois</span><span class="vchips">'+months.map(m=>'<label class="chk"><input type="checkbox" data-vm="'+m+'"'+(Pl.months.includes(m)?" checked":"")+'> '+ymName(m)+'</label>').join("")+'</span></label>'+
+    '<label class="rhf"><span>Progression visée (%)</span><span><input id="va-gmin" class="mono" style="width:70px" inputmode="decimal" value="'+gMin+'"> à <input id="va-gmax" class="mono" style="width:70px" inputmode="decimal" value="'+gMax+'"></span></label>'+
+    '<label class="rhf"><span>Taux retenu pour les objectifs (%)</span><input id="va-gobj" class="mono" style="width:70px" inputmode="decimal" value="'+gObj+'"></label>'+
+    '<label class="rhf"><span>Vendeurs présents par jour (moyenne '+fdShort(N.from)+' → '+fdShort(N.to)+')</span><span><input id="va-vj" class="mono" style="width:70px" inputmode="decimal" value="'+String(vendJ).replace(".",",")+'"> <small class="st-mut">'+(A.n>=10?'mesuré sur '+A.n+' jours planifiés : '+vF("n",A.v):'peu de plannings sur la période : estimation à corriger')+'</small></span></label>'+
+    '<label class="rhf"><span>Caissières présentes par jour</span><span><input id="va-cj" class="mono" style="width:70px" inputmode="decimal" value="'+String(caisJ).replace(".",",")+'"> <small class="st-mut">'+(A.n>=10?'mesuré : '+vF("n",A.c):'estimation')+'</small></span></label></div>'+
+    '<p class="st-mut">Productivité de référence : '+eur(poDay)+' de PO par jour, soit '+eur(prodV)+' par vendeur présent ; '+vF("n",factDay)+' factures par jour, soit '+vF("n",capC)+' par caissière ; panier moyen '+vF("e",panier)+'.</p></div>';
+  for(const ym of Pl.months.slice().sort()){ const b=vN1Month(ym); const WD=vDayShares(ym);
+    h+='<div class="panel"><h2>'+ymName(ym)+'</h2>';
+    if(!b){ const [Y,M]=ym.split("-").map(Number); h+='<div class="notice">PO N-1 inconnue : importez le palmarès de '+MOIS[M-1]+' '+(Y-1)+' (du 01/'+pad(M)+'/'+String(Y-1).slice(2)+' au '+new Date(Date.UTC(Y-1,M,0)).getUTCDate()+'/'+pad(M)+'/'+String(Y-1).slice(2)+'), ou saisissez la PO N-1 jour par jour dans l\'onglet Objectifs.</div></div>'; continue; }
+    const tMin=b.po*(1+gMin/100), tMax=b.po*(1+gMax/100), tObj=b.po*(1+gObj/100); const Mo=objMonth(ym,false);
+    h+='<div class="obk3"><div><small>PO N-1</small><b>'+eur(b.po)+'</b><small class="st-mut">'+esc(b.src)+'</small></div><div class="hl"><small>Objectif +'+gObj+' %</small><b>'+eur(tObj)+'</b></div><div><small>Fourchette +'+gMin+' / +'+gMax+' %</small><b>'+eur(tMin)+' – '+eur(tMax)+'</b></div></div>'+
+      '<p><button class="btn primary" data-vapply="'+ym+'">'+(Mo?'Mettre à jour':'Créer')+' les objectifs de '+ymName(ym)+' à +'+gObj+' %</button> <button class="btn ghost" data-vgo="'+ym+'">Voir la répartition jour par jour</button>'+(Mo?' <span class="st-mut">Objectif actuel : '+eur(monthPO(Mo,ym))+'</span>':'')+'</p>';
+    // objectif mensuel par collaborateur (selon les plannings saisis)
+    const per={}; let planned=0; const weeks=[...new Set(WD.map(x=>weekOfDate(x.day)))];
+    if(Mo){ for(const wid of weeks){ const w=(S.allWeeks||{})[wid]; if(!w||!w.entries) continue; const O=objForWeek(wid,w); weekDays(wid).forEach((dt,d)=>{ if(ymOf(ymd(dt))!==ym) return; Object.entries(O.emp).forEach(([id,o])=>{ const x=o.days[d]; if(x){ per[id]=(per[id]||0)+x.po; planned=1; } }); }); } }
+    if(Mo) h+='<p class="oblbl">Objectif mensuel par collaborateur (plannings saisis)</p>'+(planned?'<div class="vchips">'+emps().filter(e=>per[e.id]).map(e=>'<span class="pill info">'+esc(e.name)+' · '+eur(per[e.id])+'</span>').join(" ")+'</div><p class="st-mut">Calculé sur les semaines déjà planifiées du mois ; il se complète à mesure que les plannings sont saisis.</p>':'<p class="st-mut">Aucune semaine planifiée sur ce mois pour l\'instant.</p>');
+    // plan d'effectif jour par jour
+    let need={v:0,c:0}, base={v:0,c:0}, gap={v:0,c:0};
+    const rows=WD.map(x=>{ const dMin=tMin*x.k, dMax=tMax*x.k; const r=n=>Math.max(2,Math.ceil(n-0.1));
+      const vMin=r(dMin/prodV), vMax=r(dMax/prodV); const cMin=panier?r(dMin/panier/capC):2, cMax=panier?r(dMax/panier/capC):2; const s=vStaffOn(x.day);
+      need.v+=vMax; need.c+=cMax; base.v+=Math.max(0,vMax-Math.round(vendJ)); base.c+=Math.max(0,cMax-Math.round(caisJ)); if(s){ gap.v+=Math.max(0,vMax-s.v); gap.c+=Math.max(0,cMax-s.c); }
+      const dd=x.day.split("-"); const ec=(n,p)=>p==null?'<span class="st-mut">–</span>':p>=n?'<span class="vup">'+p+'</span>':'<span class="vdn">'+p+' (−'+(n-p)+')</span>';
+      return '<tr'+(x.d===5?' class="vsat"':'')+'><td><b>'+DAYN[x.d].slice(0,3)+'. '+dd[2]+'/'+dd[1]+'</b></td><td class="n">'+eur(dMin)+' – '+eur(dMax)+'</td><td class="n"><b>'+(vMin===vMax?vMax:vMin+' – '+vMax)+'</b></td><td class="n">'+ec(vMax,s?s.v:null)+'</td><td class="n"><b>'+(cMin===cMax?cMax:cMin+' – '+cMax)+'</b></td><td class="n">'+ec(cMax,s?s.c:null)+'</td></tr>'; }).join("");
+    h+='<p class="oblbl">Plan d\'effectif · réservé à la direction</p><div class="obk3"><div><small>Renfort vendeur à prévoir (+'+gMax+' %)</small><b>'+base.v+' journée'+(base.v>1?'s':'')+'</b><small class="st-mut">au-delà de '+Math.round(vendJ)+' vendeurs par jour</small></div><div><small>Renfort caisse à prévoir</small><b>'+base.c+' journée'+(base.c>1?'s':'')+'</b><small class="st-mut">au-delà de '+Math.round(caisJ)+' caissières par jour</small></div><div><small>Manque sur les plannings saisis</small><b>'+gap.v+' vendeur · '+gap.c+' caisse</b><small class="st-mut">journées</small></div></div>'+
+      '<div class="tbl"><table class="vtab"><thead><tr><th>Jour</th><th>Objectif PO (+'+gMin+' à +'+gMax+' %)</th><th>Vendeurs nécessaires</th><th>Vendeurs planifiés</th><th>Caissières nécessaires</th><th>Caissières planifiées</th></tr></thead><tbody>'+rows+'</tbody></table></div></div>'; }
+  h+='<p class="st-mut">Hypothèses : PO par vendeur présent et factures par caissière constantes par rapport à la période analysée ; minimum 2 vendeurs et 2 caissières par jour ouvert (ouverture, fermeture, caisse tenue en permanence). Répartition des jours : calendrier N-1 de l\'onglet Objectifs s\'il est rempli, sinon poids des jours. Dimanches et jours fériés d\'ouverture exceptionnelle non compris.</p>';
+  return h; }
+
+function vBind(v){ const T=VT();
+  const num=x=>{ const t=String(x).trim().replace(/\s/g,"").replace(",","."); return t===""?null:parseFloat(t); };
+  const fi=$("#va-file"); if(fi) fi.onchange=async ev=>{ const files=[...ev.target.files]; ev.target.value=""; if(!files.length) return;
+    if(!window.XLSX){ toast("Le module Excel n'est pas encore chargé : réessayez dans quelques secondes"); return; }
+    for(const file of files){ try{ const buf=await file.arrayBuffer(); const wb=window.XLSX.read(buf,{type:"array"}); const P=vParse(wb); const imp=vBuild(P,file.name);
+        const had=!!T.imports[imp.id]; T.imports[imp.id]=imp;
+        jlog("ventes","Palmarès "+fdShort(imp.from)+" → "+fdShort(imp.to)+(had?" remplacé":" importé")+" : "+Object.keys(imp.rows).length+" collaborateurs présents, PO magasin "+eur(imp.store.po));
+        toast("Palmarès du "+fdShort(imp.from)+" au "+fdShort(imp.to)+" importé : "+Object.keys(imp.rows).length+" présents"); }
+      catch(e){ console.warn("Import palmarès", file.name, e); toast("Import impossible ("+file.name+") : "+((e&&e.message)||e)); } }
+    teamChanged(); renderAna(); };
+  v.querySelectorAll("[data-vdel]").forEach(b=>b.onclick=()=>{ if(b.dataset.sure!=="1"){ b.dataset.sure="1"; b.textContent="Confirmer ?"; return; } const x=T.imports[b.dataset.vdel]; delete T.imports[b.dataset.vdel]; if(T.selN===b.dataset.vdel) delete T.selN; if(T.selN1===b.dataset.vdel) delete T.selN1; jlog("ventes","Palmarès "+(x?fdShort(x.from)+" → "+fdShort(x.to):"")+" retiré"); teamChanged(); renderAna(); });
+  v.querySelectorAll("[data-vx]").forEach(i=>i.onchange=()=>{ const x=T.extra[+i.dataset.vx]; x[i.dataset.k]=i.dataset.k==="mat"?i.value.trim().toUpperCase():i.value.trim(); teamChanged(); renderAna(); });
+  v.querySelectorAll("[data-vxd]").forEach(b=>b.onclick=()=>{ T.extra.splice(+b.dataset.vxd,1); teamChanged(); renderAna(); });
+  const xa=$("#va-xadd"); if(xa) xa.onclick=()=>{ T.extra.push({mat:"",name:""}); teamChanged(); renderAna(); setTimeout(()=>{ const i=v.querySelectorAll('[data-k="mat"]'); i.length&&i[i.length-1].focus(); },50); };
+  const sn=$("#va-n"); if(sn) sn.onchange=()=>{ T.selN=sn.value; delete T.selN1; teamChanged(); renderAna(); };
+  const s1=$("#va-n1"); if(s1) s1.onchange=()=>{ T.selN1=s1.value; teamChanged(); renderAna(); };
+  const P=T.plan; const setP=(k,el,min,max)=>{ if(!el) return; el.onchange=()=>{ const n=num(el.value); if(n==null){ delete P[k]; } else if(!(n>=min&&n<=max)){ toast("Valeur hors limites ("+min+" à "+max+")"); return; } else P[k]=n; teamChanged(); renderAna(); }; };
+  setP("gMin",$("#va-gmin"),-50,200); setP("gMax",$("#va-gmax"),-50,200); setP("gObj",$("#va-gobj"),-50,200); setP("vendJ",$("#va-vj"),0.5,30); setP("caisJ",$("#va-cj"),0.5,10);
+  v.querySelectorAll("[data-vm]").forEach(c=>c.onchange=()=>{ const s=new Set(P.months||[]); c.checked?s.add(c.dataset.vm):s.delete(c.dataset.vm); P.months=[...s]; teamChanged(); renderAna(); });
+  v.querySelectorAll("[data-vgo]").forEach(b=>b.onclick=()=>{ S.objMonth=b.dataset.vgo; go("obj"); });
+  v.querySelectorAll("[data-vapply]").forEach(b=>b.onclick=()=>{ const ym=b.dataset.vapply; const base=vN1Month(ym); if(!base){ toast("PO N-1 inconnue pour ce mois"); return; } const g=P.gObj??P.gMin??15;
+    const M=objMonth(ym,true); if(M.mode==="n1"&&monthWorkDays(ym).some(x=>+((M.n1||{})[x.day]||0)>0)){ M.rateAll=g; } else { M.mode="po"; M.po=Math.round(base.po*(1+g/100)); }
+    jlog("objectifs","Objectifs de "+ymName(ym)+" : PO N-1 "+eur(base.po)+" + "+g+" % = "+eur(monthPO(M,ym))+" ("+base.src+")"); objChanged(ym); toast("Objectifs de "+ymName(ym)+" : "+eur(monthPO(M,ym))); renderAna(); }); }
+
 /* ====================== Suivi RH ====================== */
 const RHT = () => (S.team.settings ||= {});
 const fiche = e => (e.fiche ||= {});
@@ -3191,6 +3412,7 @@ function renderHome(){
       tile("abs","abs","Absences","Maladie, retards…","t-rd")+
       tile("res","res","Résultats","PDF du jour pour l\'équipe","t-tl",(S.res||[]).some(r=>r.day===todayStr())?0:"!")+
       tile("obj","obj","Objectifs","PO et services","t-or")+
+      tile("ana","cpt","Ventes et effectifs","Palmarès, podium, plan","t-tl")+
       tile("rea","cpt","Réalisés","Validation et primes","t-gr",(S.rea||[]).filter(r=>r.status==="attente").length)+
       tile("apv","indiv","Vue collaborateur","Ce que voit l\'équipe","t-gy")+
       tile("pz","pz","Pauses",((S.pauses||[]).filter(p=>!pzEnd(p)&&p.day===todayStr()).length||"Aucun")+" en pause","t-tl")+
