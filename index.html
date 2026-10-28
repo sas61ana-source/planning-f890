@@ -2942,6 +2942,24 @@ function vParse(wb){
       if(!sm) continue; const {head,i}=vMatIn(r,5); if(i<0) continue;
       const o={}; for(const [j,k] of Object.entries(sm)){ const v=vNum(r[+j]); if(v!=null) o[k]=(o[k]||0)+v; } svc[head[i].toUpperCase()]=o; } }
   return {from, to, rows, total, svc, hasSvc:!!sn}; }
+// palmarès en PDF : même lecture que l'onglet Résultats, convertie au format de l'import Excel
+// ligne TOTAL de la synthèse : nombre de factures distinctes et PO du magasin
+function vPdfTotal(items){ const t=items.find(i=>i.s==="TOTAL"); if(!t) return null; const L=items.filter(i=>i.p===t.p&&Math.abs(i.y-t.y)<1.6&&i.x>t.x).sort((a,b)=>a.x-b.x);
+  const fact=L.length?palmNum(L[0].s):null, po=L.find(i=>/€/.test(i.s)); return {fact, po:po?palmNum(po.s):null}; }
+function vFromPdf(P, T){ if(!P||!P.rows||!P.rows.length) throw new Error("ce PDF n'est pas un palmarès vendeurs lisible");
+  if(P.base!=="PO") throw new Error("palmarès en CA : importez le palmarès vendeurs en PO");
+  const d=s=>{ const m=/^(\d\d)\/(\d\d)\/(\d\d)$/.exec(s||""); return m?"20"+m[3]+"-"+m[2]+"-"+m[1]:null; }; const from=d(P.du), to=d(P.au);
+  if(!from||!to) throw new Error("période introuvable dans le PDF");
+  const pc=v=>v==null?null:v/100; const rows={}; const svc={}; const total={}; let accPO=0, attW=0, attF=0, cegW=0, cegP=0;
+  P.rows.forEach(r=>{ if(r.ca==null&&r.fact==null) return; const o={mat:r.mat, nom:r.nom||"", prenom:r.prenom||"", po:r.ca, fact:r.fact, marge:r.marge, txm:pc(r.txm), pdmAcc:pc(r.pdmAcc), attach:pc(r.txAttach), nbAcc:r.nbAcc,
+      poSvc:r.caSvc, margeSvc:r.margeSvc, pdmSvc:pc(r.pdmSvc), ceg:r.cegQ, cegTx:pc(r.cegTx), psm:r.prot, club:r.club, bplus:r.bp, clubp:r.clubp, inf:r.ci, infMob:r.ci2};
+    Object.keys(o).forEach(k=>{ if(o[k]==null) delete o[k]; }); rows[r.mat]=o; if(r.cegCA!=null) svc[r.mat]={cegCA:r.cegCA};
+    ["po","fact","marge","nbAcc","poSvc","margeSvc","ceg","psm","club","bplus","clubp","inf","infMob"].forEach(k=>{ if(o[k]!=null) total[k]=(total[k]||0)+o[k]; });
+    const po=o.po||0; if(o.pdmAcc!=null) accPO+=o.pdmAcc*po; if(o.attach!=null&&o.fact){ attW+=o.attach*o.fact; attF+=o.fact; } if(o.cegTx!=null&&po>0){ cegW+=o.cegTx*po; cegP+=po; } });
+  if(!total.po) throw new Error("aucune PO lue dans le PDF");
+  if(T&&T.fact>0) total.fact=T.fact; if(T&&T.po!=null&&Math.abs(T.po-total.po)<=Math.max(50,Math.abs(total.po)*0.001)) total.po=T.po;
+  total.txm=(total.marge||0)/total.po; total.pdmAcc=accPO/total.po; if(attF) total.attach=attW/attF; if(total.marge) total.pdmSvc=(total.margeSvc||0)/total.marge; if(cegP) total.cegTx=cegW/cegP;
+  return {from, to, rows, total, svc, hasSvc:false}; }
 // collaborateurs présents : matricule de la fiche (ou connu) + vendeurs hors planning (Éric)
 function vPresent(){ const L=[];
   emps().forEach(e=>{ const m=matOf(e); if(m&&/^FC/i.test(m)) L.push({mat:m.toUpperCase(), name:e.name, id:e.id, fonction:fonctionOf(e)}); });
@@ -3024,8 +3042,8 @@ async function renderAna(){ const v=$("#v-ana"); if(!v) return;
   if(!S.allWeeks){ v.innerHTML='<div class="panel">Chargement des plannings…</div>'; await loadAllWeeks(); if(S.view!=="ana") return; }
   else S.allWeeks[S.weekId]=clone(S.week);
   const T=VT(), L=vImports(), N=vPickN(), N1=vPickN1(N), pres=vPresent();
-  let h='<div class="panel"><h2>Ventes et effectifs</h2><p class="lead">Importez les palmarès vendeurs en PO (.xlsx Boulanger). Seuls les collaborateurs présents sont gardés ; le total du magasin reste celui du palmarès (ventes des collaborateurs partis et comptes MS comprises). <b>Écran réservé à la direction : rien n\'est publié aux collaborateurs.</b></p>'+
-    '<div class="vimp"><label class="btn primary" for="va-file">Importer un palmarès (.xlsx)</label><input id="va-file" type="file" accept=".xlsx,.xls" multiple hidden><span class="st-mut">Pour les objectifs : un palmarès par mois de l\'an dernier (ex. du 01/11/25 au 30/11/25). Pour la comparaison : la même période sur les deux années.</span></div>'+
+  let h='<div class="panel"><h2>Ventes et effectifs</h2><p class="lead">Importez les palmarès vendeurs en PO (Excel ou PDF Boulanger). L\'Excel apporte en plus le détail Infinity et assurances. Seuls les collaborateurs présents sont gardés ; le total du magasin reste celui du palmarès (ventes des collaborateurs partis et comptes MS comprises). <b>Écran réservé à la direction : rien n\'est publié aux collaborateurs.</b></p>'+
+    '<div class="vimp"><label class="btn primary" for="va-file">Importer un palmarès (Excel ou PDF)</label><input id="va-file" type="file" accept=".xlsx,.xls,.pdf,application/pdf" multiple hidden><span class="st-mut">Pour les objectifs : un palmarès par mois de l\'an dernier (ex. du 01/11/25 au 30/11/25). Pour la comparaison : la même période sur les deux années.</span></div>'+
     (L.length?'<div class="tbl"><table><thead><tr><th>Période</th><th>Jours d\'ouverture</th><th>PO HT magasin</th><th>Présents</th><th>Fichier</th><th></th></tr></thead><tbody>'+L.slice().reverse().map(x=>'<tr><td><b>'+fdShort(x.from)+' → '+fdShort(x.to)+'</b></td><td class="n">'+vOpenDays(x.from,x.to)+'</td><td class="n">'+eur(x.store.po)+'</td><td class="n">'+Object.keys(x.rows).length+'</td><td class="st-mut">'+esc(x.file)+'</td><td><button class="btn ghost danger" data-vdel="'+esc(x.id)+'">Retirer</button></td></tr>').join("")+'</tbody></table></div>':'<div class="emptystate">Aucun palmarès importé.</div>')+
     '<details class="vmat"><summary>Matricules des collaborateurs présents ('+pres.length+')</summary><p class="st-mut">Repris des fiches collaborateurs. Ajoutez ici les vendeurs hors planning (ex. vous-même). Un matricule ajouté après un import demande de réimporter le fichier.</p><div class="vchips">'+pres.map(p=>'<span class="pill info">'+esc(p.name)+' · '+esc(p.mat)+'</span>').join(" ")+'</div>'+
     '<div class="tbl"><table><thead><tr><th>Matricule</th><th>Prénom</th><th></th></tr></thead><tbody>'+T.extra.map((x,i)=>'<tr><td><input data-vx="'+i+'" data-k="mat" value="'+esc(x.mat)+'"></td><td><input data-vx="'+i+'" data-k="name" value="'+esc(x.name)+'"></td><td><button class="btn ghost danger" data-vxd="'+i+'">Retirer</button></td></tr>').join("")+'</tbody></table></div><button class="btn" id="va-xadd">+ Vendeur hors planning</button></details></div>';
@@ -3095,8 +3113,10 @@ function vPlanHTML(N, I){ const T=VT(), Pl=T.plan; const now=new Date(); const m
 function vBind(v){ const T=VT();
   const num=x=>{ const t=String(x).trim().replace(/\s/g,"").replace(",","."); return t===""?null:parseFloat(t); };
   const fi=$("#va-file"); if(fi) fi.onchange=async ev=>{ const files=[...ev.target.files]; ev.target.value=""; if(!files.length) return;
-    if(!window.XLSX){ toast("Le module Excel n'est pas encore chargé : réessayez dans quelques secondes"); return; }
-    for(const file of files){ try{ const buf=await file.arrayBuffer(); const wb=window.XLSX.read(buf,{type:"array"}); const P=vParse(wb); const imp=vBuild(P,file.name);
+    for(const file of files){ try{ const buf=await file.arrayBuffer(); let P;
+        if(/\.pdf$/i.test(file.name)||file.type==="application/pdf") { const its=await pdfItems(new Uint8Array(buf)); P=vFromPdf(parsePalmares(its), vPdfTotal(its)); }
+        else { if(!window.XLSX) throw new Error("module Excel pas encore chargé, réessayez dans quelques secondes"); P=vParse(window.XLSX.read(buf,{type:"array"})); }
+        const imp=vBuild(P,file.name);
         const had=!!T.imports[imp.id]; T.imports[imp.id]=imp;
         jlog("ventes","Palmarès "+fdShort(imp.from)+" → "+fdShort(imp.to)+(had?" remplacé":" importé")+" : "+Object.keys(imp.rows).length+" collaborateurs présents, PO magasin "+eur(imp.store.po));
         toast("Palmarès du "+fdShort(imp.from)+" au "+fdShort(imp.to)+" importé : "+Object.keys(imp.rows).length+" présents"); }
